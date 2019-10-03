@@ -1,5 +1,7 @@
 package VirtuTuile.GUI;
 
+import javax.swing.JOptionPane;
+
 /**
  * @author Petros Fytilis
  */
@@ -40,6 +42,7 @@ public class MainWindow extends javax.swing.JFrame
     {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jMenu1 = new javax.swing.JMenu();
         jToolBar1 = new javax.swing.JToolBar();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
@@ -56,6 +59,20 @@ public class MainWindow extends javax.swing.JFrame
         pourcentageLabel = new javax.swing.JLabel();
         rightPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        topMenuBar = new javax.swing.JMenuBar();
+        menuFichier = new javax.swing.JMenu();
+        menuFichierNouveauProjet = new javax.swing.JMenuItem();
+        menuFichierOuvrirProjet = new javax.swing.JMenuItem();
+        menuFichierFermerProjet = new javax.swing.JMenuItem();
+        menuFichierEnregistrerProjet = new javax.swing.JMenuItem();
+        menuFichierQuitter = new javax.swing.JMenuItem();
+        menuEdition = new javax.swing.JMenu();
+        menuEditionAnnuler = new javax.swing.JMenuItem();
+        menuEditionRepeter = new javax.swing.JMenuItem();
+        menuAide = new javax.swing.JMenu();
+        menuAidePropos = new javax.swing.JMenuItem();
+
+        jMenu1.setText("jMenu1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(640, 480));
@@ -138,7 +155,7 @@ public class MainWindow extends javax.swing.JFrame
         );
         canvasPanel1Layout.setVerticalGroup(
             canvasPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 336, Short.MAX_VALUE)
+            .addGap(0, 314, Short.MAX_VALUE)
         );
 
         coordonneesPixelsLabel.setText("Coordonnées: X: 0 pixels Y: 0 pixels");
@@ -229,6 +246,72 @@ public class MainWindow extends javax.swing.JFrame
         gridBagConstraints.weighty = 1.0;
         mainPanel.add(rightPanel, gridBagConstraints);
 
+        menuFichier.setText("Fichier");
+
+        menuFichierNouveauProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierNouveauProjet.setText("Nouveau Projet");
+        menuFichier.add(menuFichierNouveauProjet);
+
+        menuFichierOuvrirProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierOuvrirProjet.setText("Ouvrir Projet");
+        menuFichier.add(menuFichierOuvrirProjet);
+
+        menuFichierFermerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierFermerProjet.setText("Fermer Projet");
+        menuFichier.add(menuFichierFermerProjet);
+
+        menuFichierEnregistrerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierEnregistrerProjet.setText("Enregistrer Projet");
+        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuFichierEnregistrerProjetActionPerformed(evt);
+            }
+        });
+        menuFichier.add(menuFichierEnregistrerProjet);
+
+        menuFichierQuitter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierQuitter.setText("Quitter");
+        menuFichierQuitter.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuFichierQuitterActionPerformed(evt);
+            }
+        });
+        menuFichier.add(menuFichierQuitter);
+
+        topMenuBar.add(menuFichier);
+
+        menuEdition.setText("Edition");
+
+        menuEditionAnnuler.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        menuEditionAnnuler.setText("Annuler");
+        menuEdition.add(menuEditionAnnuler);
+
+        menuEditionRepeter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        menuEditionRepeter.setText("Répéter");
+        menuEdition.add(menuEditionRepeter);
+
+        topMenuBar.add(menuEdition);
+
+        menuAide.setText("Aide");
+
+        menuAidePropos.setText("A propos de");
+        menuAidePropos.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuAideProposActionPerformed(evt);
+            }
+        });
+        menuAide.add(menuAidePropos);
+
+        topMenuBar.add(menuAide);
+
+        setJMenuBar(topMenuBar);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -241,7 +324,7 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE))
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
         );
 
         pack();
@@ -310,6 +393,30 @@ public class MainWindow extends javax.swing.JFrame
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton3ActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton1ActionPerformed
+    {//GEN-HEADEREND:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void menuFichierQuitterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierQuitterActionPerformed
+    {//GEN-HEADEREND:event_menuFichierQuitterActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_menuFichierQuitterActionPerformed
+
+    private void menuAideProposActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuAideProposActionPerformed
+    {//GEN-HEADEREND:event_menuAideProposActionPerformed
+        javax.swing.JOptionPane.showMessageDialog(null,"VirtuTuile 2019\n"+
+                "vous est présenté par\n" +
+                "Petros Fytilis\n" + "Gabriel Chevrette-Parrot\n" +
+                "Nathalie Ponton\n" + "Martin Sasseville", "A propos de",
+                JOptionPane.INFORMATION_MESSAGE); 
+    }//GEN-LAST:event_menuAideProposActionPerformed
+
+    private void menuFichierEnregistrerProjetActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierEnregistrerProjetActionPerformed
+    {//GEN-HEADEREND:event_menuFichierEnregistrerProjetActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuFichierEnregistrerProjetActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -349,11 +456,24 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JButton jButton3;
     private javax.swing.JButton jButton6;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JMenu menuAide;
+    private javax.swing.JMenuItem menuAidePropos;
+    private javax.swing.JMenu menuEdition;
+    private javax.swing.JMenuItem menuEditionAnnuler;
+    private javax.swing.JMenuItem menuEditionRepeter;
+    private javax.swing.JMenu menuFichier;
+    private javax.swing.JMenuItem menuFichierEnregistrerProjet;
+    private javax.swing.JMenuItem menuFichierFermerProjet;
+    private javax.swing.JMenuItem menuFichierNouveauProjet;
+    private javax.swing.JMenuItem menuFichierOuvrirProjet;
+    private javax.swing.JMenuItem menuFichierQuitter;
     private javax.swing.JLabel pourcentageLabel;
     private javax.swing.JPanel rightPanel;
+    private javax.swing.JMenuBar topMenuBar;
     private javax.swing.JButton zoomInButton;
     private javax.swing.JLabel zoomLabel;
     private javax.swing.JButton zoomOutButton;
