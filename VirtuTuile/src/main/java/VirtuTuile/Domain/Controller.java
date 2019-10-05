@@ -9,7 +9,7 @@ package VirtuTuile.Domain;
  *
  * @author
  */
-public class VirtuTuileController
+public class Controller
 {
     
 }

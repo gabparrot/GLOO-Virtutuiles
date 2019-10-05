@@ -1,31 +1,28 @@
 package VirtuTuile.GUI;
 
+import VirtuTuile.Infrastructure.Utilities;
 import javax.swing.JOptionPane;
 
+
 /**
+ * La fenêtre principale de l'application.
  * @author Petros Fytilis
  */
 public class MainWindow extends javax.swing.JFrame
 {
-    // Nombre de pixels par mèetre lorsque le zoom est à 100%
-    final int PIXELS_PAR_METRE_BASE = 100;
-    
-    // Tableau avec les différents niveaux de zoom
-    final float[] ZOOM_LEVELS = {.3f, .5f, .67f, .8f, .9f, 1f, 1.1f, 1.2f,
-                                 1.33f, 1.5f, 1.7f, 2f, 2.4f, 3f};
-    
-    // Niveau de zoom actuel
-    float zoomActuel = 1f;
+    // Le controller de l'application.
+    public VirtuTuile.Domain.Controller controller;
     
     /**
-     * Creates new form MainWindow
+     * Constructeur.
      */
     public MainWindow()
     {
         initComponents();
+        controller = new VirtuTuile.Domain.Controller();
     }
 
-    // Initialise les paramètres de la fenêtre
+    // Initialise les paramètres de la fenêtre.
     {
         setTitle("VirtuTuile");
         setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
@@ -52,7 +49,7 @@ public class MainWindow extends javax.swing.JFrame
         zoomOutButton = new javax.swing.JButton();
         zoomInButton = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
-        canvasPanel1 = new VirtuTuile.GUI.CanvasPanel();
+        canvasPanel = new VirtuTuile.GUI.CanvasPanel(this);
         coordonneesPixelsLabel = new javax.swing.JLabel();
         coordonneesMesureLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
@@ -139,23 +136,30 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        canvasPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
+        canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
         {
             public void mouseMoved(java.awt.event.MouseEvent evt)
             {
-                canvasPanel1MouseMoved(evt);
+                canvasPanelMouseMoved(evt);
+            }
+        });
+        canvasPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+        {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+            {
+                canvasPanelMouseWheelMoved(evt);
             }
         });
 
-        javax.swing.GroupLayout canvasPanel1Layout = new javax.swing.GroupLayout(canvasPanel1);
-        canvasPanel1.setLayout(canvasPanel1Layout);
-        canvasPanel1Layout.setHorizontalGroup(
-            canvasPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 561, Short.MAX_VALUE)
+        javax.swing.GroupLayout canvasPanelLayout = new javax.swing.GroupLayout(canvasPanel);
+        canvasPanel.setLayout(canvasPanelLayout);
+        canvasPanelLayout.setHorizontalGroup(
+            canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 640, Short.MAX_VALUE)
         );
-        canvasPanel1Layout.setVerticalGroup(
-            canvasPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 314, Short.MAX_VALUE)
+        canvasPanelLayout.setVerticalGroup(
+            canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 534, Short.MAX_VALUE)
         );
 
         coordonneesPixelsLabel.setText("Coordonnées: X: 0 pixels Y: 0 pixels");
@@ -185,7 +189,7 @@ public class MainWindow extends javax.swing.JFrame
                                 .addComponent(zoomInButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(jButton6))
-                            .addComponent(canvasPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGap(40, 40, 40))
                     .addGroup(leftPanelLayout.createSequentialGroup()
                         .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -204,7 +208,7 @@ public class MainWindow extends javax.swing.JFrame
                     .addComponent(zoomLabel)
                     .addComponent(pourcentageLabel))
                 .addGap(40, 40, 40)
-                .addComponent(canvasPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(coordonneesPixelsLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -316,7 +320,7 @@ public class MainWindow extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 855, Short.MAX_VALUE)
+            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
             .addComponent(mainPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -324,7 +328,7 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 436, Short.MAX_VALUE))
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE))
         );
 
         pack();
@@ -335,57 +339,37 @@ public class MainWindow extends javax.swing.JFrame
     }//GEN-LAST:event_jButton6ActionPerformed
 
     /**
-     * Affiche les coordonnées du curseur sur le canvas
-     * @param evt 
+     * Mets à jour les coordonnées de la souris sur le canevas.
+     * @param evt : position de la souris
      */
-    private void canvasPanel1MouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanel1MouseMoved
+    private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
         int posXPixels = evt.getX();
         int posYPixels = evt.getY();
         coordonneesPixelsLabel.setText("Coordonnées: X: " + posXPixels + " pixels Y: " + posYPixels + " pixels");
         
-        float posXMetrique = (float) posXPixels / (PIXELS_PAR_METRE_BASE * zoomActuel);
-        float posYMetrique = (float) posYPixels / (PIXELS_PAR_METRE_BASE * zoomActuel);
-        coordonneesMesureLabel.setText("Coordonnées: X: " + posXMetrique + " mètres Y: " + posYMetrique + " mètres");
-    }//GEN-LAST:event_canvasPanel1MouseMoved
+        float posXMetrique = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
+        float posYMetrique = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+        coordonneesMesureLabel.setText("Coordonnées: X: " + String.format("%.03f", posXMetrique) + " mètres Y: " + String.format("%.03f", posYMetrique) + " mètres");
+    }//GEN-LAST:event_canvasPanelMouseMoved
 
+    /**
+     * Décrémente le zoom.
+     * @param evt 
+     */
     private void zoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomOutButtonActionPerformed
-        if (zoomActuel > .3f)
-        {
-            float newZoom = 2.4f;
-            for (int i = 0; i < ZOOM_LEVELS.length; i++)
-            {
-                if (ZOOM_LEVELS[i] >= zoomActuel)
-                {
-                    newZoom = ZOOM_LEVELS[i - 1];
-                    break;
-                }
-            }
-            zoomActuel = newZoom;
-            zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
-            canvasPanel1.resizeTestRectangle((int) (50f * newZoom), (int) (50f * newZoom), (int) (100f * newZoom), (int) (200f * newZoom));
-            canvasPanel1.largeurGrille = (int) (canvasPanel1.largeurGrilleBase * newZoom);
-            canvasPanel1.repaint();
-        }
+        float newZoom = canvasPanel.zoomOutIncrement();
+        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        canvasPanel.repaint();
     }//GEN-LAST:event_zoomOutButtonActionPerformed
 
+    /**
+     * Incrémente le zoom.
+     * @param evt 
+     */
     private void zoomInButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomInButtonActionPerformed
-        if (zoomActuel < 3f)
-        {
-            float newZoom = .5f;
-            for (int i = ZOOM_LEVELS.length - 1; i > 0; i--)
-            {
-                if (ZOOM_LEVELS[i] <= zoomActuel)
-                {
-                    newZoom = ZOOM_LEVELS[i + 1];
-                    break;
-                }
-            }
-            zoomActuel = newZoom;
-            zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
-            canvasPanel1.resizeTestRectangle((int) (50f * newZoom), (int) (50f * newZoom), (int) (100f * newZoom), (int) (200f * newZoom));
-            canvasPanel1.largeurGrille = (int) (canvasPanel1.largeurGrilleBase * newZoom);
-            canvasPanel1.repaint();
-        }
+        float newZoom = canvasPanel.zoomInIncrement();
+        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        canvasPanel.repaint();
     }//GEN-LAST:event_zoomInButtonActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton3ActionPerformed
@@ -418,6 +402,17 @@ public class MainWindow extends javax.swing.JFrame
     }//GEN-LAST:event_menuFichierEnregistrerProjetActionPerformed
 
     /**
+     * Déplace le zoom par la roue de la souris.
+     * @param evt 
+     */
+    private void canvasPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt)//GEN-FIRST:event_canvasPanelMouseWheelMoved
+    {//GEN-HEADEREND:event_canvasPanelMouseWheelMoved
+        float newZoom = canvasPanel.changeZoom(evt.getWheelRotation());
+        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        canvasPanel.repaint();
+    }//GEN-LAST:event_canvasPanelMouseWheelMoved
+
+    /**
      * @param args the command line arguments
      */
     public static void main(String args[])
@@ -448,7 +443,7 @@ public class MainWindow extends javax.swing.JFrame
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private VirtuTuile.GUI.CanvasPanel canvasPanel1;
+    private VirtuTuile.GUI.CanvasPanel canvasPanel;
     private javax.swing.JLabel coordonneesMesureLabel;
     private javax.swing.JLabel coordonneesPixelsLabel;
     private javax.swing.JButton jButton1;

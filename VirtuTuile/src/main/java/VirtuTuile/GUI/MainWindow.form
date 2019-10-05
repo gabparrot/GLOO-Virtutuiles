@@ -136,7 +136,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jToolBar1" alignment="1" pref="855" max="32767" attributes="0"/>
+          <Component id="jToolBar1" alignment="1" pref="960" max="32767" attributes="0"/>
           <Component id="mainPanel" alignment="1" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
@@ -145,7 +145,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="jToolBar1" min="-2" pref="42" max="-2" attributes="0"/>
               <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
-              <Component id="mainPanel" pref="436" max="32767" attributes="0"/>
+              <Component id="mainPanel" pref="656" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -229,7 +229,7 @@
                                       <EmptySpace max="32767" attributes="0"/>
                                       <Component id="jButton6" min="-2" max="-2" attributes="0"/>
                                   </Group>
-                                  <Component id="canvasPanel1" max="32767" attributes="0"/>
+                                  <Component id="canvasPanel" max="32767" attributes="0"/>
                               </Group>
                               <EmptySpace min="40" pref="40" max="-2" attributes="0"/>
                           </Group>
@@ -256,7 +256,7 @@
                           <Component id="pourcentageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                      <Component id="canvasPanel1" max="32767" attributes="0"/>
+                      <Component id="canvasPanel" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="coordonneesPixelsLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -291,20 +291,24 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton6ActionPerformed"/>
               </Events>
             </Component>
-            <Container class="VirtuTuile.GUI.CanvasPanel" name="canvasPanel1">
+            <Container class="VirtuTuile.GUI.CanvasPanel" name="canvasPanel">
               <Events>
-                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="canvasPanel1MouseMoved"/>
+                <EventHandler event="mouseMoved" listener="java.awt.event.MouseMotionListener" parameters="java.awt.event.MouseEvent" handler="canvasPanelMouseMoved"/>
+                <EventHandler event="mouseWheelMoved" listener="java.awt.event.MouseWheelListener" parameters="java.awt.event.MouseWheelEvent" handler="canvasPanelMouseWheelMoved"/>
               </Events>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new VirtuTuile.GUI.CanvasPanel(this)"/>
+              </AuxValues>
 
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="561" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="640" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <EmptySpace min="0" pref="314" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="534" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
               </Layout>
