@@ -41,19 +41,24 @@ public class MainWindow extends javax.swing.JFrame
 
         jMenu1 = new javax.swing.JMenu();
         jToolBar1 = new javax.swing.JToolBar();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        selectionButton = new javax.swing.JButton();
+        rectangleButton = new javax.swing.JButton();
+        polygonButton = new javax.swing.JButton();
+        quantitiesButton = new javax.swing.JButton();
+        magnetButton = new javax.swing.JButton();
+        inspectionButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         zoomOutButton = new javax.swing.JButton();
         zoomInButton = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
+        measurementButton = new javax.swing.JButton();
         canvasPanel = new VirtuTuile.GUI.CanvasPanel();
         coordonneesPixelsLabel = new javax.swing.JLabel();
         coordonneesMesureLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
-        pourcentageLabel = new javax.swing.JLabel();
+        percentLabel = new javax.swing.JLabel();
+        verticalScrollBar = new javax.swing.JScrollBar();
+        horizontalScrollBar = new javax.swing.JScrollBar();
         rightPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         topMenuBar = new javax.swing.JMenuBar();
@@ -78,30 +83,62 @@ public class MainWindow extends javax.swing.JFrame
         jToolBar1.setFloatable(false);
         jToolBar1.setRollover(true);
 
-        jButton1.setText("jButton1");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(jButton1);
-
-        jButton2.setText("jButton2");
-        jButton2.setFocusable(false);
-        jButton2.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(jButton2);
-
-        jButton3.setText("jButton3");
-        jButton3.setFocusable(false);
-        jButton3.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton3.addActionListener(new java.awt.event.ActionListener()
+        selectionButton.setText("Selection");
+        selectionButton.setFocusable(false);
+        selectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        selectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        selectionButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                jButton3ActionPerformed(evt);
+                selectionButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(jButton3);
+        jToolBar1.add(selectionButton);
+
+        rectangleButton.setText("Rectangle");
+        rectangleButton.setFocusable(false);
+        rectangleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        rectangleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(rectangleButton);
+
+        polygonButton.setText("Polygon");
+        polygonButton.setFocusable(false);
+        polygonButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        polygonButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        polygonButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                polygonButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(polygonButton);
+
+        quantitiesButton.setText("$$$");
+        quantitiesButton.setFocusable(false);
+        quantitiesButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        quantitiesButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(quantitiesButton);
+
+        magnetButton.setText("Magnet");
+        magnetButton.setFocusable(false);
+        magnetButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        magnetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        magnetButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                magnetButtonActionPerformed(evt);
+            }
+        });
+        jToolBar1.add(magnetButton);
+
+        inspectionButton.setText("Inspection");
+        inspectionButton.setFocusable(false);
+        inspectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        inspectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(inspectionButton);
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -126,12 +163,12 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        jButton6.setText("inch/cm");
-        jButton6.addActionListener(new java.awt.event.ActionListener()
+        measurementButton.setText("inch/cm");
+        measurementButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                jButton6ActionPerformed(evt);
+                measurementButtonActionPerformed(evt);
             }
         });
 
@@ -158,7 +195,7 @@ public class MainWindow extends javax.swing.JFrame
         );
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 534, Short.MAX_VALUE)
+            .addGap(0, 556, Short.MAX_VALUE)
         );
 
         coordonneesPixelsLabel.setText("Coordonnées: X: 0 pixels Y: 0 pixels");
@@ -167,7 +204,26 @@ public class MainWindow extends javax.swing.JFrame
 
         zoomLabel.setText("100");
 
-        pourcentageLabel.setText("%");
+        percentLabel.setText("%");
+
+        verticalScrollBar.setMaximum(1000);
+        verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
+                verticalScrollBarAdjustmentValueChanged(evt);
+            }
+        });
+
+        horizontalScrollBar.setMaximum(1000);
+        horizontalScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
+        horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
+                horizontalScrollBarAdjustmentValueChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
@@ -177,24 +233,27 @@ public class MainWindow extends javax.swing.JFrame
                 .addGap(40, 40, 40)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(leftPanelLayout.createSequentialGroup()
-                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+                        .addComponent(coordonneesMesureLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(coordonneesPixelsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(leftPanelLayout.createSequentialGroup()
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(horizontalScrollBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(leftPanelLayout.createSequentialGroup()
                                 .addComponent(zoomOutButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(zoomLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(pourcentageLabel)
+                                .addComponent(percentLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(zoomInButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jButton6))
-                            .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(40, 40, 40))
-                    .addGroup(leftPanelLayout.createSequentialGroup()
-                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(coordonneesPixelsLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(coordonneesMesureLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                .addComponent(measurementButton))
+                            .addComponent(canvasPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(verticalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(17, 17, 17))))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -203,15 +262,19 @@ public class MainWindow extends javax.swing.JFrame
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(zoomOutButton)
                     .addComponent(zoomInButton)
-                    .addComponent(jButton6)
+                    .addComponent(measurementButton)
                     .addComponent(zoomLabel)
-                    .addComponent(pourcentageLabel))
-                .addGap(40, 40, 40)
-                .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(percentLabel))
+                .addGap(18, 18, 18)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(verticalScrollBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(3, 3, 3)
+                .addComponent(horizontalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(coordonneesPixelsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(coordonneesMesureLabel)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(coordonneesMesureLabel)
+                    .addComponent(coordonneesPixelsLabel))
                 .addGap(8, 8, 8))
         );
 
@@ -233,14 +296,14 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(134, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addGap(26, 26, 26)
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(570, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -333,17 +396,17 @@ public class MainWindow extends javax.swing.JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+    private void measurementButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_measurementButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton6ActionPerformed
+    }//GEN-LAST:event_measurementButtonActionPerformed
 
     /**
      * Mets à jour les coordonnées de la souris sur le canevas.
      * @param evt : position de la souris
      */
     private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
-        int posXPixels = evt.getX();
-        int posYPixels = evt.getY();
+        int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
+        int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
         coordonneesPixelsLabel.setText("Coordonnées: X: " + posXPixels + " pixels Y: " + posYPixels + " pixels");
         
         float posXMetrique = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
@@ -371,15 +434,15 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomInButtonActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton3ActionPerformed
-    {//GEN-HEADEREND:event_jButton3ActionPerformed
+    private void polygonButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_polygonButtonActionPerformed
+    {//GEN-HEADEREND:event_polygonButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_polygonButtonActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jButton1ActionPerformed
-    {//GEN-HEADEREND:event_jButton1ActionPerformed
+    private void selectionButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_selectionButtonActionPerformed
+    {//GEN-HEADEREND:event_selectionButtonActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_selectionButtonActionPerformed
 
     private void menuFichierQuitterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierQuitterActionPerformed
     {//GEN-HEADEREND:event_menuFichierQuitterActionPerformed
@@ -410,6 +473,23 @@ public class MainWindow extends javax.swing.JFrame
         zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         canvasPanel.repaint();
     }//GEN-LAST:event_canvasPanelMouseWheelMoved
+
+    private void magnetButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_magnetButtonActionPerformed
+    {//GEN-HEADEREND:event_magnetButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_magnetButtonActionPerformed
+
+    private void verticalScrollBarAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt)//GEN-FIRST:event_verticalScrollBarAdjustmentValueChanged
+    {//GEN-HEADEREND:event_verticalScrollBarAdjustmentValueChanged
+        canvasPanel.setVerticalOffset(evt.getValue());
+        canvasPanel.repaint();
+    }//GEN-LAST:event_verticalScrollBarAdjustmentValueChanged
+
+    private void horizontalScrollBarAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt)//GEN-FIRST:event_horizontalScrollBarAdjustmentValueChanged
+    {//GEN-HEADEREND:event_horizontalScrollBarAdjustmentValueChanged
+        canvasPanel.setHorizontalOffset(evt.getValue());
+        canvasPanel.repaint();
+    }//GEN-LAST:event_horizontalScrollBarAdjustmentValueChanged
 
     /**
      * @param args the command line arguments
@@ -445,15 +525,15 @@ public class MainWindow extends javax.swing.JFrame
     private VirtuTuile.GUI.CanvasPanel canvasPanel;
     private javax.swing.JLabel coordonneesMesureLabel;
     private javax.swing.JLabel coordonneesPixelsLabel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton6;
+    private javax.swing.JScrollBar horizontalScrollBar;
+    private javax.swing.JButton inspectionButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JPanel leftPanel;
+    private javax.swing.JButton magnetButton;
     private javax.swing.JPanel mainPanel;
+    private javax.swing.JButton measurementButton;
     private javax.swing.JMenu menuAide;
     private javax.swing.JMenuItem menuAidePropos;
     private javax.swing.JMenu menuEdition;
@@ -465,9 +545,14 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem menuFichierNouveauProjet;
     private javax.swing.JMenuItem menuFichierOuvrirProjet;
     private javax.swing.JMenuItem menuFichierQuitter;
-    private javax.swing.JLabel pourcentageLabel;
+    private javax.swing.JLabel percentLabel;
+    private javax.swing.JButton polygonButton;
+    private javax.swing.JButton quantitiesButton;
+    private javax.swing.JButton rectangleButton;
     private javax.swing.JPanel rightPanel;
+    private javax.swing.JButton selectionButton;
     private javax.swing.JMenuBar topMenuBar;
+    private javax.swing.JScrollBar verticalScrollBar;
     private javax.swing.JButton zoomInButton;
     private javax.swing.JLabel zoomLabel;
     private javax.swing.JButton zoomOutButton;

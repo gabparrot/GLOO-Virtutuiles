@@ -46,17 +46,21 @@ public class CanvasDrawer
     private void drawGrid(Graphics g)
     {
         gridDistance = gridDistanceDefault * parent.getZoom();
+        
+        int verticalOffset = parent.getVerticalOffset() % (int) gridDistance;
+        int horizontalOffset = parent.getHorizontalOffset() % (int) gridDistance;
+
         int nbColumns = (int) (parent.getWidth() / gridDistance + 1);
         int nbRows = (int) (parent.getHeight() / gridDistance + 1);
 
         for (int column = 0; column < nbColumns; column++)
         {
-            g.drawLine( (int) (column * gridDistance), 0, (int) (column * gridDistance), parent.getHeight());
+            g.drawLine( (int) (column * gridDistance) - horizontalOffset, 0, (int) (column * gridDistance) - horizontalOffset, parent.getHeight());
         }
         
         for (int row = 0; row < nbRows; row++)
         {
-            g.drawLine( 0, (int) (row * gridDistance), parent.getWidth(), (int) (row * gridDistance));
+            g.drawLine( 0, (int) (row * gridDistance) - verticalOffset, parent.getWidth(), (int) (row * gridDistance) - verticalOffset);
         }
     }
     
@@ -67,10 +71,12 @@ public class CanvasDrawer
     private void drawSurfaces(Graphics g)
     {
         float zoom = parent.getZoom();
+        int verticalOffset = parent.getVerticalOffset();
+        int horizontalOffset = parent.getHorizontalOffset();
         
         // !!!TEST!!!
         g.setColor(Color.red);
-        g.fillRect((int) (testRectangle.x * zoom), (int) (testRectangle.y * zoom),
+        g.fillRect((int) (testRectangle.x * zoom) - horizontalOffset, (int) (testRectangle.y * zoom) - verticalOffset,
                    (int) (testRectangle.width * zoom), (int) (testRectangle.height * zoom));
         g.setColor(Color.black);
         /// !!!FIN TEST!!!

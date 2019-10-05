@@ -9,13 +9,18 @@ import java.awt.*;
 public class CanvasPanel extends javax.swing.JPanel
 {   
     // Tableau avec les incréments de zoom.
-    private static final float[] ZOOM_LEVELS = {.3f, .5f, .67f, .8f, .9f, 1f, 1.1f, 1.2f, 1.33f, 1.5f, 1.7f, 2f, 2.4f, 3f};
+    private static final float[] ZOOM_LEVELS = {.1f, .3f, .5f, .67f, .8f, .9f, 1f,
+                                                1.1f, 1.2f, 1.33f, 1.5f, 1.7f, 2f, 2.4f, 3f, 5f, 10f};
     
     // Niveau de zoom actuel.
     private float zoom = 1f;
     
+    // Offsets du canevas. Lorsque les offsets grandissent, la caméra se déplace en-bas et à-droite.
+    private int verticalOffset = 0;
+    private int horizontalOffset = 0;
+    
     // Objet qui déssine sur le panneau.
-    private VirtuTuile.Drawing.CanvasDrawer drawer = new VirtuTuile.Drawing.CanvasDrawer(this);
+    private final VirtuTuile.Drawing.CanvasDrawer drawer = new VirtuTuile.Drawing.CanvasDrawer(this);
     
     /**
      * Constructeur.
@@ -30,9 +35,9 @@ public class CanvasPanel extends javax.swing.JPanel
      */
     public float zoomInIncrement()
     {
-        if (zoom < 3f)
+        if (zoom < 10f)
         {
-            float newZoom = .5f;
+            float newZoom = .3f;
             for (int i = ZOOM_LEVELS.length - 1; i > 0; i--)
             {
                 if (ZOOM_LEVELS[i] <= zoom)
@@ -52,9 +57,9 @@ public class CanvasPanel extends javax.swing.JPanel
      */
     public float zoomOutIncrement()
     {
-        if (zoom > .3f)
+        if (zoom > .1f)
         {
-            float newZoom = 2.4f;
+            float newZoom = 5f;
             for (int i = 0; i < ZOOM_LEVELS.length; i++)
             {
                 if (ZOOM_LEVELS[i] >= zoom)
@@ -90,6 +95,26 @@ public class CanvasPanel extends javax.swing.JPanel
     public float getZoom()
     {
         return zoom;
+    }
+    
+    public int getVerticalOffset()
+    {
+        return verticalOffset;
+    }           
+    
+    public void setVerticalOffset(int offset)
+    {
+        verticalOffset = offset;
+    }
+    
+    public int getHorizontalOffset()
+    {
+        return horizontalOffset;
+    }           
+    
+    public void setHorizontalOffset(int offset)
+    {
+        horizontalOffset = offset;
     }
     
     /**
