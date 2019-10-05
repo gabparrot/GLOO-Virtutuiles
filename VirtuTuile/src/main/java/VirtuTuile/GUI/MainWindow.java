@@ -49,7 +49,7 @@ public class MainWindow extends javax.swing.JFrame
         zoomOutButton = new javax.swing.JButton();
         zoomInButton = new javax.swing.JButton();
         jButton6 = new javax.swing.JButton();
-        canvasPanel = new VirtuTuile.GUI.CanvasPanel(this);
+        canvasPanel = new VirtuTuile.GUI.CanvasPanel();
         coordonneesPixelsLabel = new javax.swing.JLabel();
         coordonneesMesureLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
@@ -73,7 +73,6 @@ public class MainWindow extends javax.swing.JFrame
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMinimumSize(new java.awt.Dimension(640, 480));
-        setPreferredSize(new java.awt.Dimension(960, 720));
 
         jToolBar1.setBackground(new java.awt.Color(102, 153, 255));
         jToolBar1.setFloatable(false);

@@ -14,20 +14,14 @@ public class CanvasPanel extends javax.swing.JPanel
     // Niveau de zoom actuel.
     private float zoom = 1f;
     
-    // Référence au parent.
-    private VirtuTuile.GUI.MainWindow mainWindow;
-    
     // Objet qui déssine sur le panneau.
-    private final VirtuTuile.Drawing.CanvasDrawer drawer;
+    private VirtuTuile.Drawing.CanvasDrawer drawer = new VirtuTuile.Drawing.CanvasDrawer(this);
     
     /**
      * Constructeur.
-     * @param mainWindow : la fenêtre parente.
      */
-    public CanvasPanel(VirtuTuile.GUI.MainWindow mainWindow)
+    public CanvasPanel()
     {
-        this.mainWindow = mainWindow;
-        this.drawer = new VirtuTuile.Drawing.CanvasDrawer(mainWindow.controller, this);
     }
 
     /**
@@ -105,8 +99,7 @@ public class CanvasPanel extends javax.swing.JPanel
     @Override
     protected void paintComponent(Graphics g)
     {
-        super.paintComponent(g);
-        
+        super.paintComponent(g);   
         drawer.draw(g);
         
         // Graphics2D g2d = (Graphics2D) g.create();

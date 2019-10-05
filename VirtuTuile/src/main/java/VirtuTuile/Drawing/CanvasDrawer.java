@@ -8,9 +8,6 @@ import java.awt.*;
  */
 public class CanvasDrawer
 {
-    // Référence au controller.
-    private final VirtuTuile.Domain.Controller controller;
-    
     // Référence au parent.
     private final VirtuTuile.GUI.CanvasPanel parent;
     
@@ -25,12 +22,10 @@ public class CanvasDrawer
     
     /**
      * Constructeur.
-     * @param controller : le controller du MainWindow.
      * @param parent : le canevas qui contient l'afficheur.
      */
-    public CanvasDrawer(VirtuTuile.Domain.Controller controller, VirtuTuile.GUI.CanvasPanel parent)
+    public CanvasDrawer(VirtuTuile.GUI.CanvasPanel parent)
     {
-        this.controller = controller;
         this.parent = parent;
     }
     
