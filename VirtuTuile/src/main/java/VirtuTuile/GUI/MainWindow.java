@@ -206,7 +206,7 @@ public class MainWindow extends javax.swing.JFrame
 
         percentLabel.setText("%");
 
-        verticalScrollBar.setMaximum(1000);
+        verticalScrollBar.setUnitIncrement(5);
         verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
         {
             public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
@@ -215,8 +215,8 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        horizontalScrollBar.setMaximum(1000);
         horizontalScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
+        horizontalScrollBar.setUnitIncrement(5);
         horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
         {
             public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
@@ -481,12 +481,15 @@ public class MainWindow extends javax.swing.JFrame
 
     private void verticalScrollBarAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt)//GEN-FIRST:event_verticalScrollBarAdjustmentValueChanged
     {//GEN-HEADEREND:event_verticalScrollBarAdjustmentValueChanged
+        verticalScrollBar.setMaximum(evt.getValue() + 100);
         canvasPanel.setVerticalOffset(evt.getValue());
+        verticalScrollBar.repaint();
         canvasPanel.repaint();
     }//GEN-LAST:event_verticalScrollBarAdjustmentValueChanged
 
     private void horizontalScrollBarAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt)//GEN-FIRST:event_horizontalScrollBarAdjustmentValueChanged
     {//GEN-HEADEREND:event_horizontalScrollBarAdjustmentValueChanged
+        horizontalScrollBar.setMaximum(evt.getValue() + 100);
         canvasPanel.setHorizontalOffset(evt.getValue());
         canvasPanel.repaint();
     }//GEN-LAST:event_horizontalScrollBarAdjustmentValueChanged

@@ -50,8 +50,8 @@ public class CanvasDrawer
         int verticalOffset = parent.getVerticalOffset() % (int) gridDistance;
         int horizontalOffset = parent.getHorizontalOffset() % (int) gridDistance;
 
-        int nbColumns = (int) (parent.getWidth() / gridDistance + 1);
-        int nbRows = (int) (parent.getHeight() / gridDistance + 1);
+        int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
+        int nbRows = (int) (parent.getHeight() / gridDistance + 2);
 
         for (int column = 0; column < nbColumns; column++)
         {
