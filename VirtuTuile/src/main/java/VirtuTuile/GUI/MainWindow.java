@@ -466,8 +466,8 @@ public class MainWindow extends javax.swing.JFrame
         xPixelCoordsLabel.setText("X: " + posXPixels + " pixels");
         yPixelCoordsLabel.setText("Y: " + posYPixels + " pixels");
         
-        float posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
-        float posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+        double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
+        double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
         
         if (isMetric)
         {
@@ -490,7 +490,7 @@ public class MainWindow extends javax.swing.JFrame
      * @param evt 
      */
     private void zoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomOutButtonActionPerformed
-        float newZoom = canvasPanel.zoomOutIncrement();
+        double newZoom = canvasPanel.zoomOutIncrement();
         zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomOutButtonActionPerformed
@@ -500,7 +500,7 @@ public class MainWindow extends javax.swing.JFrame
      * @param evt 
      */
     private void zoomInButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomInButtonActionPerformed
-        float newZoom = canvasPanel.zoomInIncrement();
+        double newZoom = canvasPanel.zoomInIncrement();
         zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomInButtonActionPerformed
@@ -540,8 +540,8 @@ public class MainWindow extends javax.swing.JFrame
      */
     private void canvasPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt)//GEN-FIRST:event_canvasPanelMouseWheelMoved
     {//GEN-HEADEREND:event_canvasPanelMouseWheelMoved
-        float newZoom = canvasPanel.changeZoom(evt.getWheelRotation());
-        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        double newZoom = canvasPanel.changeZoom(evt.getWheelRotation());
+        zoomLabel.setText(String.valueOf(Math.round(newZoom * 100)));
         canvasPanel.repaint();
     }//GEN-LAST:event_canvasPanelMouseWheelMoved
 

@@ -15,7 +15,7 @@ public final class Utilities
      * @param zoom : le facteur avec lequel les pixels doivent être convertis.
      * @return la conversion en mètres.
      */
-    public static float pixelsToMeters(int pixels, float zoom)
+    public static double pixelsToMeters(int pixels, double zoom)
     {
         return pixels / (PIXELS_PAR_METRE_BASE * zoom);
     }
@@ -25,7 +25,7 @@ public final class Utilities
      * @param meters : le nombre de mètres.
      * @return la conversion en pieds en nombre entier.
      */
-    public static int metersToFeet(float meters)
+    public static int metersToFeet(double meters)
     {
         return (int) (meters * 3.28084);
     }
@@ -35,7 +35,7 @@ public final class Utilities
      * @param meters : le nombre de mètres.
      * @return la conversion en pouces restant après la convertion en pieds.
      */
-    public static double metersToRemainingInches(float meters)
+    public static double metersToRemainingInches(double meters)
     {
         int feet = metersToFeet(meters);
         double inches = meters * 39.3701;

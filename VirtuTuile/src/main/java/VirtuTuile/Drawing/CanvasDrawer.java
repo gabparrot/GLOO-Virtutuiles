@@ -55,12 +55,14 @@ public class CanvasDrawer
 
         for (int column = 0; column < nbColumns; column++)
         {
-            g.drawLine( (int) (column * gridDistance) - horizontalOffset, 0, (int) (column * gridDistance) - horizontalOffset, parent.getHeight());
+            g.drawLine((int) (column * gridDistance) - horizontalOffset, 0,
+                       (int) (column * gridDistance) - horizontalOffset, parent.getHeight());
         }
         
         for (int row = 0; row < nbRows; row++)
         {
-            g.drawLine( 0, (int) (row * gridDistance) - verticalOffset, parent.getWidth(), (int) (row * gridDistance) - verticalOffset);
+            g.drawLine(0, (int) (row * gridDistance) - verticalOffset,
+                       parent.getWidth(), (int) (row * gridDistance) - verticalOffset);
         }
     }
     
@@ -70,7 +72,7 @@ public class CanvasDrawer
      */
     private void drawSurfaces(Graphics g)
     {
-        float zoom = parent.getZoom();
+        double zoom = parent.getZoom();
         int verticalOffset = parent.getVerticalOffset();
         int horizontalOffset = parent.getHorizontalOffset();
         
