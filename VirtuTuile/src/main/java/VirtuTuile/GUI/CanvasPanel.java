@@ -80,7 +80,7 @@ public class CanvasPanel extends javax.swing.JPanel
      */
     public float changeZoom(int increment)
     {
-        float newZoom = zoom + (float) increment / 50;
+        float newZoom = zoom - (float) increment / 50;
         if (newZoom >= 0.1)
         {
             zoom = newZoom;
