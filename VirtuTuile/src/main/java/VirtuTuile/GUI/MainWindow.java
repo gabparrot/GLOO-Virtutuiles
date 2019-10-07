@@ -13,6 +13,8 @@ public class MainWindow extends javax.swing.JFrame
     // Le controller de l'application.
     public VirtuTuile.Domain.Controller controller;
     
+    private boolean isMetric = true;
+    
     /**
      * Constructeur.
      */
@@ -20,6 +22,23 @@ public class MainWindow extends javax.swing.JFrame
     {
         initComponents();
         controller = new VirtuTuile.Domain.Controller();
+    }
+    
+    /**
+     * @return true si le système actuel est métrique, false pour impérial. 
+     */
+    public boolean isMetric()
+    {
+        return isMetric;
+    }
+    
+    /**
+     * Setter pour la variable isMetric
+     * @param isMetric true pour un système métrique, false pour un système impérial.
+     */
+    public void setIsMetric(boolean isMetric)
+    {
+        this.isMetric = isMetric;
     }
 
     // Initialise les paramètres de la fenêtre.
@@ -53,12 +72,14 @@ public class MainWindow extends javax.swing.JFrame
         zoomInButton = new javax.swing.JButton();
         measurementButton = new javax.swing.JButton();
         canvasPanel = new VirtuTuile.GUI.CanvasPanel();
-        coordonneesPixelsLabel = new javax.swing.JLabel();
-        coordonneesMesureLabel = new javax.swing.JLabel();
+        xPixelCoordsLabel = new javax.swing.JLabel();
+        xMeasureCoordsLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
         percentLabel = new javax.swing.JLabel();
         verticalScrollBar = new javax.swing.JScrollBar();
         horizontalScrollBar = new javax.swing.JScrollBar();
+        yMeasureCoordsLabel = new javax.swing.JLabel();
+        yPixelCoordsLabel = new javax.swing.JLabel();
         rightPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         topMenuBar = new javax.swing.JMenuBar();
@@ -163,7 +184,7 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        measurementButton.setText("inch/cm");
+        measurementButton.setText("impérial");
         measurementButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -195,12 +216,12 @@ public class MainWindow extends javax.swing.JFrame
         );
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 556, Short.MAX_VALUE)
+            .addGap(0, 550, Short.MAX_VALUE)
         );
 
-        coordonneesPixelsLabel.setText("Coordonnées: X: 0 pixels Y: 0 pixels");
+        xPixelCoordsLabel.setText("X: 0 pixels");
 
-        coordonneesMesureLabel.setText("Coordonnées: X: 0.00 mètres Y: 0.00 mètres");
+        xMeasureCoordsLabel.setText("X: 0.000 mètres");
 
         zoomLabel.setText("100");
 
@@ -225,6 +246,10 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
+        yMeasureCoordsLabel.setText("Y: 0.000 mètres");
+
+        yPixelCoordsLabel.setText("Y: 0 pixels");
+
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
         leftPanelLayout.setHorizontalGroup(
@@ -232,11 +257,6 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(leftPanelLayout.createSequentialGroup()
                 .addGap(40, 40, 40)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(leftPanelLayout.createSequentialGroup()
-                        .addComponent(coordonneesMesureLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(coordonneesPixelsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(leftPanelLayout.createSequentialGroup()
                         .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(horizontalScrollBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -253,7 +273,19 @@ public class MainWindow extends javax.swing.JFrame
                             .addComponent(canvasPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(verticalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(17, 17, 17))))
+                        .addGap(17, 17, 17))
+                    .addGroup(leftPanelLayout.createSequentialGroup()
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(yMeasureCoordsLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(leftPanelLayout.createSequentialGroup()
+                                .addComponent(yPixelCoordsLabel)
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addGroup(leftPanelLayout.createSequentialGroup()
+                                .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -271,11 +303,14 @@ public class MainWindow extends javax.swing.JFrame
                     .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(3, 3, 3)
                 .addComponent(horizontalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(3, 3, 3)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(coordonneesMesureLabel)
-                    .addComponent(coordonneesPixelsLabel))
-                .addGap(8, 8, 8))
+                    .addComponent(xMeasureCoordsLabel)
+                    .addComponent(xPixelCoordsLabel))
+                .addGap(3, 3, 3)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(yMeasureCoordsLabel)
+                    .addComponent(yPixelCoordsLabel)))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -396,8 +431,29 @@ public class MainWindow extends javax.swing.JFrame
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Le bouton alterne l'affichage entre un système de mesure métrique et impérial.
+     * @param evt 
+     */
     private void measurementButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_measurementButtonActionPerformed
-        // TODO add your handling code here:
+        if (isMetric)
+        {
+            setIsMetric(false);
+            measurementButton.setText("métrique");
+            xPixelCoordsLabel.setText("X: 0 pixels");
+            yPixelCoordsLabel.setText("Y: 0 pixels");
+            xMeasureCoordsLabel.setText("X: 0ft 0.00in");
+            yMeasureCoordsLabel.setText("Y: 0ft 0.00in");
+        }
+        else
+        {
+            setIsMetric(true);
+            measurementButton.setText("impérial");
+            xPixelCoordsLabel.setText("X: 0 pixels");
+            yPixelCoordsLabel.setText("Y: 0 pixels");
+            xMeasureCoordsLabel.setText("X: 0.000 mètres");
+            yMeasureCoordsLabel.setText("Y: 0.000 mètres");
+        }
     }//GEN-LAST:event_measurementButtonActionPerformed
 
     /**
@@ -407,11 +463,26 @@ public class MainWindow extends javax.swing.JFrame
     private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
         int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
         int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
-        coordonneesPixelsLabel.setText("Coordonnées: X: " + posXPixels + " pixels Y: " + posYPixels + " pixels");
+        xPixelCoordsLabel.setText("X: " + posXPixels + " pixels");
+        yPixelCoordsLabel.setText("Y: " + posYPixels + " pixels");
         
-        float posXMetrique = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
-        float posYMetrique = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
-        coordonneesMesureLabel.setText("Coordonnées: X: " + String.format("%.03f", posXMetrique) + " mètres Y: " + String.format("%.03f", posYMetrique) + " mètres");
+        float posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
+        float posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+        
+        if (isMetric)
+        {
+            xMeasureCoordsLabel.setText("X: " + String.format("%.03f", posXMetric) + " mètres");
+            yMeasureCoordsLabel.setText("Y: " + String.format("%.03f", posYMetric) + " mètres");
+        }
+        else
+        {
+            int posXFeet = Utilities.metersToFeet(posXMetric);
+            double posXInches = Utilities.metersToRemainingInches(posXMetric);
+            int posYFeet = Utilities.metersToFeet(posYMetric);
+            double posYInches = Utilities.metersToRemainingInches(posYMetric);
+            xMeasureCoordsLabel.setText("X: " + posXFeet + "ft " + String.format("%.02f", posXInches) + "in");
+            yMeasureCoordsLabel.setText("Y: " + posYFeet + "ft " + String.format("%.02f", posYInches) + "in");
+        }
     }//GEN-LAST:event_canvasPanelMouseMoved
 
     /**
@@ -526,8 +597,6 @@ public class MainWindow extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private VirtuTuile.GUI.CanvasPanel canvasPanel;
-    private javax.swing.JLabel coordonneesMesureLabel;
-    private javax.swing.JLabel coordonneesPixelsLabel;
     private javax.swing.JScrollBar horizontalScrollBar;
     private javax.swing.JButton inspectionButton;
     private javax.swing.JLabel jLabel1;
@@ -556,6 +625,10 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JButton selectionButton;
     private javax.swing.JMenuBar topMenuBar;
     private javax.swing.JScrollBar verticalScrollBar;
+    private javax.swing.JLabel xMeasureCoordsLabel;
+    private javax.swing.JLabel xPixelCoordsLabel;
+    private javax.swing.JLabel yMeasureCoordsLabel;
+    private javax.swing.JLabel yPixelCoordsLabel;
     private javax.swing.JButton zoomInButton;
     private javax.swing.JLabel zoomLabel;
     private javax.swing.JButton zoomOutButton;

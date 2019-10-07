@@ -21,12 +21,24 @@ public final class Utilities
     }
     
     /**
-     * Converti un nombre de mètres en pieds.
+     * Converti un nombre de mètres en pieds. Retourne un nombre entier.
      * @param meters : le nombre de mètres.
-     * @return la conversion en pieds.
+     * @return la conversion en pieds en nombre entier.
      */
-    public static float metersToFeet(float meters)
+    public static int metersToFeet(float meters)
     {
-        return (float) (meters * 3.28084);
+        return (int) (meters * 3.28084);
+    }
+    
+    /**
+     * Converti un nombre de mètres en un restant de pouces après avoir converti en pieds.
+     * @param meters : le nombre de mètres.
+     * @return la conversion en pouces restant après la convertion en pieds.
+     */
+    public static double metersToRemainingInches(float meters)
+    {
+        int feet = metersToFeet(meters);
+        double inches = meters * 39.3701;
+        return inches - feet * 12;
     }
 }
