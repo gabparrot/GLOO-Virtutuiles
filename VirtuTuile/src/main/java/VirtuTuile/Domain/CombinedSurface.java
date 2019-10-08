@@ -50,20 +50,6 @@ public class CombinedSurface extends Area implements Surface
     }
 
     @Override
-    public int getWidth()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getHeight()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void setHole(boolean isHole)
     {
         // TODO
