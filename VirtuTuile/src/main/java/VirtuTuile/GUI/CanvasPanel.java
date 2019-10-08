@@ -3,7 +3,7 @@ package VirtuTuile.GUI;
 import java.awt.*;
 
 /**
- * Le panneau dans lequel les surfaces sont déssinées.
+ * Le panneau dans lequel les surfaces sont dessinées.
  * @author Petros Fytilis
  */
 public class CanvasPanel extends javax.swing.JPanel
@@ -145,5 +145,10 @@ public class CanvasPanel extends javax.swing.JPanel
         
         // Graphics2D g2d = (Graphics2D) g.create();
         //g2d.dispose();
+    }
+    
+    public void repaint()
+    {
+        //todo
     }
 }

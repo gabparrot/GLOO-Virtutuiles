@@ -3,7 +3,7 @@ package VirtuTuile.Drawing;
 import java.awt.*;
 
 /**
- * Objet qui permet de déssiner sur le canevas.
+ * Objet qui permet de dessiner sur le canevas.
  * @author Petros Fytilis
  */
 public class CanvasDrawer
