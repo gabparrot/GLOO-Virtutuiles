@@ -5,7 +5,6 @@
  */
 package VirtuTuile.Domain;
 
-import java.awt.Shape;
 import java.awt.Point;
 import java.awt.Color;
 
@@ -20,50 +19,60 @@ public class Controller
     public void addRectangularSurface(int coordX, int coordY, int width, int height)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void addIrregularSurface(Point[] point)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void glueSelectedSurfaces()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void switchSelectionStatus()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void moveSelectedSurface(Point point)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void deleteSelectedSurface()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     public void addTileType(int width, int height, Color color[])
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void setWidthSelectedRectangle(int width)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void setHeightSelectedRectangle(int height)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void MoveSelectedCovering(Point delta)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

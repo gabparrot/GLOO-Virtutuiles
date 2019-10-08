@@ -36,6 +36,7 @@ public class Project
     public void undo()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -44,6 +45,7 @@ public class Project
     public void redo()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -53,6 +55,7 @@ public class Project
     public void switchSelectionStatus(Point point)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -62,6 +65,7 @@ public class Project
     public void moveSelectedSurface(Point delta)
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
    
     // Getters et Setters

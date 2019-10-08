@@ -10,7 +10,7 @@ import java.awt.Color;
 
 /**
  *
- * @author gabpa
+ * @author gabparrot
  */
 public interface Surface extends Shape
 {
@@ -19,8 +19,6 @@ public interface Surface extends Shape
     Color getColor();
     int getCoordX();
     int getCoordY();
-    int getWidth();
-    int getHeight();
     void setHole(boolean isHole);
     void setColor(Color color);
     void setCovering(Covering covering);

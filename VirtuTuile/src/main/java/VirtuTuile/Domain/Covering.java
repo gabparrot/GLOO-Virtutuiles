@@ -47,6 +47,7 @@ public class Covering
     private void coverSurface()
     {
         // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     // Getters et Setters
