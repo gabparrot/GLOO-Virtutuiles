@@ -146,9 +146,4 @@ public class CanvasPanel extends javax.swing.JPanel
         // Graphics2D g2d = (Graphics2D) g.create();
         //g2d.dispose();
     }
-    
-    public void repaint()
-    {
-        //todo
-    }
 }
