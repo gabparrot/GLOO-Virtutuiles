@@ -2,6 +2,7 @@ package VirtuTuile.GUI;
 
 import VirtuTuile.Infrastructure.Utilities;
 import javax.swing.JOptionPane;
+import java.awt.Point;
 
 
 /**
@@ -12,6 +13,13 @@ public class MainWindow extends javax.swing.JFrame
 {
     // Le controller de l'application.
     public VirtuTuile.Domain.Controller controller;
+    
+    private enum ApplicationModes 
+    {
+        SELECT, RECTANGLE, POLYGON;
+    }
+    
+    private ApplicationModes selectedMode = ApplicationModes.SELECT;
     
     private boolean isMetric = true;
     
@@ -39,6 +47,16 @@ public class MainWindow extends javax.swing.JFrame
     public void setIsMetric(boolean isMetric)
     {
         this.isMetric = isMetric;
+    }
+    
+    public ApplicationModes getSelectedMode ()
+    {
+        return this.selectedMode;
+    }
+    
+    public void setSelectedMode(ApplicationModes newMode)
+    {
+        this.selectedMode = newMode;
     }
 
     // Initialise les paramètres de la fenêtre.
@@ -205,6 +223,13 @@ public class MainWindow extends javax.swing.JFrame
             public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
             {
                 canvasPanelMouseWheelMoved(evt);
+            }
+        });
+        canvasPanel.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
+                canvasPanelMousePressed(evt);
             }
         });
 
@@ -480,8 +505,10 @@ public class MainWindow extends javax.swing.JFrame
             double posXInches = Utilities.metersToRemainingInches(posXMetric);
             int posYFeet = Utilities.metersToFeet(posYMetric);
             double posYInches = Utilities.metersToRemainingInches(posYMetric);
-            xMeasureCoordsLabel.setText("X: " + posXFeet + "ft " + String.format("%.02f", posXInches) + "in");
-            yMeasureCoordsLabel.setText("Y: " + posYFeet + "ft " + String.format("%.02f", posYInches) + "in");
+            xMeasureCoordsLabel.setText("X: " + posXFeet + "ft " + 
+                    String.format("%.02f", posXInches) + "in");
+            yMeasureCoordsLabel.setText("Y: " + posYFeet + "ft " + 
+                    String.format("%.02f", posYInches) + "in");
         }
     }//GEN-LAST:event_canvasPanelMouseMoved
 
@@ -507,12 +534,12 @@ public class MainWindow extends javax.swing.JFrame
 
     private void polygonButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_polygonButtonActionPerformed
     {//GEN-HEADEREND:event_polygonButtonActionPerformed
-        // TODO add your handling code here:
+        setSelectedMode(ApplicationModes.POLYGON);
     }//GEN-LAST:event_polygonButtonActionPerformed
 
     private void selectionButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_selectionButtonActionPerformed
     {//GEN-HEADEREND:event_selectionButtonActionPerformed
-        // TODO add your handling code here:
+        setSelectedMode(ApplicationModes.SELECT);
     }//GEN-LAST:event_selectionButtonActionPerformed
 
     private void menuFichierQuitterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierQuitterActionPerformed
@@ -564,6 +591,25 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.setHorizontalOffset(evt.getValue());
         canvasPanel.repaint();
     }//GEN-LAST:event_horizontalScrollBarAdjustmentValueChanged
+
+    private void canvasPanelMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMousePressed
+    {//GEN-HEADEREND:event_canvasPanelMousePressed
+        //TODO IF APPLICATIONMODE == SELECT ELSE ADD SHAPE
+        int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
+        int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
+        
+        double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
+        double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+        
+        Point point = new Point(round(posXMetric), round(posYMetric));
+        this.controller.switchSelectionStatus(point);
+        
+        
+        // Avec coordonées, appeler la liste des surfaces et demander si 
+        // d'entre elle contain ces coords
+        
+        
+    }//GEN-LAST:event_canvasPanelMousePressed
 
     /**
      * @param args the command line arguments

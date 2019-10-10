@@ -6,7 +6,8 @@ import java.awt.Shape;
 import java.util.Map;
 import java.util.HashMap;
 import java.awt.Point;
-
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @class definissant le projet en cours
@@ -20,6 +21,7 @@ public class Project
     private Shape selectedTile = null;
     // Renommé "quantities" ici car flou. Pas sûr du type.
     private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
+    //private List<Surface> surfaces = new ArrayList<>();
     
     /**
      * 
@@ -33,6 +35,12 @@ public class Project
     /**
      * Annuler la dernière action
      */
+    
+    public boolean conflictCheck()
+    {
+        
+    }
+    
     public void undo()
     {
         // TODO
