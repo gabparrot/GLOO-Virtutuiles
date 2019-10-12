@@ -29,13 +29,12 @@ public class MainWindow extends javax.swing.JFrame
     public MainWindow()
     {
         initComponents();
-        controller = new VirtuTuile.Domain.Controller();
     }
     
     /**
      * @return true si le système actuel est métrique, false pour impérial. 
      */
-    public boolean isMetric()
+    public boolean getIsMetric()
     {
         return isMetric;
     }
@@ -595,20 +594,21 @@ public class MainWindow extends javax.swing.JFrame
     private void canvasPanelMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMousePressed
     {//GEN-HEADEREND:event_canvasPanelMousePressed
         //TODO IF APPLICATIONMODE == SELECT ELSE ADD SHAPE
-        int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
-        int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
-        
-        double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
-        double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
-        
-        Point point = new Point(round(posXMetric), round(posYMetric));
-        this.controller.switchSelectionStatus(point);
-        
+
+        if (this.selectedMode == ApplicationModes.SELECT)
+        {
+            int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
+            int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
+            
+            double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
+            double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+            
+            //Point point = new Pointround(posXMetric), round(posYMetric));
+            controller.switchSelectionStatus(posXMetric, posYMetric);
+        }
         
         // Avec coordonées, appeler la liste des surfaces et demander si 
         // d'entre elle contain ces coords
-        
-        
     }//GEN-LAST:event_canvasPanelMousePressed
 
     /**

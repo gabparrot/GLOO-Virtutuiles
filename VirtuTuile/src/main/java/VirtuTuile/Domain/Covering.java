@@ -8,6 +8,11 @@ import java.awt.Shape;
  * @author gabparrot
  */
 public class Covering
+        
+       /* 
+        TODO ici, je ne vois pas comment on va retourner des trucs comme tiles.color
+        et getTiles
+        */
 {
     private int offsetX;
     private int offsetY;
@@ -15,9 +20,10 @@ public class Covering
     private int groutWidth;
     private int angle;
     private Pattern pattern;
-    private Shape tiles;
+    private java.util.ArrayList<Shape> tiles = new java.util.ArrayList<Shape>();
+    private TileType tileType;
+    private Color tileColor;
 
-    
     /**
      * Contructeur avec parametres
      * //TODO ajouter descriptions params
@@ -27,10 +33,12 @@ public class Covering
      * @param groutWidth
      * @param angle
      * @param pattern 
-     * @param tiles
+     * @param tileType
+     * @param tileColor
      */
-    public Covering(int offsetX, int offsetY, Color groutColor, int groutWidth, int angle, 
-            Pattern pattern, Shape tiles)
+    public Covering(int offsetX, int offsetY, Color groutColor, int groutWidth, 
+                    int angle, Pattern pattern, TileType tileType, 
+                    Color tileColor)
     {
         // Attributs du tuilage
         this.offsetX = offsetX;
@@ -39,6 +47,8 @@ public class Covering
         this.groutWidth = groutWidth;
         this.angle = angle;
         this.pattern = pattern;
+        this.tileType = tileType;
+        this.tileColor = tileColor;
         
         // Appliquer le tuilage
         this.coverSurface();
@@ -48,6 +58,11 @@ public class Covering
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private int getNbTiles()
+    {
+        return tiles.size();
     }
     
     // Getters et Setters
@@ -109,17 +124,35 @@ public class Covering
     public void setPattern(Pattern pattern)
     {
         this.pattern = pattern;
-    } 
+    }
+    
+    public TileType getTileType()
+    {
+        return tileType;
+    }
+    
+    public void setTileType(TileType tileType)
+    {
+        this.tileType = tileType;
+    }
 
-    public Shape getTiles()
+    public java.util.ArrayList<Shape> getTiles()
     {
         return tiles;
     }
 
-    public void setTiles(Shape tiles)
+    public void setTiles(java.util.ArrayList<Shape> tiles)
     {
         this.tiles = tiles;
     }
     
+    public Color getTileColor()
+    {
+        return tileColor;
+    }
     
+    public void setTileColor(Color tileColor)
+    {
+        this.tileColor = tileColor;
+    }  
 }

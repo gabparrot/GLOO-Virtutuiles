@@ -5,16 +5,33 @@
  */
 package VirtuTuile.Domain;
 
-import java.awt.Point;
+//import java.awt.Point;
 import java.awt.Color;
+
+// Énumération des différents motifs de revêtement.
+enum Pattern { A, B, C, D, E }
 
 /**
  * @class definissant le controlleur de Larman, faisant le pont entre le GUI et le logiciel
  * @author 
  */
-
 public class Controller
 {
+    // TODO vérifier si l'object project doit bien être ici et pas dans mainWindow, tout en suivant Larman
+    public Project project;
+    
+    public Controller(){}
+
+    public Project getCurrentProject()
+    {
+        return project;
+    }
+
+    public void setCurrentProject(Project selectedProject)
+    {
+        this.project = selectedProject;
+    }
+
     // TODO types de patterns
     public void addRectangularSurface(int coordX, int coordY, int width, int height)
     {
@@ -22,7 +39,7 @@ public class Controller
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public void addIrregularSurface(Point[] point)
+    public void addIrregularSurface(java.util.ArrayList<java.awt.Point> points)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
@@ -34,13 +51,12 @@ public class Controller
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public void switchSelectionStatus()
+    public void switchSelectionStatus(double posXMetric, double posYMetric)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        project.switchSelectionStatus(posXMetric, posYMetric);
     }
     
-    public void moveSelectedSurface(Point point)
+    public void moveSelectedSurface(java.awt.Point point)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
@@ -70,7 +86,7 @@ public class Controller
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
-    public void MoveSelectedCovering(Point delta)
+    public void MoveSelectedCovering(java.awt.Point delta)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");

@@ -20,7 +20,7 @@ public class CanvasPanel extends javax.swing.JPanel
     private int horizontalOffset = 0;
     
     // Objet qui déssine sur le panneau.
-    private final VirtuTuile.Drawing.CanvasDrawer drawer = new VirtuTuile.Drawing.CanvasDrawer(this);
+    private final VirtuTuile.Domain.Drawing.CanvasDrawer drawer = new VirtuTuile.Domain.Drawing.CanvasDrawer(this);
     
     /**
      * Constructeur.

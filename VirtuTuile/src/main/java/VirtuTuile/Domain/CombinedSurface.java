@@ -9,89 +9,78 @@ import java.awt.geom.Area;
  */
 public class CombinedSurface extends Area implements Surface
 {
-    @Override
-    public int getNbTiles()
+    private boolean isHole;
+    private Color color;
+    private boolean selectedStatus = false;
+    private Covering covering;
+    
+    // TODO vérifier si attributs de coordonnées doivent être ajoutés
+
+    public CombinedSurface(boolean isHole, Color color, int[] xpoints, int[] ypoints, int npoints)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        // TODO CONSTRUCTEUR COMMENT ON FAIT ÇA?
+        this.isHole = isHole;
+        this.color = color;
     }
 
     @Override
-    public boolean isHole()
+    public boolean getIsHole()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        return isHole;
     }
 
     @Override
     public Color getColor()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        if (isHole == true)
+        {
+            return color;
+        }
+        return covering.getTileColor();
     }
 
     @Override
-    public int getCoordX()
+    public void setColor(Color newColor)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        // TODO Est-ce qu'on utilise la classe super?
+        this.color =  newColor;
     }
 
     @Override
-    public int getCoordY()
+    public void setIsHole(boolean newStatus)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        this.isHole = newStatus;
+    }
+    
+    public Covering getCovering()
+    {
+        return covering;
     }
 
     @Override
-    public void setHole(boolean isHole)
+    public void setCovering(int offsetX, int offsetY, Color groutColor,
+                            int groutWidth, int angle, Pattern pattern, 
+                            TileType tileType, Color tileColor)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        this.covering = new Covering(offsetX, offsetY, groutColor,
+                                     groutWidth, angle, pattern, tileType, 
+                                     tileColor);
     }
 
     @Override
-    public void setColor(Color color)
+    public void setSelectedStatus(boolean newStatus)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        this.selectedStatus = newStatus;
     }
 
     @Override
-    public void setCovering(Covering covering)
+    public boolean getSelectedStatus()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setCoordX(int coordX)
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setCoordY(int coordY)
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
-        
-    }
-
-    @Override
-    public void switchSelection()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public boolean isSelected()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); 
+        if (selectedStatus == true)
+        {
+            return false;
+        } 
+        return true;
     }
     
 }

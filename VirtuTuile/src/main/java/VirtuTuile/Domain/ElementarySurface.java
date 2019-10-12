@@ -13,5 +13,5 @@ package VirtuTuile.Domain;
  */
 public interface ElementarySurface extends Surface
 {
-    // TODO
+    // TODO Qu'est-ce qu'on a besoin ici?? Pas d'attributs dans un interface
 }

@@ -5,9 +5,7 @@ import java.util.HashSet;
 import java.awt.Shape;
 import java.util.Map;
 import java.util.HashMap;
-import java.awt.Point;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @class definissant le projet en cours
@@ -21,15 +19,19 @@ public class Project
     private Shape selectedTile = null;
     // Renommé "quantities" ici car flou. Pas sûr du type.
     private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
-    //private List<Surface> surfaces = new ArrayList<>();
+    private ArrayList<Surface> surfaces;
+    private boolean isMetric;
     
     /**
-     * 
+     * @param isMetric
      * @param projectName 
      */
     public Project(boolean isMetric, String projectName)
     {
         this.projectName = projectName;
+        this.isMetric = isMetric;
+        ArrayList<Surface> surfaces = new ArrayList<Surface>();
+        surfaces.size();
     }
     
     /**
@@ -38,7 +40,7 @@ public class Project
     
     public boolean conflictCheck()
     {
-        
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     public void undo()
@@ -58,19 +60,27 @@ public class Project
     
     /**
      * // TODO docs
-     * @param point 
+     * @param posXMetric
+     * @param posYMetric
      */
-    public void switchSelectionStatus(Point point)
+    public Surface switchSelectionStatus(double posXMetric, double posYMetric)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+       for (Surface iter : surfaces)
+       {
+            if (iter.contains(posXMetric, posYMetric))
+            {
+                iter.setSelectedStatus(true);
+                return iter;
+            }
+       }
+       return null;
     }
     
     /**
      * // TODO docs
      * @param delta 
      */
-    public void moveSelectedSurface(Point delta)
+    public void moveSelectedSurface(int deltaX, int deltaY)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");

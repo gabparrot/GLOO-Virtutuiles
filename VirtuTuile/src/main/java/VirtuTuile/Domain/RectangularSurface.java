@@ -11,7 +11,8 @@ public class RectangularSurface extends Rectangle implements ElementarySurface
 {
     private boolean isHole;
     private Color color;
-    private boolean selectionStatus = false;
+    private boolean selectedStatus;
+    private Covering covering;
     
     /**
      * Constructeur avec parametres
@@ -22,96 +23,71 @@ public class RectangularSurface extends Rectangle implements ElementarySurface
      * @param width
      * @param height 
      */
-    public RectangularSurface(boolean isHole, Color color, int x, int y, int width, int height)
+    public RectangularSurface(boolean isHole, Color color, int x, int y, 
+                              int width, int height)
     {
         super(x, y, width, height);
         this.isHole = isHole;
         this.color = color;
+        this.selectedStatus = false;
     }
 
     // Implémentation des méthodes de Surface
+
     @Override
-    public int getNbTiles()
+    public boolean getIsHole()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return isHole;
     }
 
     @Override
-    public boolean isHole()
+    public void setIsHole(boolean newStatus)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.isHole = newStatus;
     }
 
     @Override
     public Color getColor()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getCoordX()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public int getCoordY()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void setHole(boolean isHole)
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (isHole == true)
+        {
+            return color;
+        }
+        return this.covering.getTileColor();
     }
 
     @Override
     public void setColor(Color color)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // TODO Est-ce qu'on utilise la classe super() ?
+        this.color = color;
+    }
+    
+    public Covering getCovering()
+    {
+        return covering;
     }
 
     @Override
-    public void setCovering(Covering covering)
+    public void setCovering(int offsetX, int offsetY, Color groutColor,
+                            int groutWidth, int angle, Pattern pattern, 
+                            TileType tileType, Color tileColor)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.covering = new Covering(offsetX, offsetY, groutColor,
+                                     groutWidth, angle, pattern, tileType, 
+                                     tileColor);
     }
 
     @Override
-    public void setCoordX(int coordX)
+    public boolean getSelectedStatus()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return selectedStatus;
     }
 
     @Override
-    public void setCoordY(int coordY)
+    public void setSelectedStatus(boolean newStatus)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void switchSelection()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isSelected()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.selectedStatus = newStatus;
     }
     
 }

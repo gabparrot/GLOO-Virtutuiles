@@ -16,89 +16,77 @@ public class IrregularSurface extends Polygon implements ElementarySurface
 {
     private boolean isHole;
     private Color color;
-    private boolean selectionStatus = false;
+    private boolean selectedStatus = false;
+    private Covering covering;
     
     // TODO vérifier si attributs de coordonnées doivent être ajoutés
 
-    public IrregularSurface(boolean isHole, Color color, int[] xpoints, int[] ypoints, int npoints)
+    public IrregularSurface(boolean isHole, Color color, int[] xpoints, 
+                            int[] ypoints, int npoints)
     {
         super(xpoints, ypoints, npoints);
         this.isHole = isHole;
         this.color = color;
     }
-       
-    
-    
-    @Override
-    public int getNbTiles()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
 
     @Override
-    public boolean isHole()
+    public boolean getIsHole()
     {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        return isHole;
     }
 
     @Override
     public Color getColor()
     {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        if (isHole == true)
+        {
+            return color;
+        }
+        return this.covering.getTileColor();
     }
 
     @Override
-    public int getCoordX()
+    public void setColor(Color newColor)
     {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        // TODO Est-ce qu'on utilise la classe super?
+        this.color =  newColor;
     }
 
     @Override
-    public int getCoordY()
+    public void setIsHole(boolean newStatus)
     {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setHole(boolean isHole)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setColor(Color color)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setCovering(Covering covering)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setCoordX(int coordX)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void setCoordY(int coordY)
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public void switchSelection()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
-    }
-
-    @Override
-    public boolean isSelected()
-    {
-        throw new UnsupportedOperationException("Not supported yet."); 
+        this.isHole = newStatus;
     }
     
+    @Override
+    public Covering getCovering()
+    {
+        return covering;
+    }
+
+    @Override
+    public void setCovering(int offsetX, int offsetY, Color groutColor,
+                            int groutWidth, int angle, Pattern pattern, 
+                            TileType tileType, Color tileColor)
+    {
+        this.covering = new Covering(offsetX, offsetY, groutColor,
+                                     groutWidth, angle, pattern, tileType, 
+                                     tileColor);
+    }
+
+    @Override
+    public void setSelectedStatus(boolean newStatus)
+    {
+        this.selectedStatus = newStatus;
+    }
+
+    @Override
+    public boolean getSelectedStatus()
+    {
+        if (selectedStatus == true)
+        {
+            return false;
+        } 
+        return true;
+    }
 }

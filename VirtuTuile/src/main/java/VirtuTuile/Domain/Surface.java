@@ -14,16 +14,14 @@ import java.awt.Color;
  */
 public interface Surface extends Shape
 {
-    int getNbTiles();
-    boolean isHole();
+    boolean getIsHole();
+    void setIsHole(boolean newStatus);  
     Color getColor();
-    int getCoordX();
-    int getCoordY();
-    void setHole(boolean isHole);
     void setColor(Color color);
-    void setCovering(Covering covering);
-    void setCoordX(int coordX);
-    void setCoordY(int coordY);
-    void switchSelection();
-    boolean isSelected();
+    boolean getSelectedStatus();
+    void setSelectedStatus(boolean newStatus);
+    Covering getCovering();
+    void setCovering(int offsetX, int offsetY, Color groutColor,
+                            int groutWidth, int angle, Pattern pattern, 
+                            TileType tileType, Color color);
 }
