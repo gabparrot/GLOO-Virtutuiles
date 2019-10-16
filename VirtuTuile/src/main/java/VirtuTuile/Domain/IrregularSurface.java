@@ -16,7 +16,6 @@ public class IrregularSurface extends Polygon implements ElementarySurface
 {
     private boolean isHole;
     private Color color;
-    private boolean selectedStatus = false;
     private Covering covering;
     
     // TODO vérifier si attributs de coordonnées doivent être ajoutés
@@ -30,7 +29,7 @@ public class IrregularSurface extends Polygon implements ElementarySurface
     }
 
     @Override
-    public boolean getIsHole()
+    public boolean isHole()
     {
         return isHole;
     }
@@ -38,17 +37,12 @@ public class IrregularSurface extends Polygon implements ElementarySurface
     @Override
     public Color getColor()
     {
-        if (isHole == true)
-        {
-            return color;
-        }
-        return this.covering.getTileColor();
+        return color;
     }
 
     @Override
     public void setColor(Color newColor)
     {
-        // TODO Est-ce qu'on utilise la classe super?
         this.color =  newColor;
     }
 
@@ -72,21 +66,5 @@ public class IrregularSurface extends Polygon implements ElementarySurface
         this.covering = new Covering(offsetX, offsetY, groutColor,
                                      groutWidth, angle, pattern, tileType, 
                                      tileColor);
-    }
-
-    @Override
-    public void setSelectedStatus(boolean newStatus)
-    {
-        this.selectedStatus = newStatus;
-    }
-
-    @Override
-    public boolean getSelectedStatus()
-    {
-        if (selectedStatus == true)
-        {
-            return false;
-        } 
-        return true;
     }
 }

@@ -1,17 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package VirtuTuile.Domain;
 
-
-// Nécessaire pour créer des surfaces combinées de surfaces irreg ou reg mélangées
 /**
- *
+ * Une surface élémentaire est soit une surface rectangulaire ou irrégulière.
  * @author gabparrot
  */
-public interface ElementarySurface extends Surface
-{
-    // TODO Qu'est-ce qu'on a besoin ici?? Pas d'attributs dans un interface
-}
+public interface ElementarySurface extends Surface {}

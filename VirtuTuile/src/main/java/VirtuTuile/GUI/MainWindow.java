@@ -1,9 +1,12 @@
 package VirtuTuile.GUI;
 
+import VirtuTuile.Domain.RectangularSurface;
 import VirtuTuile.Infrastructure.Utilities;
+import java.awt.Color;
+import java.awt.Cursor;
 import javax.swing.JOptionPane;
 import java.awt.Point;
-
+import java.awt.Rectangle;
 
 /**
  * La fenêtre principale de l'application.
@@ -14,13 +17,25 @@ public class MainWindow extends javax.swing.JFrame
     // Le controller de l'application.
     public VirtuTuile.Domain.Controller controller;
     
+    // Enumération des différents modes de l'application.
     private enum ApplicationModes 
     {
-        SELECT, RECTANGLE, POLYGON;
+        SELECT, MOVE, RECTANGLE, POLYGON, NONE;
     }
     
-    private ApplicationModes selectedMode = ApplicationModes.SELECT;
+    // La mode courante de l'application.
+    private ApplicationModes selectedMode = ApplicationModes.NONE;
     
+    // Un rectangle est défini par deux points, son premier point métrique est enregistré ici.
+    private Point firstRectangleCorner = null;
+    
+    // Un point d'origine pour le déplacement de surface.
+    private Point originClick = null;
+    
+    // Référence à la surface sélectionnée.
+    private VirtuTuile.Domain.Surface selectedSurface = null;
+    
+    // Si le projet fonctionne en mesure métrique ou impérial.
     private boolean isMetric = true;
     
     /**
@@ -29,12 +44,14 @@ public class MainWindow extends javax.swing.JFrame
     public MainWindow()
     {
         initComponents();
+        controller = new VirtuTuile.Domain.Controller();
+        canvasPanel.assignControllerToDrawer(controller);
     }
     
     /**
      * @return true si le système actuel est métrique, false pour impérial. 
      */
-    public boolean getIsMetric()
+    public boolean isMetric()
     {
         return isMetric;
     }
@@ -47,21 +64,19 @@ public class MainWindow extends javax.swing.JFrame
     {
         this.isMetric = isMetric;
     }
-    
-    public ApplicationModes getSelectedMode ()
-    {
-        return this.selectedMode;
-    }
-    
-    public void setSelectedMode(ApplicationModes newMode)
-    {
-        this.selectedMode = newMode;
-    }
 
-    // Initialise les paramètres de la fenêtre.
+    /**
+     * Prend un Point en pixels et retourne un Point en métrique
+     * @param point : un Point représentant des coordonnées en pixels.
+     * @return un Point représentant des millimètres.
+     */
+    private Point pointToMetric(Point point)
     {
-        setTitle("VirtuTuile");
-        setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+        int posXPixels = point.x + canvasPanel.getHorizontalOffset();
+        int posYPixels = point.y + canvasPanel.getVerticalOffset();
+        int posXMetric = Utilities.pixelsToMm(posXPixels, canvasPanel.getZoom());
+        int posYMetric = Utilities.pixelsToMm(posYPixels, canvasPanel.getZoom());
+        return new Point(posXMetric, posYMetric);
     }
     
     /**
@@ -75,14 +90,29 @@ public class MainWindow extends javax.swing.JFrame
     {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jMenu1 = new javax.swing.JMenu();
-        jToolBar1 = new javax.swing.JToolBar();
-        selectionButton = new javax.swing.JButton();
-        rectangleButton = new javax.swing.JButton();
-        polygonButton = new javax.swing.JButton();
+        menuBar = new javax.swing.JMenu();
+        toggleGroup = new javax.swing.ButtonGroup();
+        coverButtonGroup = new javax.swing.ButtonGroup();
+        gridDistanceDialog = new javax.swing.JDialog();
+        gridDistanceTopLabel = new javax.swing.JLabel();
+        gridDistanceSlider = new javax.swing.JSlider();
+        gridDistanceLabel = new javax.swing.JLabel();
+        gridDistanceOKButton = new javax.swing.JButton();
+        imperialGridDistanceDialog = new javax.swing.JDialog();
+        imperialGridDistanceTopLabel = new javax.swing.JLabel();
+        imperialGridDistanceSlider = new javax.swing.JSlider();
+        imperialGridDistanceLabel = new javax.swing.JLabel();
+        imperialGridDistanceOKButton = new javax.swing.JButton();
+        toolBar = new javax.swing.JToolBar();
+        selectionToggle = new javax.swing.JToggleButton();
+        moveToggle = new javax.swing.JToggleButton();
+        rectangleToggle = new javax.swing.JToggleButton();
+        polygonToggle = new javax.swing.JToggleButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
         quantitiesButton = new javax.swing.JButton();
-        magnetButton = new javax.swing.JButton();
-        inspectionButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        magnetButton = new javax.swing.JToggleButton();
+        inspectorButton = new javax.swing.JToggleButton();
         mainPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
         zoomOutButton = new javax.swing.JButton();
@@ -99,6 +129,22 @@ public class MainWindow extends javax.swing.JFrame
         yPixelCoordsLabel = new javax.swing.JLabel();
         rightPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        surfaceXField = new javax.swing.JTextField();
+        surfaceYField = new javax.swing.JTextField();
+        surfaceWidthField = new javax.swing.JTextField();
+        surfaceHeightField = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        surfaceColorButton = new javax.swing.JButton();
+        coverRadioButton = new javax.swing.JRadioButton();
+        doNotCoverRadioButton = new javax.swing.JRadioButton();
         topMenuBar = new javax.swing.JMenuBar();
         menuFichier = new javax.swing.JMenu();
         menuFichierNouveauProjet = new javax.swing.JMenuItem();
@@ -109,74 +155,246 @@ public class MainWindow extends javax.swing.JFrame
         menuEdition = new javax.swing.JMenu();
         menuEditionAnnuler = new javax.swing.JMenuItem();
         menuEditionRepeter = new javax.swing.JMenuItem();
+        menuAffichage = new javax.swing.JMenu();
+        menuGridDistance = new javax.swing.JMenuItem();
         menuAide = new javax.swing.JMenu();
         menuAidePropos = new javax.swing.JMenuItem();
 
-        jMenu1.setText("jMenu1");
+        menuBar.setText("jMenu1");
+
+        gridDistanceDialog.setTitle("Modifier la distance de la grille");
+        gridDistanceDialog.setAlwaysOnTop(true);
+        gridDistanceDialog.setIconImages(null);
+        gridDistanceDialog.setPreferredSize(new java.awt.Dimension(330, 160));
+        gridDistanceDialog.setResizable(false);
+
+        gridDistanceTopLabel.setText("Distance entre chaque ligne de la grille:");
+
+        gridDistanceSlider.setMajorTickSpacing(10);
+        gridDistanceSlider.setMinimum(5);
+        gridDistanceSlider.setMinorTickSpacing(5);
+        gridDistanceSlider.setValue(20);
+        gridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
+                gridDistanceSliderStateChanged(evt);
+            }
+        });
+
+        gridDistanceLabel.setText("20 cm");
+
+        gridDistanceOKButton.setText("OK");
+        gridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                gridDistanceOKButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout gridDistanceDialogLayout = new javax.swing.GroupLayout(gridDistanceDialog.getContentPane());
+        gridDistanceDialog.getContentPane().setLayout(gridDistanceDialogLayout);
+        gridDistanceDialogLayout.setHorizontalGroup(
+            gridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, gridDistanceDialogLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addGroup(gridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(gridDistanceTopLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(gridDistanceOKButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(gridDistanceDialogLayout.createSequentialGroup()
+                        .addComponent(gridDistanceSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(gridDistanceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(10, 10, 10))
+        );
+        gridDistanceDialogLayout.setVerticalGroup(
+            gridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(gridDistanceDialogLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(gridDistanceTopLabel)
+                .addGap(10, 10, 10)
+                .addGroup(gridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(gridDistanceSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
+                    .addComponent(gridDistanceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0)
+                .addComponent(gridDistanceOKButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        imperialGridDistanceDialog.setTitle("Modifier la distance de la grille");
+        imperialGridDistanceDialog.setAlwaysOnTop(true);
+        imperialGridDistanceDialog.setIconImages(null);
+        imperialGridDistanceDialog.setPreferredSize(new java.awt.Dimension(340, 160));
+        imperialGridDistanceDialog.setResizable(false);
+
+        imperialGridDistanceTopLabel.setText("Distance entre chaque ligne de la grille:");
+
+        imperialGridDistanceSlider.setMajorTickSpacing(10);
+        imperialGridDistanceSlider.setMaximum(40);
+        imperialGridDistanceSlider.setMinimum(1);
+        imperialGridDistanceSlider.setMinorTickSpacing(5);
+        imperialGridDistanceSlider.setValue(12);
+        imperialGridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
+                imperialGridDistanceSliderStateChanged(evt);
+            }
+        });
+
+        imperialGridDistanceLabel.setText("12 pouces");
+
+        imperialGridDistanceOKButton.setText("OK");
+        imperialGridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                imperialGridDistanceOKButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout imperialGridDistanceDialogLayout = new javax.swing.GroupLayout(imperialGridDistanceDialog.getContentPane());
+        imperialGridDistanceDialog.getContentPane().setLayout(imperialGridDistanceDialogLayout);
+        imperialGridDistanceDialogLayout.setHorizontalGroup(
+            imperialGridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, imperialGridDistanceDialogLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addGroup(imperialGridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(imperialGridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(imperialGridDistanceTopLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 294, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(imperialGridDistanceOKButton, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(imperialGridDistanceDialogLayout.createSequentialGroup()
+                        .addComponent(imperialGridDistanceSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 238, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(imperialGridDistanceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))))
+        );
+        imperialGridDistanceDialogLayout.setVerticalGroup(
+            imperialGridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(imperialGridDistanceDialogLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addComponent(imperialGridDistanceTopLabel)
+                .addGap(10, 10, 10)
+                .addGroup(imperialGridDistanceDialogLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(imperialGridDistanceSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 44, Short.MAX_VALUE)
+                    .addComponent(imperialGridDistanceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0)
+                .addComponent(imperialGridDistanceOKButton)
+                .addGap(10, 10, 10))
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(640, 480));
+        setTitle("VirtuTuile");
+        setMinimumSize(new java.awt.Dimension(1000, 700));
 
-        jToolBar1.setBackground(new java.awt.Color(102, 153, 255));
-        jToolBar1.setFloatable(false);
-        jToolBar1.setRollover(true);
+        toolBar.setBackground(new java.awt.Color(102, 153, 255));
+        toolBar.setFloatable(false);
+        toolBar.setRollover(true);
 
-        selectionButton.setText("Selection");
-        selectionButton.setFocusable(false);
-        selectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        selectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        selectionButton.addActionListener(new java.awt.event.ActionListener()
+        toggleGroup.add(selectionToggle);
+        selectionToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/select.png"))); // NOI18N
+        selectionToggle.setToolTipText("Sélectionner une surface");
+        selectionToggle.setFocusable(false);
+        selectionToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        selectionToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        selectionToggle.setMaximumSize(new java.awt.Dimension(30, 30));
+        selectionToggle.setMinimumSize(new java.awt.Dimension(30, 30));
+        selectionToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        selectionToggle.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                selectionButtonActionPerformed(evt);
+                selectionToggleActionPerformed(evt);
             }
         });
-        jToolBar1.add(selectionButton);
+        toolBar.add(selectionToggle);
 
-        rectangleButton.setText("Rectangle");
-        rectangleButton.setFocusable(false);
-        rectangleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        rectangleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(rectangleButton);
-
-        polygonButton.setText("Polygon");
-        polygonButton.setFocusable(false);
-        polygonButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        polygonButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        polygonButton.addActionListener(new java.awt.event.ActionListener()
+        toggleGroup.add(moveToggle);
+        moveToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/moveIcon.png"))); // NOI18N
+        moveToggle.setToolTipText("Déplacer une surface");
+        moveToggle.setFocusable(false);
+        moveToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        moveToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        moveToggle.setMaximumSize(new java.awt.Dimension(30, 30));
+        moveToggle.setMinimumSize(new java.awt.Dimension(30, 30));
+        moveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        moveToggle.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                polygonButtonActionPerformed(evt);
+                moveToggleActionPerformed(evt);
             }
         });
-        jToolBar1.add(polygonButton);
+        toolBar.add(moveToggle);
 
-        quantitiesButton.setText("$$$");
+        toggleGroup.add(rectangleToggle);
+        rectangleToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/rectangle.png"))); // NOI18N
+        rectangleToggle.setToolTipText("Créer une surface rectangulaire");
+        rectangleToggle.setFocusable(false);
+        rectangleToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        rectangleToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        rectangleToggle.setMaximumSize(new java.awt.Dimension(30, 30));
+        rectangleToggle.setMinimumSize(new java.awt.Dimension(30, 30));
+        rectangleToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        rectangleToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                rectangleToggleActionPerformed(evt);
+            }
+        });
+        toolBar.add(rectangleToggle);
+
+        toggleGroup.add(polygonToggle);
+        polygonToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/polygon.png"))); // NOI18N
+        polygonToggle.setToolTipText("Créer une surface irrégulière");
+        polygonToggle.setFocusable(false);
+        polygonToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        polygonToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        polygonToggle.setMaximumSize(new java.awt.Dimension(30, 30));
+        polygonToggle.setMinimumSize(new java.awt.Dimension(30, 30));
+        polygonToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        polygonToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                polygonToggleActionPerformed(evt);
+            }
+        });
+        toolBar.add(polygonToggle);
+        toolBar.add(jSeparator1);
+
+        quantitiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/quantities.png"))); // NOI18N
+        quantitiesButton.setToolTipText("Calculer les quantités");
         quantitiesButton.setFocusable(false);
         quantitiesButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        quantitiesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        quantitiesButton.setMaximumSize(new java.awt.Dimension(30, 30));
+        quantitiesButton.setMinimumSize(new java.awt.Dimension(30, 30));
         quantitiesButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(quantitiesButton);
+        toolBar.add(quantitiesButton);
+        toolBar.add(jSeparator2);
 
-        magnetButton.setText("Magnet");
+        magnetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/magnet.png"))); // NOI18N
+        magnetButton.setToolTipText("Activer la grille magnétique");
         magnetButton.setFocusable(false);
         magnetButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        magnetButton.setIconTextGap(0);
+        magnetButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        magnetButton.setMaximumSize(new java.awt.Dimension(30, 30));
+        magnetButton.setMinimumSize(new java.awt.Dimension(30, 30));
         magnetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        magnetButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                magnetButtonActionPerformed(evt);
-            }
-        });
-        jToolBar1.add(magnetButton);
+        toolBar.add(magnetButton);
 
-        inspectionButton.setText("Inspection");
-        inspectionButton.setFocusable(false);
-        inspectionButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        inspectionButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(inspectionButton);
+        inspectorButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/glass.png"))); // NOI18N
+        inspectorButton.setToolTipText("Détecter les petites tuiles");
+        inspectorButton.setFocusable(false);
+        inspectorButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        inspectorButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        inspectorButton.setMaximumSize(new java.awt.Dimension(30, 30));
+        inspectorButton.setMinimumSize(new java.awt.Dimension(30, 30));
+        inspectorButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        toolBar.add(inspectorButton);
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
@@ -212,6 +430,10 @@ public class MainWindow extends javax.swing.JFrame
 
         canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
         {
+            public void mouseDragged(java.awt.event.MouseEvent evt)
+            {
+                canvasPanelMouseDragged(evt);
+            }
             public void mouseMoved(java.awt.event.MouseEvent evt)
             {
                 canvasPanelMouseMoved(evt);
@@ -229,6 +451,10 @@ public class MainWindow extends javax.swing.JFrame
             public void mousePressed(java.awt.event.MouseEvent evt)
             {
                 canvasPanelMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt)
+            {
+                canvasPanelMouseReleased(evt);
             }
         });
 
@@ -299,17 +525,14 @@ public class MainWindow extends javax.swing.JFrame
                         .addComponent(verticalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(17, 17, 17))
                     .addGroup(leftPanelLayout.createSequentialGroup()
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(yMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(68, 68, 68)
                         .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(yMeasureCoordsLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(leftPanelLayout.createSequentialGroup()
-                                .addComponent(yPixelCoordsLabel)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(leftPanelLayout.createSequentialGroup()
-                                .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 266, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))))
+                            .addComponent(yPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -346,7 +569,97 @@ public class MainWindow extends javax.swing.JFrame
         rightPanel.setBackground(new java.awt.Color(0, 153, 153));
         rightPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         jLabel1.setText("Surface:");
+
+        jLabel2.setText("x :");
+
+        jLabel3.setText("y :");
+
+        jLabel4.setText("Largeur :");
+
+        jLabel5.setText("Hauteur :");
+
+        surfaceXField.setEditable(false);
+        surfaceXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceXFieldActionPerformed(evt);
+            }
+        });
+
+        surfaceYField.setEditable(false);
+        surfaceYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceYFieldActionPerformed(evt);
+            }
+        });
+
+        surfaceWidthField.setEditable(false);
+        surfaceWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceWidthFieldActionPerformed(evt);
+            }
+        });
+
+        surfaceHeightField.setEditable(false);
+        surfaceHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceHeightFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel6.setText("mètres");
+
+        jLabel7.setText("mètres");
+
+        jLabel8.setText("mètres");
+
+        jLabel9.setText("mètres");
+
+        jLabel11.setText("Couleur :");
+
+        surfaceColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
+        surfaceColorButton.setBorderPainted(false);
+        surfaceColorButton.setEnabled(false);
+        surfaceColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceColorButtonActionPerformed(evt);
+            }
+        });
+
+        coverRadioButton.setBackground(new java.awt.Color(0, 153, 153));
+        coverButtonGroup.add(coverRadioButton);
+        coverRadioButton.setText("Couvrir");
+        coverRadioButton.setEnabled(false);
+        coverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                coverRadioButtonActionPerformed(evt);
+            }
+        });
+
+        doNotCoverRadioButton.setBackground(new java.awt.Color(0, 153, 153));
+        coverButtonGroup.add(doNotCoverRadioButton);
+        doNotCoverRadioButton.setText("Ne pas couvrir");
+        doNotCoverRadioButton.setEnabled(false);
+        doNotCoverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                doNotCoverRadioButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
@@ -354,15 +667,70 @@ public class MainWindow extends javax.swing.JFrame
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(134, Short.MAX_VALUE))
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel11))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(surfaceWidthField, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(surfaceHeightField, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(surfaceXField)
+                            .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(surfaceColorButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel8, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.TRAILING)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel4)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(coverRadioButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(doNotCoverRadioButton)))
+                        .addGap(0, 64, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(570, Short.MAX_VALUE))
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(surfaceXField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel6))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(surfaceYField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel4)
+                    .addComponent(surfaceWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel8))
+                .addGap(6, 6, 6)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(surfaceHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel9))
+                .addGap(6, 6, 6)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(coverRadioButton)
+                    .addComponent(doNotCoverRadioButton))
+                .addGap(0, 445, Short.MAX_VALUE))
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -421,9 +789,23 @@ public class MainWindow extends javax.swing.JFrame
 
         topMenuBar.add(menuEdition);
 
+        menuAffichage.setText("Affichage");
+
+        menuGridDistance.setText("Distance grille");
+        menuGridDistance.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuGridDistanceActionPerformed(evt);
+            }
+        });
+        menuAffichage.add(menuGridDistance);
+
+        topMenuBar.add(menuAffichage);
+
         menuAide.setText("Aide");
 
-        menuAidePropos.setText("A propos de");
+        menuAidePropos.setText("À propos de");
         menuAidePropos.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -441,13 +823,13 @@ public class MainWindow extends javax.swing.JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
+            .addComponent(toolBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 960, Short.MAX_VALUE)
             .addComponent(mainPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(toolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 656, Short.MAX_VALUE))
         );
@@ -485,25 +867,41 @@ public class MainWindow extends javax.swing.JFrame
      * @param evt : position de la souris
      */
     private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
+        // Update les coordonnées en pixels
         int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
         int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
         xPixelCoordsLabel.setText("X: " + posXPixels + " pixels");
         yPixelCoordsLabel.setText("Y: " + posYPixels + " pixels");
         
-        double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
-        double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
+        // Conversion en mesure métrique.
+        Point metricPoint = pointToMetric(evt.getPoint());
+        int posXMetric = metricPoint.x;
+        int posYMetric = metricPoint.y;
         
+        // Dessine un rectangle temporaire lors de la création d'un rectangle.
+        if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
+        {
+            canvasPanel.setTemporaryRectangle(cornersToRectangle(firstRectangleCorner,
+                                                                 metricPoint));
+            canvasPanel.repaint();
+        }
+        
+        // Update les coordonnées métriques
         if (isMetric)
         {
-            xMeasureCoordsLabel.setText("X: " + String.format("%.03f", posXMetric) + " mètres");
-            yMeasureCoordsLabel.setText("Y: " + String.format("%.03f", posYMetric) + " mètres");
+            xMeasureCoordsLabel.setText("X: " + String.format("%.03f", posXMetric / 1000.)
+                                              + " mètres");
+            yMeasureCoordsLabel.setText("Y: " + String.format("%.03f", posYMetric / 1000.)
+                                              + " mètres");
         }
+        
+        // Update les coordonnées impériales
         else
         {
-            int posXFeet = Utilities.metersToFeet(posXMetric);
-            double posXInches = Utilities.metersToRemainingInches(posXMetric);
-            int posYFeet = Utilities.metersToFeet(posYMetric);
-            double posYInches = Utilities.metersToRemainingInches(posYMetric);
+            int posXFeet = Utilities.mmToFeet(posXMetric);
+            double posXInches = Utilities.mmToRemainingInches(posXMetric);
+            int posYFeet = Utilities.mmToFeet(posYMetric);
+            double posYInches = Utilities.mmToRemainingInches(posYMetric);
             xMeasureCoordsLabel.setText("X: " + posXFeet + "ft " + 
                     String.format("%.02f", posXInches) + "in");
             yMeasureCoordsLabel.setText("Y: " + posYFeet + "ft " + 
@@ -530,16 +928,6 @@ public class MainWindow extends javax.swing.JFrame
         zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomInButtonActionPerformed
-
-    private void polygonButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_polygonButtonActionPerformed
-    {//GEN-HEADEREND:event_polygonButtonActionPerformed
-        setSelectedMode(ApplicationModes.POLYGON);
-    }//GEN-LAST:event_polygonButtonActionPerformed
-
-    private void selectionButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_selectionButtonActionPerformed
-    {//GEN-HEADEREND:event_selectionButtonActionPerformed
-        setSelectedMode(ApplicationModes.SELECT);
-    }//GEN-LAST:event_selectionButtonActionPerformed
 
     private void menuFichierQuitterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierQuitterActionPerformed
     {//GEN-HEADEREND:event_menuFichierQuitterActionPerformed
@@ -571,11 +959,6 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_canvasPanelMouseWheelMoved
 
-    private void magnetButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_magnetButtonActionPerformed
-    {//GEN-HEADEREND:event_magnetButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_magnetButtonActionPerformed
-
     private void verticalScrollBarAdjustmentValueChanged(java.awt.event.AdjustmentEvent evt)//GEN-FIRST:event_verticalScrollBarAdjustmentValueChanged
     {//GEN-HEADEREND:event_verticalScrollBarAdjustmentValueChanged
         verticalScrollBar.setMaximum(evt.getValue() + 100);
@@ -591,25 +974,375 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_horizontalScrollBarAdjustmentValueChanged
 
+    /**
+     * Exécute une opération dépendant du mode courant de l'application.
+     * @param evt 
+     */
     private void canvasPanelMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMousePressed
     {//GEN-HEADEREND:event_canvasPanelMousePressed
-        //TODO IF APPLICATIONMODE == SELECT ELSE ADD SHAPE
-
-        if (this.selectedMode == ApplicationModes.SELECT)
+        switch (this.selectedMode)
         {
-            int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
-            int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
-            
-            double posXMetric = Utilities.pixelsToMeters(posXPixels, canvasPanel.getZoom());
-            double posYMetric = Utilities.pixelsToMeters(posYPixels, canvasPanel.getZoom());
-            
-            //Point point = new Pointround(posXMetric), round(posYMetric));
-            controller.switchSelectionStatus(posXMetric, posYMetric);
+            // Change la sélection de surface.
+            case SELECT:
+                selectSurface(pointToMetric(evt.getPoint()));
+                break;
+                
+            // Démarche pour créer un nouveau rectangle.
+            case RECTANGLE:
+                createNewRectangularSurface(pointToMetric(evt.getPoint()));
+                break;
+                
+            // Set le point d'origine du mouvement de la souris pour déplacer une surface.
+            case MOVE:
+                Point point = pointToMetric(evt.getPoint());
+                selectSurface(point);
+                if (selectedSurface != null)
+                {
+                    this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                    originClick = point;
+                }
+                break;
         }
-        
-        // Avec coordonées, appeler la liste des surfaces et demander si 
-        // d'entre elle contain ces coords
     }//GEN-LAST:event_canvasPanelMousePressed
+
+    /**
+     * Essaie de sélectionner une surface.
+     * @param point : le point que la surface doit contenir, en mesure métrique.
+     */
+    private void selectSurface(Point point)
+    {
+        VirtuTuile.Domain.Surface surface = controller.selectSurface(point);
+        if (surface != null)
+        {
+            selectedSurface = surface;
+            Rectangle bounds = surface.getBounds();
+            surfaceXField.setText(String.format("%.03f", bounds.x / 1000.));
+            surfaceYField.setText(String.format("%.03f", bounds.y / 1000.));
+            surfaceWidthField.setText(String.format("%.03f", bounds.width / 1000.));
+            surfaceHeightField.setText(String.format("%.03f", bounds.height / 1000.));
+
+            if (surface instanceof VirtuTuile.Domain.RectangularSurface)
+            {
+                surfaceYField.setEditable(true);
+                surfaceXField.setEditable(true);
+                surfaceWidthField.setEditable(true);
+                surfaceHeightField.setEditable(true);
+            }
+            surfaceColorButton.setEnabled(true);
+            surfaceColorButton.setBackground(selectedSurface.getColor());
+            doNotCoverRadioButton.setEnabled(true);
+            coverRadioButton.setEnabled(true);
+            if (selectedSurface.isHole())
+            {
+                doNotCoverRadioButton.setSelected(true);
+            }
+            else
+            {
+                coverRadioButton.setSelected(true);
+            }
+        }
+        else
+        {
+            selectedSurface = null;
+            surfaceXField.setText("");
+            surfaceYField.setText("");
+            surfaceWidthField.setText("");
+            surfaceHeightField.setText("");
+            surfaceYField.setEditable(false);
+            surfaceXField.setEditable(false);
+            surfaceWidthField.setEditable(false);
+            surfaceHeightField.setEditable(false);
+            surfaceColorButton.setEnabled(false);
+            surfaceColorButton.setBackground(new Color(240, 240, 240));
+            doNotCoverRadioButton.setEnabled(false);
+            coverRadioButton.setEnabled(false);
+            coverButtonGroup.clearSelection();
+        }
+        canvasPanel.repaint();
+    }
+    
+    /**
+     * Essaie de créer une nouvelle surface rectangulaire.
+     * @param point : un des deux coins du rectangle, en mesure métrique.
+     */
+    private void createNewRectangularSurface(Point point)
+    {
+        // Sélectionne le premier coin du nouveau rectangle.
+        if (firstRectangleCorner == null)
+        {
+            firstRectangleCorner = point;
+        }
+        // Sélectionne le deuxième coin du nouveau rectangle.
+        else
+        {
+            Rectangle rectangle = cornersToRectangle(firstRectangleCorner, point);
+            firstRectangleCorner = null;
+            canvasPanel.setTemporaryRectangle(null);
+            
+            if (rectangle.width < 100 || rectangle.height < 100)
+            {
+                canvasPanel.repaint();
+                JOptionPane.showMessageDialog(this,
+                        "Erreur: surface trop petite.");
+            }
+            else
+            {
+                // Fait une requête pour la création du rectangle.
+                boolean status = controller.addRectangularSurface(rectangle);
+
+                if (status)
+                {
+                    selectSurface(new Point(rectangle.x, rectangle.y));
+                }
+                else
+                {
+                    canvasPanel.repaint();
+                    JOptionPane.showMessageDialog(this,
+                            "Erreur: création de la surface entraîne un conflit.");
+                }   
+            }
+        }
+    }
+    
+    /**
+     * Prend deux coins et retourne un rectangle.
+     * @param corner1 le premier coin.
+     * @param corner2 le deuxième coin.
+     * @return le rectangle défini par les deux coins
+     */
+    private Rectangle cornersToRectangle(Point corner1, Point corner2)
+    {
+        // Ordonne les coordonnées.
+        int leftMostX, rightMostX, topMostY, downMostY;
+        if (corner1.x < corner2.x)
+        {
+            leftMostX = corner1.x;
+            rightMostX = corner2.x;
+        }
+        else
+        {
+            leftMostX = corner2.x;
+            rightMostX = corner1.x;
+        }
+        if (corner1.y < corner2.y)
+        {
+            topMostY = corner1.y;
+            downMostY = corner2.y;
+        }
+        else
+        {
+            topMostY = corner2.y;
+            downMostY = corner1.y;
+        }
+        int width = rightMostX - leftMostX;
+        int height = downMostY - topMostY;
+        return new Rectangle(leftMostX, topMostY, width, height);
+    }
+    
+    private void rectangleToggleActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_rectangleToggleActionPerformed
+    {//GEN-HEADEREND:event_rectangleToggleActionPerformed
+        selectedMode = ApplicationModes.RECTANGLE;
+        firstRectangleCorner = null;
+        canvasPanel.setTemporaryRectangle(null);
+        canvasPanel.repaint();
+    }//GEN-LAST:event_rectangleToggleActionPerformed
+
+    private void selectionToggleActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_selectionToggleActionPerformed
+    {//GEN-HEADEREND:event_selectionToggleActionPerformed
+        selectedMode = ApplicationModes.SELECT;
+        canvasPanel.setTemporaryRectangle(null);
+        canvasPanel.repaint();
+    }//GEN-LAST:event_selectionToggleActionPerformed
+
+    private void polygonToggleActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_polygonToggleActionPerformed
+    {//GEN-HEADEREND:event_polygonToggleActionPerformed
+        selectedMode = ApplicationModes.POLYGON;
+        canvasPanel.setTemporaryRectangle(null);
+        canvasPanel.repaint();
+    }//GEN-LAST:event_polygonToggleActionPerformed
+
+    private void surfaceXFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceXFieldActionPerformed
+    {//GEN-HEADEREND:event_surfaceXFieldActionPerformed
+        try
+        {
+            int x = (int) (Double.parseDouble(surfaceXField.getText()) * 1000);
+            boolean status = controller.setRectangleX(x, (RectangularSurface) selectedSurface);
+            surfaceXField.setText(String.format("%.03f", selectedSurface.getBounds().x / 1000.));
+            canvasPanel.repaint();
+            if (!status)
+            {
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+            }
+        }
+        catch(java.lang.NumberFormatException e)
+        {
+            surfaceXField.setText(String.format("%.03f", selectedSurface.getBounds().x / 1000.));
+        }
+    }//GEN-LAST:event_surfaceXFieldActionPerformed
+
+    private void surfaceYFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceYFieldActionPerformed
+    {//GEN-HEADEREND:event_surfaceYFieldActionPerformed
+        try
+        {
+            int y = (int) (Double.parseDouble(surfaceYField.getText()) * 1000);
+            boolean status = controller.setRectangleY(y, (RectangularSurface) selectedSurface);
+            surfaceYField.setText(String.format("%.03f", selectedSurface.getBounds().y / 1000.));
+            canvasPanel.repaint();
+            if (!status)
+            {
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+            }
+        }
+        catch(java.lang.NumberFormatException e)
+        {
+            surfaceYField.setText(String.format("%.03f", selectedSurface.getBounds().y / 1000.));
+        }
+    }//GEN-LAST:event_surfaceYFieldActionPerformed
+
+    private void surfaceWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceWidthFieldActionPerformed
+    {//GEN-HEADEREND:event_surfaceWidthFieldActionPerformed
+        try
+        {
+            int width = (int) (Double.parseDouble(surfaceWidthField.getText()) * 1000);
+            boolean status = controller.setRectangleWidth(width,
+                                                         (RectangularSurface) selectedSurface);
+            surfaceWidthField.setText(String.format("%.03f",
+                                                    selectedSurface.getBounds().width / 1000.));
+            canvasPanel.repaint();
+            if (!status)
+            {
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+            }
+        }
+        catch(java.lang.NumberFormatException e)
+        {
+            surfaceWidthField.setText(String.format("%.03f",
+                                                    selectedSurface.getBounds().width / 1000.));
+        }
+    }//GEN-LAST:event_surfaceWidthFieldActionPerformed
+
+    private void surfaceHeightFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceHeightFieldActionPerformed
+    {//GEN-HEADEREND:event_surfaceHeightFieldActionPerformed
+        try
+        {
+            int height = (int) (Double.parseDouble(surfaceHeightField.getText()) * 1000);
+            boolean status = controller.setRectangleHeight(height,
+                                                           (RectangularSurface) selectedSurface);
+            surfaceHeightField.setText(String.format("%.03f",
+                                                     selectedSurface.getBounds().height / 1000.));
+            canvasPanel.repaint();
+            if (!status)
+            {
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+            }
+        }
+        catch(java.lang.NumberFormatException e)
+        {
+            surfaceHeightField.setText(String.format("%.03f",
+                                                     selectedSurface.getBounds().height / 1000.));
+        }
+    }//GEN-LAST:event_surfaceHeightFieldActionPerformed
+
+    private void surfaceColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceColorButtonActionPerformed
+    {//GEN-HEADEREND:event_surfaceColorButtonActionPerformed
+        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
+                                          selectedSurface.getColor());
+        if (c != null)
+        {
+            surfaceColorButton.setBackground(c);
+            selectedSurface.setColor(c);
+            canvasPanel.repaint();   
+        }
+    }//GEN-LAST:event_surfaceColorButtonActionPerformed
+
+    private void coverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_coverRadioButtonActionPerformed
+    {//GEN-HEADEREND:event_coverRadioButtonActionPerformed
+        selectedSurface.setIsHole(false);
+    }//GEN-LAST:event_coverRadioButtonActionPerformed
+
+    private void doNotCoverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_doNotCoverRadioButtonActionPerformed
+    {//GEN-HEADEREND:event_doNotCoverRadioButtonActionPerformed
+        selectedSurface.setIsHole(true);
+    }//GEN-LAST:event_doNotCoverRadioButtonActionPerformed
+
+    private void moveToggleActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_moveToggleActionPerformed
+    {//GEN-HEADEREND:event_moveToggleActionPerformed
+        selectedMode = ApplicationModes.MOVE;
+        canvasPanel.setTemporaryRectangle(null);
+        canvasPanel.repaint();
+    }//GEN-LAST:event_moveToggleActionPerformed
+
+    private void canvasPanelMouseDragged(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMouseDragged
+    {//GEN-HEADEREND:event_canvasPanelMouseDragged
+        canvasPanelMouseMoved(evt);
+        if (selectedMode == ApplicationModes.MOVE && selectedSurface != null)
+        {
+            // Déplace la surface
+            Point currentCursorPosition = pointToMetric(evt.getPoint());
+            int deltaX = currentCursorPosition.x - originClick.x;
+            int deltaY = currentCursorPosition.y - originClick.y;
+            controller.moveSurface(new Point(deltaX, deltaY), selectedSurface);
+            
+            // Update le panneau de droite
+            Rectangle bounds = selectedSurface.getBounds();
+            surfaceXField.setText(String.format("%.03f", bounds.x / 1000.));
+            surfaceYField.setText(String.format("%.03f", bounds.y / 1000.));
+            
+            originClick = currentCursorPosition;
+            canvasPanel.repaint();
+        }
+        // Dessine un rectangle temporaire lors de la création d'un rectangle.
+        else if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
+        {
+            canvasPanel.setTemporaryRectangle(cornersToRectangle(firstRectangleCorner,
+                                                                 pointToMetric(evt.getPoint())));
+            canvasPanel.repaint();
+        }
+    }//GEN-LAST:event_canvasPanelMouseDragged
+
+    private void canvasPanelMouseReleased(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMouseReleased
+    {//GEN-HEADEREND:event_canvasPanelMouseReleased
+        this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+    }//GEN-LAST:event_canvasPanelMouseReleased
+
+    /**
+     * Affiche un dialogue pour modifier la distance de la grille.
+     * @param evt 
+     */
+    private void menuGridDistanceActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuGridDistanceActionPerformed
+    {//GEN-HEADEREND:event_menuGridDistanceActionPerformed
+        javax.swing.JDialog dialog;
+        if (isMetric) dialog = gridDistanceDialog;
+        else dialog = imperialGridDistanceDialog;
+        
+        dialog.setSize(dialog.getPreferredSize());
+        dialog.setModal(true);
+        dialog.setVisible(true);
+    }//GEN-LAST:event_menuGridDistanceActionPerformed
+
+    private void gridDistanceSliderStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_gridDistanceSliderStateChanged
+    {//GEN-HEADEREND:event_gridDistanceSliderStateChanged
+        gridDistanceLabel.setText(gridDistanceSlider.getValue() + " cm");
+    }//GEN-LAST:event_gridDistanceSliderStateChanged
+
+    private void gridDistanceOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_gridDistanceOKButtonActionPerformed
+    {//GEN-HEADEREND:event_gridDistanceOKButtonActionPerformed
+        canvasPanel.setGridDistance(gridDistanceSlider.getValue());
+        canvasPanel.repaint();
+        gridDistanceDialog.dispose();
+    }//GEN-LAST:event_gridDistanceOKButtonActionPerformed
+
+    private void imperialGridDistanceSliderStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_imperialGridDistanceSliderStateChanged
+    {//GEN-HEADEREND:event_imperialGridDistanceSliderStateChanged
+        imperialGridDistanceLabel.setText(imperialGridDistanceSlider.getValue() + " pouces");
+    }//GEN-LAST:event_imperialGridDistanceSliderStateChanged
+
+    private void imperialGridDistanceOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_imperialGridDistanceOKButtonActionPerformed
+    {//GEN-HEADEREND:event_imperialGridDistanceOKButtonActionPerformed
+        canvasPanel.setGridDistance(Utilities.inchesToCm(imperialGridDistanceSlider.getValue()));
+        canvasPanel.repaint();
+        imperialGridDistanceDialog.dispose();
+    }//GEN-LAST:event_imperialGridDistanceOKButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -643,17 +1376,41 @@ public class MainWindow extends javax.swing.JFrame
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private VirtuTuile.GUI.CanvasPanel canvasPanel;
+    private javax.swing.ButtonGroup coverButtonGroup;
+    private javax.swing.JRadioButton coverRadioButton;
+    private javax.swing.JRadioButton doNotCoverRadioButton;
+    private javax.swing.JDialog gridDistanceDialog;
+    private javax.swing.JLabel gridDistanceLabel;
+    private javax.swing.JButton gridDistanceOKButton;
+    private javax.swing.JSlider gridDistanceSlider;
+    private javax.swing.JLabel gridDistanceTopLabel;
     private javax.swing.JScrollBar horizontalScrollBar;
-    private javax.swing.JButton inspectionButton;
+    private javax.swing.JDialog imperialGridDistanceDialog;
+    private javax.swing.JLabel imperialGridDistanceLabel;
+    private javax.swing.JButton imperialGridDistanceOKButton;
+    private javax.swing.JSlider imperialGridDistanceSlider;
+    private javax.swing.JLabel imperialGridDistanceTopLabel;
+    private javax.swing.JToggleButton inspectorButton;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JPanel leftPanel;
-    private javax.swing.JButton magnetButton;
+    private javax.swing.JToggleButton magnetButton;
     private javax.swing.JPanel mainPanel;
     private javax.swing.JButton measurementButton;
+    private javax.swing.JMenu menuAffichage;
     private javax.swing.JMenu menuAide;
     private javax.swing.JMenuItem menuAidePropos;
+    private javax.swing.JMenu menuBar;
     private javax.swing.JMenu menuEdition;
     private javax.swing.JMenuItem menuEditionAnnuler;
     private javax.swing.JMenuItem menuEditionRepeter;
@@ -663,12 +1420,21 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem menuFichierNouveauProjet;
     private javax.swing.JMenuItem menuFichierOuvrirProjet;
     private javax.swing.JMenuItem menuFichierQuitter;
+    private javax.swing.JMenuItem menuGridDistance;
+    private javax.swing.JToggleButton moveToggle;
     private javax.swing.JLabel percentLabel;
-    private javax.swing.JButton polygonButton;
+    private javax.swing.JToggleButton polygonToggle;
     private javax.swing.JButton quantitiesButton;
-    private javax.swing.JButton rectangleButton;
+    private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JPanel rightPanel;
-    private javax.swing.JButton selectionButton;
+    private javax.swing.JToggleButton selectionToggle;
+    private javax.swing.JButton surfaceColorButton;
+    private javax.swing.JTextField surfaceHeightField;
+    private javax.swing.JTextField surfaceWidthField;
+    private javax.swing.JTextField surfaceXField;
+    private javax.swing.JTextField surfaceYField;
+    private javax.swing.ButtonGroup toggleGroup;
+    private javax.swing.JToolBar toolBar;
     private javax.swing.JMenuBar topMenuBar;
     private javax.swing.JScrollBar verticalScrollBar;
     private javax.swing.JLabel xMeasureCoordsLabel;

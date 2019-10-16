@@ -1,11 +1,13 @@
 package VirtuTuile.Domain;
 
-import java.util.Set;
-import java.util.HashSet;
+import java.awt.Color;
 import java.awt.Shape;
+import java.awt.geom.Area;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
+import java.awt.Point;
+import java.awt.Rectangle;
 
 /**
  * @class definissant le projet en cours
@@ -14,76 +16,219 @@ import java.util.ArrayList;
 public class Project
 {
     private String projectName;
-    // TODO: Pas sûr du type ici ou ce que c'est censé être donc mis un Set, à checker
-    private Set<String> history = new HashSet<String>();
     private Shape selectedTile = null;
-    // Renommé "quantities" ici car flou. Pas sûr du type.
     private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
-    private ArrayList<Surface> surfaces;
-    private boolean isMetric;
+    private final ArrayList<Surface> surfaces = new ArrayList<>();
+    private Surface selectedSurface = null;
     
     /**
-     * @param isMetric
-     * @param projectName 
+     * Constructeur.
+     * @param projectName : le nom du projet.
      */
-    public Project(boolean isMetric, String projectName)
+    public Project(String projectName)
     {
         this.projectName = projectName;
-        this.isMetric = isMetric;
-        ArrayList<Surface> surfaces = new ArrayList<Surface>();
-        surfaces.size();
     }
     
     /**
-     * Annuler la dernière action
+     * Getter pour la liste des surfaces.
+     * @return la liste des surfaces du projet.
      */
-    
-    public boolean conflictCheck()
+    public ArrayList<Surface> getSurfaces()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-    public void undo()
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        return surfaces;
     }
     
     /**
-     * Refaire l'action annulée
+     * Crée une nouvelle surface rectangulaire.
+     * @param rectangle la forme du rectangle.
+     * @return true si la création à réussie, false sinon.
      */
-    public void redo()
+    public boolean addRectangularSurface(Rectangle rectangle)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean status = conflictCheck(rectangle);
+        if (status)
+        {
+            surfaces.add(new RectangularSurface(rectangle, false, new Color(113, 148, 191)));
+        }
+        return status;
     }
     
     /**
-     * // TODO docs
-     * @param posXMetric
-     * @param posYMetric
+     * Vérifie s'il y a conflit avec une nouvelle surface.
+     * @param shape : la forme de la surface à vérifier.
+     * @return true s'il n'y a pas de conflit, false s'il y a conflit.
      */
-    public Surface switchSelectionStatus(double posXMetric, double posYMetric)
+    public boolean conflictCheck(Shape shape)
     {
-       for (Surface iter : surfaces)
-       {
-            if (iter.contains(posXMetric, posYMetric))
+        boolean status = true;
+        Area newArea = new Area(shape);
+        for (Surface surface : surfaces)
+        {
+            Area area = new Area(surface);
+            area.intersect(newArea);
+            if (!area.isEmpty() && surface != shape)
             {
-                iter.setSelectedStatus(true);
-                return iter;
+                status = false;
             }
-       }
-       return null;
+        }
+        return status;
     }
     
     /**
-     * // TODO docs
-     * @param delta 
+     * Déplace une surface.
+     * @param delta : déplacement x et y.
+     * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSelectedSurface(int deltaX, int deltaY)
+    public void moveSurface(Point delta, Surface surface)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (surface instanceof RectangularSurface)
+        {
+            setRectangleX(((RectangularSurface) surface).x + delta.x, (RectangularSurface) surface);
+            setRectangleY(((RectangularSurface) surface).y + delta.y, (RectangularSurface) surface);
+        }
+    }
+    
+    /**
+     * Set le paramètre x d'une surface rectangulaire.
+     * @param x : le nouveau paramètre x.
+     * @param surface : la surface qui doit être modifiée.
+     * @return : true si réussi, false sinon.
+     */
+    public boolean setRectangleX(int x, RectangularSurface surface)
+    {
+        if (x < 0) return false;
+        
+        int oldX = surface.x;
+        
+        surface.x = x;
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            surface.x = oldX;
+            return false;
+        }
+    }
+    
+    /**
+     * Set le paramètre y d'une surface rectangulaire.
+     * @param y : le nouveau paramètre y.
+     * @param surface : la surface qui doit être modifiée.
+     * @return : true si réussi, false sinon.
+     */
+    public boolean setRectangleY(int y, RectangularSurface surface)
+    {
+        if (y < 0) return false;
+        
+        int oldY = surface.y;
+        
+        surface.y = y;
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            surface.y = oldY;
+            return false;
+        }
+    }
+    
+    /**
+     * Set le paramètre width d'une surface rectangulaire.
+     * @param width : le nouveau paramètre width.
+     * @param surface : la surface qui doit être modifiée.
+     * @return : true si réussi, false sinon.
+     */
+    public boolean setRectangularSurfaceWidth(int width, RectangularSurface surface)
+    {
+        if (width < 100) return false;
+        
+        int oldWidth = surface.width;
+        
+        surface.width = width;
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            surface.width = oldWidth;
+            return false;
+        }
+    }
+    
+    /**
+     * Set le paramètre height d'une surface rectangulaire.
+     * @param height : le nouveau paramètre height.
+     * @param surface : la surface qui doit être modifiée.
+     * @return : true si réussi, false sinon.
+     */
+    public boolean setRectangularSurfaceHeight(int height, RectangularSurface surface)
+    {
+        if (height < 100) return false;
+        
+        int oldHeight = surface.height;
+        
+        surface.height = height;
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            surface.height = oldHeight;
+            return false;
+        }
+    }
+    
+    /**
+     * Sélectionne une surface.
+     * @param point : le point qui doit être à l'intérieur de la surface.
+     * @return la surface sélectionnée, peut être null.
+     */
+    public Surface selectSurface(Point point)
+    {
+        for (Surface surface : surfaces)
+        {
+            if (surface.contains(point))
+            {
+                selectedSurface = surface;
+                return surface;
+            }
+        }
+        selectedSurface = null;
+        return selectedSurface;
+    }
+    
+    /**
+     * Efface la surface selectionnee en les retirant de la liste
+     */
+    public void deleteSelectedSurface()
+    {
+        surfaces.remove(selectedSurface);
+    }
+    
+    /**
+     * @param deltaX
+     * @param deltaY
+     * Retourne la surface sélectionnée, peut être null.
+     * @return la surface sélectionnée, si une surface est sélectionnée, null sinon.
+     */
+    public Surface getSelectedSurface()
+    {
+        if(selectedSurface != null)
+        {
+            return selectedSurface;
+        }
+        return null;
     }
    
     // Getters et Setters
@@ -95,16 +240,6 @@ public class Project
     public void setProjectName(String projectName)
     {
         this.projectName = projectName;
-    }
-
-    public Set<String> getHistory()
-    {
-        return history;
-    }
-
-    public void setHistory(Set<String> history)
-    {
-        this.history = history;
     }
 
     public Shape getSelectedTile()
@@ -126,6 +261,22 @@ public class Project
     {
         this.qtyPerTileType = qtyPerTileType;
     }
-
     
+    /**
+     * Annuler la dernière action
+     */
+    public void undo()
+    {
+        // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    /**
+     * Refaire l'action annulée
+     */
+    public void redo()
+    {
+        // TODO
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }

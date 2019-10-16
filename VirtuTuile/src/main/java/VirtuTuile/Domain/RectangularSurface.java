@@ -4,65 +4,76 @@ import java.awt.Rectangle;
 import java.awt.Color;
 
 /**
- *
+ * Une surface rectangulaire.
  * @author gabparrot
  */
 public class RectangularSurface extends Rectangle implements ElementarySurface
 {
+    // Si true, la surface ne doit pas être couverte.
     private boolean isHole;
+    
+    // La couleur de la surface.
     private Color color;
-    private boolean selectedStatus;
+    
+    // Le revêtement de la surface.
     private Covering covering;
     
     /**
-     * Constructeur avec parametres
-     * @param isHole
-     * @param color
-     * @param x
-     * @param y
-     * @param width
-     * @param height 
+     * Constructeur.
+     * @param rectangle la forme du rectangle.
+     * @param isHole si la surface doit être couverte ou pas.
+     * @param color la couleur de la surface.
      */
-    public RectangularSurface(boolean isHole, Color color, int x, int y, 
-                              int width, int height)
+    public RectangularSurface(Rectangle rectangle, boolean isHole, Color color)
     {
-        super(x, y, width, height);
+        super(rectangle);
         this.isHole = isHole;
         this.color = color;
-        this.selectedStatus = false;
     }
 
     // Implémentation des méthodes de Surface
 
+    /**
+     * La surface doit-elle être couverte?
+     * @return false is la surface doit être couverte, true sinon.
+     */
     @Override
-    public boolean getIsHole()
+    public boolean isHole()
     {
         return isHole;
     }
 
+    /**
+     * Setter pour le paramètre isHole. False si la surface doit être couverte, true sinon.
+     * @param newStatus : false si la surface doit être couverte, true sinon.
+     */
     @Override
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
     }
 
+    /**
+     * Retourne la couleur de la surface.
+     * @return la couleur de la surface.
+     */
     @Override
     public Color getColor()
     {
-        if (isHole == true)
-        {
-            return color;
-        }
-        return this.covering.getTileColor();
+        return color;
     }
 
+    /**
+     * Setter pour la couleur de la surface.
+     * @param color : la nouvelle couleur.
+     */
     @Override
     public void setColor(Color color)
     {
-        // TODO Est-ce qu'on utilise la classe super() ?
         this.color = color;
     }
     
+    @Override
     public Covering getCovering()
     {
         return covering;
@@ -74,20 +85,6 @@ public class RectangularSurface extends Rectangle implements ElementarySurface
                             TileType tileType, Color tileColor)
     {
         this.covering = new Covering(offsetX, offsetY, groutColor,
-                                     groutWidth, angle, pattern, tileType, 
-                                     tileColor);
+                                     groutWidth, angle, pattern, tileType, tileColor);
     }
-
-    @Override
-    public boolean getSelectedStatus()
-    {
-        return selectedStatus;
-    }
-
-    @Override
-    public void setSelectedStatus(boolean newStatus)
-    {
-        this.selectedStatus = newStatus;
-    }
-    
 }

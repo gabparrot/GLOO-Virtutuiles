@@ -20,7 +20,7 @@ public class Covering
     private int groutWidth;
     private int angle;
     private Pattern pattern;
-    private java.util.ArrayList<Shape> tiles = new java.util.ArrayList<Shape>();
+    private java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
     private TileType tileType;
     private Color tileColor;
 

@@ -1,6 +1,10 @@
 package VirtuTuile.Domain.Drawing;
 
+import VirtuTuile.Domain.Surface;
 import java.awt.*;
+import java.util.ArrayList;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
 
 /**
  * Objet qui permet de dessiner sur le canevas.
@@ -11,14 +15,8 @@ public class CanvasDrawer
     // Référence au parent.
     private final VirtuTuile.GUI.CanvasPanel parent;
     
-    // Largeur (en pixels) entre chaque ligne de la grille lorsque le zoom est à 100%.
-    private final int gridDistanceDefault = 20;
-    
-    // Largeur (en pixels) courante entre chaque ligne de la grille.
-    private double gridDistance = gridDistanceDefault;
-    
-    // !!!TEST!!!
-    private final Rectangle testRectangle = new Rectangle(50, 50, 100, 200);
+    // Référence au controller.
+    private VirtuTuile.Domain.Controller controller;
     
     /**
      * Constructeur.
@@ -30,39 +28,49 @@ public class CanvasDrawer
     }
     
     /**
-     * Déssine tous les éléments du canevas.
-     * @param g : Graphics du canevas.
+     * Setter pour le controller.
+     * @param controller : le controller de l'application.
      */
-    public void draw(Graphics g)
+    public void setController(VirtuTuile.Domain.Controller controller)
     {
-        drawGrid(g);
-        drawSurfaces(g);
+        this.controller = controller;
+    }
+    
+    /**
+     * Déssine tous les éléments du canevas.
+     * @param g2d : Graphics du canevas.
+     */
+    public void draw(Graphics2D g2d)
+    {
+        drawGrid(g2d);
+        if (controller != null) drawSurfaces(g2d);
     }
     
     /**
      * Déssine la grille du canevas.
-     * @param g : Graphics du canevas.
+     * @param g2d : Graphics du canevas.
      */
-    private void drawGrid(Graphics g)
+    private void drawGrid(Graphics2D g2d)
     {
-        gridDistance = gridDistanceDefault * parent.getZoom();
+        g2d.setColor(Color.DARK_GRAY);
+        double gridDistance = parent.getGridDistance();
         
-        int verticalOffset = parent.getVerticalOffset() % (int) gridDistance;
-        int horizontalOffset = parent.getHorizontalOffset() % (int) gridDistance;
+        double verticalOffset = parent.getVerticalOffset() % gridDistance;
+        double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
 
         int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
         int nbRows = (int) (parent.getHeight() / gridDistance + 2);
 
         for (int column = 0; column < nbColumns; column++)
         {
-            g.drawLine((int) (column * gridDistance) - horizontalOffset, 0,
-                       (int) (column * gridDistance) - horizontalOffset, parent.getHeight());
+            g2d.drawLine((int) (column * gridDistance - horizontalOffset), 0,
+                         (int) (column * gridDistance - horizontalOffset), parent.getHeight());
         }
         
         for (int row = 0; row < nbRows; row++)
         {
-            g.drawLine(0, (int) (row * gridDistance) - verticalOffset,
-                       parent.getWidth(), (int) (row * gridDistance) - verticalOffset);
+            g2d.drawLine(0, (int) (row * gridDistance - verticalOffset),
+                         parent.getWidth(), (int) (row * gridDistance - verticalOffset));
         }
     }
     
@@ -70,17 +78,54 @@ public class CanvasDrawer
      * Déssine les surfaces sur le canevas.
      * @param g : Graphics du canevas.
      */
-    private void drawSurfaces(Graphics g)
+    private void drawSurfaces(Graphics2D g2d)
     {
         double zoom = parent.getZoom();
         int verticalOffset = parent.getVerticalOffset();
         int horizontalOffset = parent.getHorizontalOffset();
+        ArrayList<Surface> surfaces = controller.getSurfaces();
         
-        // !!!TEST!!!
-        g.setColor(Color.red);
-        g.fillRect((int) (testRectangle.x * zoom) - horizontalOffset, (int) (testRectangle.y * zoom) - verticalOffset,
-                   (int) (testRectangle.width * zoom), (int) (testRectangle.height * zoom));
-        g.setColor(Color.black);
-        /// !!!FIN TEST!!!
+        // Réglage des transformations en fonction du zoom et des offsets.
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(0.1, 0.1);
+        scaleTransform.scale(zoom, zoom);
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(-horizontalOffset, -verticalOffset);
+
+        // Dessine chaque surface du projet.
+        for (Surface surface : surfaces)
+        {
+            Surface selectedSurface = controller.getSelectedSurface();
+            
+            Area copy = new Area(surface);
+            copy.transform(scaleTransform);
+            copy.transform(translationTransform);
+            
+            // Dessine l'interieur de la surface.
+            g2d.setColor(surface.getColor());
+            g2d.fill(copy);
+            
+            // Dessine le contour de la surface.
+            g2d.setColor(Color.BLACK);
+            if (surface == selectedSurface) g2d.setStroke(new BasicStroke(5));
+            else g2d.setColor(Color.BLACK);
+            g2d.draw(copy);
+            g2d.setStroke(new BasicStroke(1));
+        }
+        
+        // Dessine un rectangle temporaire lors de la création de surface rectangulaire.
+        Rectangle temp = parent.getTemporaryRectangle();
+        if (temp != null)
+        {
+            Area copy = new Area(temp);
+            copy.transform(scaleTransform);
+            copy.transform(translationTransform);
+            
+            // Dessine le rectangle temporaire.
+            g2d.setColor(new Color(113, 148, 191));
+            g2d.fill(copy);
+            g2d.setColor(Color.BLACK);
+            g2d.draw(copy);
+        }
     }
 }

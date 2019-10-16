@@ -12,7 +12,7 @@ public class TileType
 {
     private int width;
     private int height;
-    private Set<Color> colors = new HashSet<Color>();
+    private Set<Color> colors = new HashSet<>();
     private String name;
     private int nbPerBox;
 
@@ -71,9 +71,8 @@ public class TileType
         return colors;
     }
 
-    public void setColors(Set<Color> colors)
+    public void setColors(HashSet<Color> colors)
     {
         this.colors = colors;
-    }
-    
+    }   
 }

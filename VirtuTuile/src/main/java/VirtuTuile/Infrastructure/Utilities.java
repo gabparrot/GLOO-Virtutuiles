@@ -6,39 +6,49 @@ package VirtuTuile.Infrastructure;
  */
 public final class Utilities
 {
-    // Nombre de pixels par mètre lorsque le zoom est à 100%.
-    public static final int PIXELS_PAR_METRE_BASE = 100;
+    // Nombre de millimètres par pixel lorsque le zoom est à 100%.
+    public static final int MM_PER_PIXEL = 10;
     
     /**
-     * Converti un nombre de pixels en mètres.
+     * Converti un nombre de pixels en millimètres.
      * @param pixels : le nombre de pixels.
      * @param zoom : le facteur avec lequel les pixels doivent être convertis.
-     * @return la conversion en mètres.
+     * @return la conversion en millimètres.
      */
-    public static double pixelsToMeters(int pixels, double zoom)
+    public static int pixelsToMm(int pixels, double zoom)
     {
-        return pixels / (PIXELS_PAR_METRE_BASE * zoom);
+        return (int) (pixels * MM_PER_PIXEL / zoom);
     }
     
     /**
-     * Converti un nombre de mètres en pieds. Retourne un nombre entier.
-     * @param meters : le nombre de mètres.
+     * Converti un nombre de millimètres en pieds. Retourne un nombre entier.
+     * @param mm : le nombre de millimètres.
      * @return la conversion en pieds en nombre entier.
      */
-    public static int metersToFeet(double meters)
+    public static int mmToFeet(int mm)
     {
-        return (int) (meters * 3.28084);
+        return (int) (mm / 1000. * 3.28084);
     }
     
     /**
-     * Converti un nombre de mètres en un restant de pouces après avoir converti en pieds.
-     * @param meters : le nombre de mètres.
+     * Converti un nombre de millimètres en un restant de pouces après avoir converti en pieds.
+     * @param mm : le nombre de millimètres.
      * @return la conversion en pouces restant après la convertion en pieds.
      */
-    public static double metersToRemainingInches(double meters)
+    public static double mmToRemainingInches(int mm)
     {
-        int feet = metersToFeet(meters);
-        double inches = meters * 39.3701;
+        int feet = mmToFeet(mm);
+        double inches = mm / 1000. * 39.3701;
         return inches - feet * 12;
+    }
+    
+    /**
+     * Converti un nombre de pouces en centimètres.
+     * @param inches : le nombre de pouces.
+     * @return le nombre de centimètres.
+     */
+    public static double inchesToCm(int inches)
+    {
+        return inches * 2.54;
     }
 }

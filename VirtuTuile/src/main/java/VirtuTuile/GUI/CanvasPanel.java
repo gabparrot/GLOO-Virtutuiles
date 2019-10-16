@@ -1,6 +1,7 @@
 package VirtuTuile.GUI;
 
 import java.awt.*;
+import VirtuTuile.Domain.Drawing.CanvasDrawer;
 
 /**
  * Le panneau dans lequel les surfaces sont dessinées.
@@ -9,8 +10,8 @@ import java.awt.*;
 public class CanvasPanel extends javax.swing.JPanel
 {   
     // Tableau avec les incréments de zoom.
-    private static final double[] ZOOM_LEVELS = {.1, .3, .5, .65, .8, .9, 1,
-                                                 1.1, 1.2, 1.35, 1.5, 1.7, 2, 2.4, 3, 4, 5, 7.5, 10};
+    private static final double[] ZOOM_LEVELS = {.1, .3, .5, .65, .8, .9, 1, 1.1, 1.2, 1.35, 1.5,
+                                                 1.7, 2, 2.4, 3, 4, 5, 7.5, 10};
     
     // Niveau de zoom actuel.
     private double zoom = 1;
@@ -19,8 +20,14 @@ public class CanvasPanel extends javax.swing.JPanel
     private int verticalOffset = 0;
     private int horizontalOffset = 0;
     
+    // Largeur (en pixels) entre chaque ligne de la grille lorsque le zoom est à 100%.
+    private double gridDistance = 20;
+    
     // Objet qui déssine sur le panneau.
-    private final VirtuTuile.Domain.Drawing.CanvasDrawer drawer = new VirtuTuile.Domain.Drawing.CanvasDrawer(this);
+    private final CanvasDrawer drawer = new CanvasDrawer(this);
+    
+    // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
+    Rectangle temporaryRectangle = null;
     
     /**
      * Constructeur.
@@ -29,6 +36,51 @@ public class CanvasPanel extends javax.swing.JPanel
     {
     }
 
+    /**
+     * Setter pour la distance de la grille, en pixels, lorsque le zoom est à 100%.
+     * @param newGridDistance : la nouvelle distance en pixels.
+     */
+    public void setGridDistance(double newGridDistance)
+    {
+        gridDistance = newGridDistance;
+    }
+    
+    /**
+     * Retourne la distance courante de la grille, en pixels, en tenant compte du zoom actuel.
+     * @return la distance courante, en pixels.
+     */
+    public double getGridDistance()
+    {
+        return gridDistance * zoom;
+    }
+    
+    /**
+     * Setter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
+     * @param rectangle : le rectangle
+     */
+    public void setTemporaryRectangle(Rectangle rectangle)
+    {
+        temporaryRectangle = rectangle;
+    }
+    
+    /**
+     * Getter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
+     * @return 
+     */
+    public Rectangle getTemporaryRectangle()
+    {
+        return temporaryRectangle;
+    }
+    
+    /**
+     * Assigne un Controller au Drawer.
+     * @param controller : le controller de l'application.
+     */
+    public void assignControllerToDrawer(VirtuTuile.Domain.Controller controller)
+    {
+        drawer.setController(controller);
+    }
+    
     /**
      * Se rend au prochain incrément de zoom.
      * @return le nouveau facteur de zoom.
@@ -140,10 +192,12 @@ public class CanvasPanel extends javax.swing.JPanel
     @Override
     protected void paintComponent(Graphics g)
     {
-        super.paintComponent(g);   
-        drawer.draw(g);
+        super.paintComponent(g);
         
-        // Graphics2D g2d = (Graphics2D) g.create();
-        //g2d.dispose();
+        Graphics2D g2d = (Graphics2D) g.create();
+        
+        drawer.draw(g2d);
+        
+        g2d.dispose();
     }
 }
