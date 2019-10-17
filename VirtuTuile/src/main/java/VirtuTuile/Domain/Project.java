@@ -76,17 +76,110 @@ public class Project
     }
     
     /**
-     * Déplace une surface.
-     * @param delta : déplacement x et y.
+     * Déplace une surface à une nouvelle position.
+     * @param newPos : nouvelle position.
      * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSurface(Point delta, Surface surface)
+    public void moveSurfaceToPoint(Point newPos, Surface surface)
     {
         if (surface instanceof RectangularSurface)
         {
-            setRectangleX(((RectangularSurface) surface).x + delta.x, (RectangularSurface) surface);
-            setRectangleY(((RectangularSurface) surface).y + delta.y, (RectangularSurface) surface);
+            setRectangularSurfaceXY(newPos.x, newPos.y, (RectangularSurface) surface);
         }
+    }
+    
+    /**
+     * Déplace une surface rectangulaire à une nouvelle position x y.
+     * @param x la coordonnée horizontale
+     * @param y la coordonnée verticale
+     * @param surface la surface qui doit être déplacée
+     */
+    public void setRectangularSurfaceXY(int x, int y, RectangularSurface surface)
+    {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        
+        int oldX = surface.x;
+        int oldY = surface.y;
+        
+        int surroundingBounds[] = getSurroundingBounds(surface);
+        
+        surface.x = x;
+        surface.y = y;
+        
+        // Si il y a conflit, il faut glisser la surface dans deux directions:
+        if (!conflictCheck(surface))
+        {
+            // Déplacement à droite
+            if (x > oldX)
+            {
+                surface.x = Math.min(x, surroundingBounds[2] - surface.width);
+            }
+            // Déplacement à gauche
+            else
+            {
+                surface.x = Math.max(x, surroundingBounds[0]);
+            }
+            // Déplacement vers le bas
+            if (y > oldY)
+            {
+                surface.y = Math.min(y, surroundingBounds[3] - surface.height);
+            }
+            // Déplacement vers le haut
+            else
+            {
+                surface.y = Math.max(y, surroundingBounds[1]);
+            }
+        }
+    }
+    
+    /**
+     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
+     * peut se déplacer.
+     * @param inputSurface : la surface en question.
+     * @return les bornes dans un tableau [droite, en-haut, gauche, en-bas]
+     */
+    public int[] getSurroundingBounds(Surface inputSurface)
+    {
+        Rectangle bounds = inputSurface.getBounds();
+        int surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
+        for (Surface surface : surfaces)
+        {
+            Rectangle b = surface.getBounds();
+            
+            if ((b.x < bounds.x && b.x + b.width > surroundingBounds[0]) &&
+                ((b.y <= bounds.y && b.y + b.height > bounds.y) ||
+                 (b.y >= bounds.y && b.y + b.height <= bounds.y + bounds.height) ||
+                 (b.y < bounds.y + bounds.height && b.y + b.height >= bounds.y + bounds.height)))
+            {
+                surroundingBounds[0] = b.x + b.width;
+            }
+            
+            else if ((b.y < bounds.y && b.y + b.height > surroundingBounds[1]) &&
+                     ((b.x <= bounds.x && b.x + b.width > bounds.x) ||
+                      (b.x >= bounds.x && b.x + b.width <= bounds.x + bounds.width) ||
+                      (b.x < bounds.x + bounds.width && b.x + b.width >= bounds.x + bounds.width)))
+            {
+                surroundingBounds[1] = b.y + b.height;
+            }
+            
+            else if ((b.x >= bounds.x + bounds.width && b.x < surroundingBounds[2]) &&
+                     ((b.y <= bounds.y && b.y + b.height > bounds.y) ||
+                      (b.y >= bounds.y && b.y + b.height <= bounds.y + bounds.height) ||
+                      (b.y < bounds.y + bounds.height && b.y + b.height >= bounds.y + bounds.height)))
+            {
+                surroundingBounds[2] = b.x;
+            }
+            
+            else if ((b.y >= bounds.y + bounds.height && b.y < surroundingBounds[3]) &&
+                     ((b.x <= bounds.x && b.x + b.width > bounds.x) ||
+                      (b.x >= bounds.x && b.x + b.width <= bounds.x + bounds.width) ||
+                      (b.x < bounds.x + bounds.width && b.x + b.width >= bounds.x + bounds.width)))
+            {
+                surroundingBounds[3] = b.y;
+            }
+        }
+        return surroundingBounds;
     }
     
     /**
@@ -95,7 +188,7 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangleX(int x, RectangularSurface surface)
+    public boolean setRectangularSurfaceX(int x, RectangularSurface surface)
     {
         if (x < 0) return false;
         
@@ -120,7 +213,7 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangleY(int y, RectangularSurface surface)
+    public boolean setRectangularSurfaceY(int y, RectangularSurface surface)
     {
         if (y < 0) return false;
         
@@ -217,21 +310,14 @@ public class Project
     }
     
     /**
-     * @param deltaX
-     * @param deltaY
      * Retourne la surface sélectionnée, peut être null.
      * @return la surface sélectionnée, si une surface est sélectionnée, null sinon.
      */
     public Surface getSelectedSurface()
     {
-        if(selectedSurface != null)
-        {
-            return selectedSurface;
-        }
-        return null;
+        return selectedSurface;
     }
    
-    // Getters et Setters
     public String getProjectName()
     {
         return projectName;

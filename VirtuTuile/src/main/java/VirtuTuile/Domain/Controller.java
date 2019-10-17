@@ -49,6 +49,17 @@ public class Controller
     }
     
     /**
+     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
+     * peut se déplacer.
+     * @param surface : la surface en question.
+     * @return les bornes dans un tableau [droite, en-haut, gauche, en-bas]
+     */
+    public int[] getSurroundingBounds(Surface surface)
+    {
+        return project.getSurroundingBounds(surface);
+    }
+    
+    /**
      * Cree une surface rectangulaire.
      * @param rectangle la forme du rectangle.
      * @return true si la création à réussie, false sinon.
@@ -70,7 +81,6 @@ public class Controller
     
     /**
      * Colle deux surfaces sans les fusionner.
-     * @param 
      */
     public void glueSelectedSurfaces()
     {
@@ -79,13 +89,13 @@ public class Controller
     }
     
     /**
-     * Déplace une surface.
-     * @param delta : déplacement x et y.
+     * Déplace une surface à une nouvelle position.
+     * @param newPos : nouvelle position.
      * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSurface(Point delta, Surface surface)
+    public void moveSurfaceToPoint(Point newPos, Surface surface)
     {
-        project.moveSurface(delta, surface);
+        project.moveSurfaceToPoint(newPos, surface);
     }
     
     /**
@@ -94,9 +104,9 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangleX(int x, RectangularSurface surface)
+    public boolean setRectangularSurfaceX(int x, RectangularSurface surface)
     {
-        return project.setRectangleX(x, surface);
+        return project.setRectangularSurfaceX(x, surface);
     }
 
     /**
@@ -105,9 +115,9 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangleY(int y, RectangularSurface surface)
+    public boolean setRectangularSurfaceY(int y, RectangularSurface surface)
     {
-        return project.setRectangleY(y, surface);
+        return project.setRectangularSurfaceY(y, surface);
     }
 
     /**

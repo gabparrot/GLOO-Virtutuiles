@@ -29,6 +29,10 @@ public class CanvasPanel extends javax.swing.JPanel
     // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
     Rectangle temporaryRectangle = null;
     
+    // Si la fenêtre est en mode debug.
+    private boolean isDebug = false;
+    
+    
     /**
      * Constructeur.
      */
@@ -36,6 +40,23 @@ public class CanvasPanel extends javax.swing.JPanel
     {
     }
 
+    /**
+     * Retourne si la fenêtre est en mode debug ou pas.
+     * @return true is la fenêtere est en mode debug, false sinon.
+     */
+    public boolean isDebug()
+    {
+        return isDebug;
+    }
+    
+    /**
+     * Alterne le mode debug entre activé et non-activé.
+     */
+    public void toggleIsDebug()
+    {
+        isDebug = !isDebug;
+    }
+    
     /**
      * Setter pour la distance de la grille, en pixels, lorsque le zoom est à 100%.
      * @param newGridDistance : la nouvelle distance en pixels.
@@ -49,9 +70,18 @@ public class CanvasPanel extends javax.swing.JPanel
      * Retourne la distance courante de la grille, en pixels, en tenant compte du zoom actuel.
      * @return la distance courante, en pixels.
      */
-    public double getGridDistance()
+    public double getGridDistanceZoomed()
     {
         return gridDistance * zoom;
+    }
+    
+    /**
+     * Retourne la distance de la grille, en pixels, sans tenir compte du zoom.
+     * @return la distance de la grille, en pixels, sans tenir compte du zoom.
+     */
+    public double getGridDistance()
+    {
+        return gridDistance;
     }
     
     /**

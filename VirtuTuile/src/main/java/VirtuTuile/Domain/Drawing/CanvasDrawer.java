@@ -47,13 +47,13 @@ public class CanvasDrawer
     }
     
     /**
-     * Déssine la grille du canevas.
+     * Dessine la grille du canevas.
      * @param g2d : Graphics du canevas.
      */
     private void drawGrid(Graphics2D g2d)
     {
         g2d.setColor(Color.DARK_GRAY);
-        double gridDistance = parent.getGridDistance();
+        double gridDistance = parent.getGridDistanceZoomed();
         
         double verticalOffset = parent.getVerticalOffset() % gridDistance;
         double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
@@ -83,6 +83,7 @@ public class CanvasDrawer
         double zoom = parent.getZoom();
         int verticalOffset = parent.getVerticalOffset();
         int horizontalOffset = parent.getHorizontalOffset();
+        Surface selectedSurface = controller.getSelectedSurface();
         ArrayList<Surface> surfaces = controller.getSurfaces();
         
         // Réglage des transformations en fonction du zoom et des offsets.
@@ -94,9 +95,7 @@ public class CanvasDrawer
 
         // Dessine chaque surface du projet.
         for (Surface surface : surfaces)
-        {
-            Surface selectedSurface = controller.getSelectedSurface();
-            
+        {   
             Area copy = new Area(surface);
             copy.transform(scaleTransform);
             copy.transform(translationTransform);
@@ -126,6 +125,23 @@ public class CanvasDrawer
             g2d.fill(copy);
             g2d.setColor(Color.BLACK);
             g2d.draw(copy);
+        }
+        
+        /**
+         * Dessine un rectangle montrant les bornes extérieures de la surface sélectionnée
+         * si le mode debug est activé.
+         */
+        if (parent.isDebug() && selectedSurface != null)
+        {
+            int surroundingBounds[] = controller.getSurroundingBounds(selectedSurface);
+            Rectangle devRec = new Rectangle(surroundingBounds[0], surroundingBounds[1], surroundingBounds[2] - surroundingBounds[0], surroundingBounds[3] - surroundingBounds[1]);
+            Area devArea = new Area(devRec);
+            devArea.transform(scaleTransform);
+            devArea.transform(translationTransform);
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(new BasicStroke(3));
+            g2d.draw(devArea);
+            g2d.setStroke(new BasicStroke(1));
         }
     }
 }
