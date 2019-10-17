@@ -1204,7 +1204,7 @@ public class MainWindow extends javax.swing.JFrame
         try
         {
             int width = (int) (Double.parseDouble(surfaceWidthField.getText()) * 1000);
-            boolean status = controller.setRectangleWidth(width,
+            boolean status = controller.setRectangularSurfaceWidth(width,
                                                          (RectangularSurface) selectedSurface);
             surfaceWidthField.setText(String.format("%.03f",
                                                     selectedSurface.getBounds().width / 1000.));
@@ -1226,7 +1226,7 @@ public class MainWindow extends javax.swing.JFrame
         try
         {
             int height = (int) (Double.parseDouble(surfaceHeightField.getText()) * 1000);
-            boolean status = controller.setRectangleHeight(height,
+            boolean status = controller.setRectangularSurfaceHeight(height,
                                                            (RectangularSurface) selectedSurface);
             surfaceHeightField.setText(String.format("%.03f",
                                                      selectedSurface.getBounds().height / 1000.));
