@@ -2,8 +2,8 @@ package VirtuTuile.Domain;
 
 import java.awt.Color;
 import java.util.ArrayList;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 
 /**
  * @class definissant le controlleur de Larman, faisant le pont entre le GUI et le logiciel
@@ -49,31 +49,38 @@ public class Controller
     }
     
     /**
-     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
-     * peut se déplacer.
-     * @param surface : la surface en question.
-     * @return les bornes dans un tableau [droite, en-haut, gauche, en-bas]
+     * Désélectionne la surface sélectionnée.
      */
-    public int[] getSurroundingBounds(Surface surface)
+    public void unselect()
+    {
+        project.unselect();
+    }
+    
+    /**
+     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
+     * peut être déplacée dans les quatre directions.
+     * @param surface : la surface en question.
+     * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
+     */
+    public double[] getSurroundingBounds(Surface surface)
     {
         return project.getSurroundingBounds(surface);
     }
     
     /**
-     * Cree une surface rectangulaire.
+     * Crée une surface rectangulaire.
      * @param rectangle la forme du rectangle.
      * @return true si la création à réussie, false sinon.
      */
-    public boolean addRectangularSurface(Rectangle rectangle)
+    public boolean addRectangularSurface(Rectangle2D.Double rectangle)
     {
         return project.addRectangularSurface(rectangle);
     }
     
     /**
-     * Crée une nouvelle surface irreguliere.
-     * @param points le tableau des points de la surface
+     * Crée une nouvelle surface irrégulière.
      */
-    public void addIrregularSurface(java.util.ArrayList<Point> points)
+    public void addIrregularSurface()
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
@@ -93,7 +100,7 @@ public class Controller
      * @param newPos : nouvelle position.
      * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSurfaceToPoint(Point newPos, Surface surface)
+    public void moveSurfaceToPoint(Point2D newPos, Surface surface)
     {
         project.moveSurfaceToPoint(newPos, surface);
     }
@@ -104,7 +111,7 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceX(int x, RectangularSurface surface)
+    public boolean setRectangularSurfaceX(double x, RectangularSurface surface)
     {
         return project.setRectangularSurfaceX(x, surface);
     }
@@ -115,7 +122,7 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceY(int y, RectangularSurface surface)
+    public boolean setRectangularSurfaceY(double y, RectangularSurface surface)
     {
         return project.setRectangularSurfaceY(y, surface);
     }
@@ -126,7 +133,7 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceWidth(int width, RectangularSurface surface)
+    public boolean setRectangularSurfaceWidth(double width, RectangularSurface surface)
     {
         return project.setRectangularSurfaceWidth(width, surface);
     }
@@ -137,17 +144,17 @@ public class Controller
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceHeight(int height, RectangularSurface surface)
+    public boolean setRectangularSurfaceHeight(double height, RectangularSurface surface)
     {
         return project.setRectangularSurfaceHeight(height, surface);
     }
     
     /**
-     * Selectionne la surface qui contient le point.
+     * Sélectionne la surface qui contient le point.
      * @param point : le point qui doit être à l'intérieur de la surface.
      * @return la surface sélectionnée, peut être null.
      */
-    public Surface selectSurface(Point point)
+    public Surface selectSurface(Point2D point)
     {
         return project.selectSurface(point);
     }
@@ -175,7 +182,7 @@ public class Controller
      * @param height : la hauteur de la tuile.
      * @param color : la couleur de la tuile.
      */
-    public void addTileType(int width, int height, Color color[])
+    public void addTileType(double width, double height, Color color[])
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
@@ -185,9 +192,18 @@ public class Controller
      * Bouge le revetement (motif) de la surface dans l'interface.
      * @param delta : le point sélectionné par la souris.
      */
-    public void MoveSelectedCovering(Point delta)
+    public void MoveSelectedCovering(Point2D delta)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    /**
+     * Trouve le point le plus à droite et en-bas de toutes les surfaces.
+     * @return le point le plus à droite et en-bas de toutes les surfaces. 
+     */
+    public Point2D.Double getFarthestPoint()
+    {
+        return project.getFarthestPoint();
     }
 }

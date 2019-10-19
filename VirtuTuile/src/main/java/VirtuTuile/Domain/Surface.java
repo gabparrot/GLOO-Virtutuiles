@@ -14,7 +14,7 @@ public interface Surface extends Shape
     Color       getColor        ();
     void        setColor        (Color color);
     Covering    getCovering     ();
-    void        setCovering     (int offsetX, int offsetY, Color groutColor,
-                                 int groutWidth, int angle, Pattern pattern, 
+    void        setCovering     (double offsetX, double offsetY, Color groutColor,
+                                 double groutWidth, int angle, Pattern pattern, 
                                  TileType tileType, Color color);
 }

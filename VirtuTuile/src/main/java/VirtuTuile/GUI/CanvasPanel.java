@@ -1,6 +1,8 @@
 package VirtuTuile.GUI;
 
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 import VirtuTuile.Domain.Drawing.CanvasDrawer;
 
 /**
@@ -27,11 +29,10 @@ public class CanvasPanel extends javax.swing.JPanel
     private final CanvasDrawer drawer = new CanvasDrawer(this);
     
     // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
-    Rectangle temporaryRectangle = null;
+    Rectangle2D.Double temporaryRectangle = null;
     
     // Si la fenêtre est en mode debug.
     private boolean isDebug = false;
-    
     
     /**
      * Constructeur.
@@ -88,7 +89,7 @@ public class CanvasPanel extends javax.swing.JPanel
      * Setter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
      * @param rectangle : le rectangle
      */
-    public void setTemporaryRectangle(Rectangle rectangle)
+    public void setTemporaryRectangle(Rectangle2D.Double rectangle)
     {
         temporaryRectangle = rectangle;
     }
@@ -97,7 +98,7 @@ public class CanvasPanel extends javax.swing.JPanel
      * Getter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
      * @return 
      */
-    public Rectangle getTemporaryRectangle()
+    public Rectangle2D.Double getTemporaryRectangle()
     {
         return temporaryRectangle;
     }
@@ -223,7 +224,7 @@ public class CanvasPanel extends javax.swing.JPanel
     protected void paintComponent(Graphics g)
     {
         super.paintComponent(g);
-        
+                
         Graphics2D g2d = (Graphics2D) g.create();
         
         drawer.draw(g2d);

@@ -2,12 +2,12 @@ package VirtuTuile.Domain;
 
 import java.awt.Color;
 import java.awt.Shape;
-import java.awt.geom.Area;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.geom.Area;
 
 /**
  * @class definissant le projet en cours
@@ -28,6 +28,20 @@ public class Project
     public Project(String projectName)
     {
         this.projectName = projectName;
+        java.awt.Polygon poly = new java.awt.Polygon();                             // Test
+        poly.addPoint(2000, 4000);                                                  // Test
+        poly.addPoint(4000, 4000);                                                  // Test
+        poly.addPoint(4000, 2000);                                                  // Test
+        CombinedSurface surface = new CombinedSurface(false, Color.GREEN, poly);    // Test
+        surfaces.add(surface);
+    }
+    
+    /**
+     * Désélectionne la surface sélectionnée.
+     */
+    public void unselect()
+    {
+        selectedSurface = null;
     }
     
     /**
@@ -44,22 +58,51 @@ public class Project
      * @param rectangle la forme du rectangle.
      * @return true si la création à réussie, false sinon.
      */
-    public boolean addRectangularSurface(Rectangle rectangle)
+    public boolean addRectangularSurface(Rectangle2D.Double rectangle)
     {
-        boolean status = conflictCheck(rectangle);
-        if (status)
+        boolean noConflict = conflictCheck(rectangle);
+        if (noConflict)
         {
             surfaces.add(new RectangularSurface(rectangle, false, new Color(113, 148, 191)));
+        }
+        return noConflict;
+    }
+    
+    /**
+     * Vérifie s'il y a un conflit avec une nouvelle surface.
+     * @param shape : la forme de la surface à vérifier.
+     * @return true s'il n'y a pas de conflit, false s'il y a conflit.
+     */
+    public boolean conflictCheck(Shape shape)
+    {
+        return boundsConflictCheck(shape) || areaConflictCheck(shape);
+    }
+    
+    /**
+     * Vérifie s'il y a intersection avec les bornes d'une nouvelle surface.
+     * @param shape : la forme de la surface à vérifier.
+     * @return true s'il n'y a pas de conflit, false s'il y a conflit.
+     */
+    public boolean boundsConflictCheck(Shape shape)
+    {
+        boolean status = true;
+        for (Surface surface : surfaces)
+        {
+            Rectangle2D intersection = shape.getBounds2D().createIntersection(surface.getBounds2D());
+            if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1 && surface != shape)
+            {
+                status = false;
+            }
         }
         return status;
     }
     
     /**
-     * Vérifie s'il y a conflit avec une nouvelle surface.
+     * Vérifie s'il y a intersection avec l'aire d'une nouvelle surface.
      * @param shape : la forme de la surface à vérifier.
      * @return true s'il n'y a pas de conflit, false s'il y a conflit.
      */
-    public boolean conflictCheck(Shape shape)
+    public boolean areaConflictCheck(Shape shape)
     {
         boolean status = true;
         Area newArea = new Area(shape);
@@ -80,11 +123,11 @@ public class Project
      * @param newPos : nouvelle position.
      * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSurfaceToPoint(Point newPos, Surface surface)
+    public void moveSurfaceToPoint(Point2D newPos, Surface surface)
     {
         if (surface instanceof RectangularSurface)
         {
-            setRectangularSurfaceXY(newPos.x, newPos.y, (RectangularSurface) surface);
+            setRectangularSurfaceXY(newPos.getX(), newPos.getY(), (RectangularSurface) surface);
         }
     }
     
@@ -94,18 +137,16 @@ public class Project
      * @param y la coordonnée verticale
      * @param surface la surface qui doit être déplacée
      */
-    public void setRectangularSurfaceXY(int x, int y, RectangularSurface surface)
+    public void setRectangularSurfaceXY(double x, double y, RectangularSurface surface)
     {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
         
-        int oldX = surface.x;
-        int oldY = surface.y;
+        double oldX = surface.x;
+        double oldY = surface.y;
         
-        int surroundingBounds[] = getSurroundingBounds(surface);
-        
+        double surroundingBounds[] = getSurroundingBounds(surface);
         surface.x = x;
-        surface.y = y;
         
         // Si il y a conflit, il faut glisser la surface dans deux directions:
         if (!conflictCheck(surface))
@@ -120,6 +161,13 @@ public class Project
             {
                 surface.x = Math.max(x, surroundingBounds[0]);
             }
+        }
+        
+        surroundingBounds = getSurroundingBounds(surface);
+        surface.y = y;
+        
+        if (!conflictCheck(surface))
+        {
             // Déplacement vers le bas
             if (y > oldY)
             {
@@ -135,50 +183,59 @@ public class Project
     
     /**
      * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
-     * peut se déplacer.
+     * peut être déplacée dans les quatre directions.
      * @param inputSurface : la surface en question.
-     * @return les bornes dans un tableau [droite, en-haut, gauche, en-bas]
+     * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
      */
-    public int[] getSurroundingBounds(Surface inputSurface)
+    public double[] getSurroundingBounds(Surface inputSurface)
     {
-        Rectangle bounds = inputSurface.getBounds();
-        int surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
+        Rectangle2D b = inputSurface.getBounds2D();
+        double x = b.getX();
+        double y = b.getY();
+        double w = b.getWidth();
+        double h = b.getHeight();
+        double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
+        Area totalArea = new Area();
         for (Surface surface : surfaces)
         {
-            Rectangle b = surface.getBounds();
-            
-            if ((b.x < bounds.x && b.x + b.width > surroundingBounds[0]) &&
-                ((b.y <= bounds.y && b.y + b.height > bounds.y) ||
-                 (b.y >= bounds.y && b.y + b.height <= bounds.y + bounds.height) ||
-                 (b.y < bounds.y + bounds.height && b.y + b.height >= bounds.y + bounds.height)))
-            {
-                surroundingBounds[0] = b.x + b.width;
-            }
-            
-            else if ((b.y < bounds.y && b.y + b.height > surroundingBounds[1]) &&
-                     ((b.x <= bounds.x && b.x + b.width > bounds.x) ||
-                      (b.x >= bounds.x && b.x + b.width <= bounds.x + bounds.width) ||
-                      (b.x < bounds.x + bounds.width && b.x + b.width >= bounds.x + bounds.width)))
-            {
-                surroundingBounds[1] = b.y + b.height;
-            }
-            
-            else if ((b.x >= bounds.x + bounds.width && b.x < surroundingBounds[2]) &&
-                     ((b.y <= bounds.y && b.y + b.height > bounds.y) ||
-                      (b.y >= bounds.y && b.y + b.height <= bounds.y + bounds.height) ||
-                      (b.y < bounds.y + bounds.height && b.y + b.height >= bounds.y + bounds.height)))
-            {
-                surroundingBounds[2] = b.x;
-            }
-            
-            else if ((b.y >= bounds.y + bounds.height && b.y < surroundingBounds[3]) &&
-                     ((b.x <= bounds.x && b.x + b.width > bounds.x) ||
-                      (b.x >= bounds.x && b.x + b.width <= bounds.x + bounds.width) ||
-                      (b.x < bounds.x + bounds.width && b.x + b.width >= bounds.x + bounds.width)))
-            {
-                surroundingBounds[3] = b.y;
-            }
+            if (surface != inputSurface) totalArea.add(new Area(surface));
         }
+        // LEFT
+        Area leftArea = new Area(totalArea);
+        leftArea.intersect(new Area(new Rectangle2D.Double(0, y, x, h)));
+        Rectangle2D leftRect = leftArea.getBounds2D();
+        if (leftRect.getX() + leftRect.getWidth() > 0)
+        {
+            surroundingBounds[0] = leftRect.getX() + leftRect.getWidth();
+        }
+        
+        // UP
+        Area upArea = new Area(totalArea);
+        upArea.intersect(new Area(new Rectangle2D.Double(x, 0, w, y)));
+        Rectangle2D upRect = upArea.getBounds2D();
+        if (upRect.getY() + upRect.getHeight() > 0)
+        {
+            surroundingBounds[1] = upRect.getY() + upRect.getHeight();
+        }
+        
+        // RIGHT
+        Area rightArea = new Area(totalArea);
+        rightArea.intersect(new Area(new Rectangle2D.Double(x + w, y, Integer.MAX_VALUE, h)));
+        Rectangle2D rightRect = rightArea.getBounds2D();
+        if (!rightArea.isEmpty())
+        {
+            surroundingBounds[2] = rightRect.getX();
+        }
+        
+        // DOWN
+        Area downArea = new Area(totalArea);
+        downArea.intersect(new Area(new Rectangle2D.Double(x, y + h, w, Integer.MAX_VALUE)));
+        Rectangle2D downRect = downArea.getBounds2D();
+        if (!downArea.isEmpty())
+        {
+            surroundingBounds[3] = downRect.getY();
+        }
+        
         return surroundingBounds;
     }
     
@@ -188,11 +245,11 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceX(int x, RectangularSurface surface)
+    public boolean setRectangularSurfaceX(double x, RectangularSurface surface)
     {
         if (x < 0) return false;
         
-        int oldX = surface.x;
+        double oldX = surface.x;
         
         surface.x = x;
         
@@ -213,11 +270,11 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceY(int y, RectangularSurface surface)
+    public boolean setRectangularSurfaceY(double y, RectangularSurface surface)
     {
         if (y < 0) return false;
         
-        int oldY = surface.y;
+        double oldY = surface.y;
         
         surface.y = y;
         
@@ -238,11 +295,11 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceWidth(int width, RectangularSurface surface)
+    public boolean setRectangularSurfaceWidth(double width, RectangularSurface surface)
     {
         if (width < 100) return false;
         
-        int oldWidth = surface.width;
+        double oldWidth = surface.width;
         
         surface.width = width;
         
@@ -263,11 +320,11 @@ public class Project
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceHeight(int height, RectangularSurface surface)
+    public boolean setRectangularSurfaceHeight(double height, RectangularSurface surface)
     {
         if (height < 100) return false;
         
-        int oldHeight = surface.height;
+        double oldHeight = surface.height;
         
         surface.height = height;
         
@@ -287,7 +344,7 @@ public class Project
      * @param point : le point qui doit être à l'intérieur de la surface.
      * @return la surface sélectionnée, peut être null.
      */
-    public Surface selectSurface(Point point)
+    public Surface selectSurface(Point2D point)
     {
         for (Surface surface : surfaces)
         {
@@ -302,11 +359,11 @@ public class Project
     }
     
     /**
-     * Efface la surface selectionnee en les retirant de la liste
+     * Efface la surface selectionnée.
      */
     public void deleteSelectedSurface()
     {
-        surfaces.remove(selectedSurface);
+        if (selectedSurface != null) surfaces.remove(selectedSurface);
     }
     
     /**
@@ -346,6 +403,28 @@ public class Project
     public void setQtyPerTileType(Map<TileType, Integer> qtyPerTileType)
     {
         this.qtyPerTileType = qtyPerTileType;
+    }
+    
+    /**
+     * Trouve le point le plus à droite et en-bas de toutes les surfaces.
+     * @return le point le plus à droite et en-bas de toutes les surfaces. 
+     */
+    public Point2D.Double getFarthestPoint()
+    {
+        Point2D.Double point = new Point2D.Double(0, 0);
+        for (Surface surface : surfaces)
+        {
+            Rectangle2D bounds = surface.getBounds2D();
+            if (bounds.getX() + bounds.getWidth() > point.x)
+            {
+                point.x = bounds.getX() + bounds.getWidth();
+            }
+            if (bounds.getY() + bounds.getHeight() > point.y)
+            {
+                point.y = bounds.getY() + bounds.getHeight();
+            }
+        }
+        return point;
     }
     
     /**

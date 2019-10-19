@@ -5,14 +5,14 @@
  */
 package VirtuTuile.Domain;
 
-import java.awt.Polygon;
+import java.awt.geom.Path2D;
 import java.awt.Color;
 
 /**
  *
  * @author gabparrot
  */
-public class IrregularSurface extends Polygon implements ElementarySurface
+public class IrregularSurface extends Path2D.Double implements ElementarySurface
 {
     private boolean isHole;
     private Color color;
@@ -20,10 +20,9 @@ public class IrregularSurface extends Polygon implements ElementarySurface
     
     // TODO vérifier si attributs de coordonnées doivent être ajoutés
 
-    public IrregularSurface(boolean isHole, Color color, int[] xpoints, 
-                            int[] ypoints, int npoints)
+    public IrregularSurface(boolean isHole, Color color)
     {
-        super(xpoints, ypoints, npoints);
+        super();
         this.isHole = isHole;
         this.color = color;
     }
@@ -59,8 +58,8 @@ public class IrregularSurface extends Polygon implements ElementarySurface
     }
 
     @Override
-    public void setCovering(int offsetX, int offsetY, Color groutColor,
-                            int groutWidth, int angle, Pattern pattern, 
+    public void setCovering(double offsetX, double offsetY, Color groutColor,
+                            double groutWidth, int angle, Pattern pattern, 
                             TileType tileType, Color tileColor)
     {
         this.covering = new Covering(offsetX, offsetY, groutColor,

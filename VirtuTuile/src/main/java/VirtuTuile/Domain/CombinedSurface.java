@@ -17,9 +17,11 @@ public class CombinedSurface extends Area implements Surface
      * Constructeur.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
+     * @param shape juste pour TEST, tu peux l'enlever!
      */
-    public CombinedSurface(boolean isHole, Color color)
+    public CombinedSurface(boolean isHole, Color color, java.awt.Shape shape)
     {
+        super(shape);
         this.isHole = isHole;
         this.color = color;
     }
@@ -55,8 +57,8 @@ public class CombinedSurface extends Area implements Surface
     }
 
     @Override
-    public void setCovering(int offsetX, int offsetY, Color groutColor,
-                            int groutWidth, int angle, Pattern pattern, 
+    public void setCovering(double offsetX, double offsetY, Color groutColor,
+                            double groutWidth, int angle, Pattern pattern, 
                             TileType tileType, Color tileColor)
     {
         this.covering = new Covering(offsetX, offsetY, groutColor,

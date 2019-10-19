@@ -2,6 +2,7 @@ package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
 import java.awt.*;
+import java.awt.geom.*;
 import java.util.ArrayList;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
@@ -63,8 +64,8 @@ public class CanvasDrawer
 
         for (int column = 0; column < nbColumns; column++)
         {
-            g2d.drawLine((int) (column * gridDistance - horizontalOffset), 0,
-                         (int) (column * gridDistance - horizontalOffset), parent.getHeight());
+            g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
+                         (int) Math.round(column * gridDistance - horizontalOffset), parent.getHeight());
         }
         
         for (int row = 0; row < nbRows; row++)
@@ -106,14 +107,22 @@ public class CanvasDrawer
             
             // Dessine le contour de la surface.
             g2d.setColor(Color.BLACK);
-            if (surface == selectedSurface) g2d.setStroke(new BasicStroke(5));
-            else g2d.setColor(Color.BLACK);
+            g2d.draw(copy);
+        }
+        
+        // Dessine le contour de la surface sélectionnée.
+        if (selectedSurface != null)
+        {
+            Area copy = new Area(selectedSurface);
+            copy.transform(scaleTransform);
+            copy.transform(translationTransform);
+            g2d.setStroke(new BasicStroke(5));
             g2d.draw(copy);
             g2d.setStroke(new BasicStroke(1));
         }
         
         // Dessine un rectangle temporaire lors de la création de surface rectangulaire.
-        Rectangle temp = parent.getTemporaryRectangle();
+        Rectangle2D.Double temp = parent.getTemporaryRectangle();
         if (temp != null)
         {
             Area copy = new Area(temp);
@@ -133,12 +142,14 @@ public class CanvasDrawer
          */
         if (parent.isDebug() && selectedSurface != null)
         {
-            int surroundingBounds[] = controller.getSurroundingBounds(selectedSurface);
-            Rectangle devRec = new Rectangle(surroundingBounds[0], surroundingBounds[1], surroundingBounds[2] - surroundingBounds[0], surroundingBounds[3] - surroundingBounds[1]);
+            double surroundingBounds[] = controller.getSurroundingBounds(selectedSurface);
+            Rectangle2D.Double devRec = new Rectangle2D.Double(surroundingBounds[0],
+                    surroundingBounds[1], surroundingBounds[2] - surroundingBounds[0],
+                    surroundingBounds[3] - surroundingBounds[1]);
             Area devArea = new Area(devRec);
             devArea.transform(scaleTransform);
             devArea.transform(translationTransform);
-            g2d.setColor(Color.BLACK);
+            g2d.setColor(Color.MAGENTA);
             g2d.setStroke(new BasicStroke(3));
             g2d.draw(devArea);
             g2d.setStroke(new BasicStroke(1));

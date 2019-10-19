@@ -10,14 +10,14 @@ import java.util.Set;
  */
 public class TileType
 {
-    private int width;
-    private int height;
+    private double width;
+    private double height;
     private Set<Color> colors = new HashSet<>();
     private String name;
     private int nbPerBox;
 
     // Constructeur avec paramètres
-    public TileType(int widthInput, int heightInput, String nameInput, int nbPerBoxInput)
+    public TileType(double widthInput, double heightInput, String nameInput, int nbPerBoxInput)
     {
         this.width = widthInput;
         this.height = heightInput;
@@ -26,22 +26,22 @@ public class TileType
     }
     
     // Getters et Setters
-    public int getWidth()
+    public double getWidth()
     {
         return width;
     }
 
-    public void setWidth(int width)
+    public void setWidth(double width)
     {
         this.width = width;
     }
 
-    public int getHeight()
+    public double getHeight()
     {
         return height;
     }
 
-    public void setHeight(int height)
+    public void setHeight(double height)
     {
         this.height = height;
     }

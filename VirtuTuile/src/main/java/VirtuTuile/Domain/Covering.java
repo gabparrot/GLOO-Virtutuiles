@@ -14,10 +14,10 @@ public class Covering
         et getTiles
         */
 {
-    private int offsetX;
-    private int offsetY;
+    private double offsetX;
+    private double offsetY;
     private Color groutColor;
-    private int groutWidth;
+    private double groutWidth;
     private int angle;
     private Pattern pattern;
     private java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
@@ -36,7 +36,7 @@ public class Covering
      * @param tileType
      * @param tileColor
      */
-    public Covering(int offsetX, int offsetY, Color groutColor, int groutWidth, 
+    public Covering(double offsetX, double offsetY, Color groutColor, double groutWidth, 
                     int angle, Pattern pattern, TileType tileType, 
                     Color tileColor)
     {
@@ -66,22 +66,22 @@ public class Covering
     }
     
     // Getters et Setters
-    public int getOffsetX()
+    public double getOffsetX()
     {
         return offsetX;
     }
 
-    public void setOffsetX(int offsetX)
+    public void setOffsetX(double offsetX)
     {
         this.offsetX = offsetX;
     }
 
-    public int getOffsetY()
+    public double getOffsetY()
     {
         return offsetY;
     }
 
-    public void setOffsetY(int offsetY)
+    public void setOffsetY(double offsetY)
     {
         this.offsetY = offsetY;
     }
@@ -96,12 +96,12 @@ public class Covering
         this.groutColor = groutColor;
     }
 
-    public int getGroutWidth()
+    public double getGroutWidth()
     {
         return groutWidth;
     }
 
-    public void setGroutWidth(int groutWidth)
+    public void setGroutWidth(double groutWidth)
     {
         this.groutWidth = groutWidth;
     }

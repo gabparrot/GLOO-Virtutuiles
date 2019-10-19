@@ -1,13 +1,13 @@
 package VirtuTuile.Domain;
 
-import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 
 /**
  * Une surface rectangulaire.
  * @author gabparrot
  */
-public class RectangularSurface extends Rectangle implements ElementarySurface
+public class RectangularSurface extends Rectangle2D.Double implements ElementarySurface
 {
     // Si true, la surface ne doit pas être couverte.
     private boolean isHole;
@@ -24,9 +24,9 @@ public class RectangularSurface extends Rectangle implements ElementarySurface
      * @param isHole si la surface doit être couverte ou pas.
      * @param color la couleur de la surface.
      */
-    public RectangularSurface(Rectangle rectangle, boolean isHole, Color color)
+    public RectangularSurface(Rectangle2D.Double rectangle, boolean isHole, Color color)
     {
-        super(rectangle);
+        super(rectangle.x, rectangle.y, rectangle.width, rectangle.height);
         this.isHole = isHole;
         this.color = color;
     }
@@ -80,8 +80,8 @@ public class RectangularSurface extends Rectangle implements ElementarySurface
     }
 
     @Override
-    public void setCovering(int offsetX, int offsetY, Color groutColor,
-                            int groutWidth, int angle, Pattern pattern, 
+    public void setCovering(double offsetX, double offsetY, Color groutColor,
+                            double groutWidth, int angle, Pattern pattern, 
                             TileType tileType, Color tileColor)
     {
         this.covering = new Covering(offsetX, offsetY, groutColor,
