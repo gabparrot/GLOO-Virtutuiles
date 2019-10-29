@@ -49,8 +49,8 @@ public class MainWindow extends javax.swing.JFrame
      */
     public MainWindow()
     {
-        initComponents();
         controller = new VirtuTuile.Domain.Controller();
+        initComponents();
         canvasPanel.assignControllerToDrawer(controller);
         surfaceXFieldInches.setVisible(false);
         xInLabel.setVisible(false);
@@ -89,18 +89,18 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.setTemporaryRectangle(null);
         selectedSurface = null;
         controller.unselect();
-        
+
         surfaceColorButton.setEnabled(false);
-        
+
         surfaceXField.setText("");
         surfaceYField.setText("");
         surfaceWidthField.setText("");
-        surfaceHeightField.setText("");   
+        surfaceHeightField.setText("");
         surfaceXFieldInches.setText("");
         surfaceYFieldInches.setText("");
         surfaceWidthFieldInches.setText("");
         surfaceHeightFieldInches.setText("");
-        
+
         surfaceXField.setEditable(false);
         surfaceXFieldInches.setEditable(false);
         surfaceWidthField.setEditable(false);
@@ -109,7 +109,7 @@ public class MainWindow extends javax.swing.JFrame
         surfaceYFieldInches.setEditable(false);
         surfaceHeightField.setEditable(false);
         surfaceHeightFieldInches.setEditable(false);
-        
+
         surfaceColorButton.setBackground(new Color(240, 240, 240));
         doNotCoverRadioButton.setEnabled(false);
         coverRadioButton.setEnabled(false);
@@ -142,7 +142,7 @@ public class MainWindow extends javax.swing.JFrame
                     Utilities.mmToRemainingInches(bounds.getHeight())));
         }
     }
-    
+
     /**
      * Update les deux scrollbars.
      */
@@ -202,6 +202,7 @@ public class MainWindow extends javax.swing.JFrame
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
         jButton1 = new javax.swing.JButton();
         jScrollBar1 = new javax.swing.JScrollBar();
+        buttonGroupMesures = new javax.swing.ButtonGroup();
         toolBar = new javax.swing.JToolBar();
         selectionToggle = new javax.swing.JToggleButton();
         moveToggle = new javax.swing.JToggleButton();
@@ -218,7 +219,6 @@ public class MainWindow extends javax.swing.JFrame
         leftPanel = new javax.swing.JPanel();
         zoomOutButton = new javax.swing.JButton();
         zoomInButton = new javax.swing.JButton();
-        measurementButton = new javax.swing.JButton();
         canvasPanel = new VirtuTuile.GUI.CanvasPanel();
         xPixelCoordsLabel = new javax.swing.JLabel();
         xMeasureCoordsLabel = new javax.swing.JLabel();
@@ -228,6 +228,8 @@ public class MainWindow extends javax.swing.JFrame
         horizontalScrollBar = new javax.swing.JScrollBar();
         yMeasureCoordsLabel = new javax.swing.JLabel();
         yPixelCoordsLabel = new javax.swing.JLabel();
+        metricButton = new javax.swing.JToggleButton();
+        imperialButton = new javax.swing.JToggleButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         rightPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -484,6 +486,9 @@ public class MainWindow extends javax.swing.JFrame
 
         jButton1.setText("jButton1");
 
+        buttonGroupMesures.add(metricButton);
+        buttonGroupMesures.add(imperialButton);
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("VirtuTuile");
         setMinimumSize(new java.awt.Dimension(1000, 700));
@@ -647,15 +652,6 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        measurementButton.setText("métrique");
-        measurementButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                measurementButtonActionPerformed(evt);
-            }
-        });
-
         canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
         {
             public void mouseDragged(java.awt.event.MouseEvent evt)
@@ -728,6 +724,25 @@ public class MainWindow extends javax.swing.JFrame
 
         yPixelCoordsLabel.setText("Y: 0 pixels");
 
+        metricButton.setSelected(true);
+        metricButton.setText("Métrique");
+        metricButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                metricButtonActionPerformed(evt);
+            }
+        });
+
+        imperialButton.setText("Impérial");
+        imperialButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                imperialButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
         leftPanelLayout.setHorizontalGroup(
@@ -755,7 +770,9 @@ public class MainWindow extends javax.swing.JFrame
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(zoomInButton)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(measurementButton))
+                                .addComponent(metricButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(imperialButton))
                             .addGroup(leftPanelLayout.createSequentialGroup()
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addComponent(horizontalScrollBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -771,12 +788,13 @@ public class MainWindow extends javax.swing.JFrame
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(zoomOutButton)
                     .addComponent(zoomInButton)
-                    .addComponent(measurementButton)
                     .addComponent(zoomLabel)
-                    .addComponent(percentLabel))
+                    .addComponent(percentLabel)
+                    .addComponent(metricButton)
+                    .addComponent(imperialButton))
                 .addGap(10, 10, 10)
                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(verticalScrollBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(verticalScrollBar, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)
                     .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, 0)
                 .addComponent(horizontalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1091,120 +1109,116 @@ public class MainWindow extends javax.swing.JFrame
                         .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(0, 0, 0)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel16)
+                            .addComponent(jLabel17)
+                            .addComponent(jLabel18))
+                        .addGap(18, 18, 18)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(jRadioButton1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                                .addComponent(jRadioButton2))
+                            .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel16)
-                                    .addComponent(jLabel17)
-                                    .addComponent(jLabel18))
-                                .addGap(18, 18, 18)
+                                .addComponent(coverRadioButton)
+                                .addGap(30, 30, 30)
+                                .addComponent(doNotCoverRadioButton))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
+                                    .addComponent(surfaceWidthField)
+                                    .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(jRadioButton1)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
-                                        .addComponent(jRadioButton2))
-                                    .addComponent(jButton6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jComboBox1, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel11)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel6))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(coverRadioButton)
-                                        .addGap(30, 30, 30)
-                                        .addComponent(doNotCoverRadioButton))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                                            .addComponent(surfaceWidthField)
-                                            .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(yFtLabel)
-                                                    .addComponent(xFtLabel))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
-                                                        .addComponent(xInLabel))
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(yInLabel))))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(widthFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(widthInLabel))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(heightFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(heightInLabel))))
-                                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
-                                        .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addComponent(jLabel12)
-                                    .addComponent(jLabel13))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel24))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                            .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(yFtLabel)
+                                            .addComponent(xFtLabel))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(jLabel22)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jLabel23))
+                                                .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 5, Short.MAX_VALUE)
+                                                .addComponent(xInLabel))
                                             .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(jLabel20)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                                .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(yInLabel))))
                                     .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(widthFtLabel)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel25))))
+                                        .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(widthInLabel))
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addComponent(heightFtLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(heightInLabel))))
+                            .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, 49, Short.MAX_VALUE)
+                                .addComponent(jLabel9, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jLabel12)
+                            .addComponent(jLabel13))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel24))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel15)
-                                    .addComponent(jLabel26)
-                                    .addComponent(jLabel14))
-                                .addGap(18, 18, 18)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addComponent(jTextField1)
-                                            .addComponent(jComboBox3, 0, 76, Short.MAX_VALUE))
+                                        .addComponent(jLabel22)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel19)))))
-                        .addGap(0, 0, 0))))
+                                        .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel23))
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addComponent(jLabel20)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel25))))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel15)
+                            .addComponent(jLabel26)
+                            .addComponent(jLabel14))
+                        .addGap(18, 18, 18)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jTextField1)
+                                    .addComponent(jComboBox3, 0, 76, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel19))))))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1422,61 +1436,6 @@ public class MainWindow extends javax.swing.JFrame
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * Le bouton alterne l'affichage entre un système de mesure métrique et impérial.
-     *
-     * @param evt
-     */
-    private void measurementButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_measurementButtonActionPerformed
-        if (isMetric)
-        {
-            setIsMetric(false);
-            measurementButton.setText("impérial");
-            xPixelCoordsLabel.setText("X: 0 pixels");
-            yPixelCoordsLabel.setText("Y: 0 pixels");
-            xMeasureCoordsLabel.setText("X: 0ft 0.00in");
-            yMeasureCoordsLabel.setText("Y: 0ft 0.00in");
-            xFtLabel.setText("ft");
-            yFtLabel.setText("ft");
-            widthFtLabel.setText("ft");
-            heightFtLabel.setText("ft");
-            surfaceXFieldInches.setVisible(true);
-            xInLabel.setVisible(true);
-            surfaceYFieldInches.setVisible(true);
-            yInLabel.setVisible(true);
-            surfaceWidthFieldInches.setVisible(true);
-            widthFtLabel.setVisible(true);
-            widthInLabel.setVisible(true);
-            surfaceHeightFieldInches.setVisible(true);
-            heightInLabel.setVisible(true);
-
-        } else
-        {
-            setIsMetric(true);
-            measurementButton.setText("métrique");
-            xPixelCoordsLabel.setText("X: 0 pixels");
-            yPixelCoordsLabel.setText("Y: 0 pixels");
-            xMeasureCoordsLabel.setText("X: 0.000 mètres");
-            yMeasureCoordsLabel.setText("Y: 0.000 mètres");
-            xFtLabel.setText("m");
-            yFtLabel.setText("m");
-            widthFtLabel.setText("m");
-            heightFtLabel.setText("m");
-            surfaceXFieldInches.setVisible(false);
-            xInLabel.setVisible(false);
-            surfaceYFieldInches.setVisible(false);
-            yInLabel.setVisible(false);
-            surfaceWidthFieldInches.setVisible(false);
-            widthInLabel.setVisible(false);
-            surfaceHeightFieldInches.setVisible(false);
-            heightInLabel.setVisible(false);
-        }
-        if (selectedSurface != null)
-        {
-            updateSurfaceDimensionsPanel();
-        }
-    }//GEN-LAST:event_measurementButtonActionPerformed
-
-    /**
      * Mets à jour les coordonnées de la souris sur le canevas.
      *
      * @param evt : position de la souris
@@ -1672,7 +1631,7 @@ public class MainWindow extends javax.swing.JFrame
         if (surface != null)
         {
             selectedSurface = surface;
-            
+
             updateSurfaceDimensionsPanel();
 
             if (surface instanceof VirtuTuile.Domain.RectangularSurface)
@@ -1724,9 +1683,9 @@ public class MainWindow extends javax.swing.JFrame
         } // Sélectionne le deuxième coin du nouveau rectangle.
         else
         {
-            Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstRectangleCorner,point);
+            Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstRectangleCorner, point);
             unselect();
-            
+
             if (rectangle.width < 100 || rectangle.height < 100)
             {
                 canvasPanel.repaint();
@@ -1814,7 +1773,7 @@ public class MainWindow extends javax.swing.JFrame
             controller.moveSurfaceToPoint(newPos, selectedSurface);
             updateSurfaceDimensionsPanel();
             canvasPanel.repaint();
-            
+
         } // Dessine un rectangle temporaire lors de la création d'un rectangle.
         else if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
@@ -1971,8 +1930,7 @@ public class MainWindow extends javax.swing.JFrame
                 surfaceWidthField.setText(String.format("%.03f",
                         selectedSurface.getBounds2D().getWidth() / 1000.));
             }
-        }
-        else
+        } else
         {
             try
             {
@@ -1991,7 +1949,7 @@ public class MainWindow extends javax.swing.JFrame
                 if (!status)
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                }            
+                }
             } catch (java.lang.NumberFormatException e)
             {
                 surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(selectedSurface.getBounds2D().getWidth())));
@@ -2023,8 +1981,7 @@ public class MainWindow extends javax.swing.JFrame
                 surfaceXField.setText(String.format("%.03f",
                         selectedSurface.getBounds2D().getX() / 1000.));
             }
-        }
-        else
+        } else
         {
             try
             {
@@ -2043,7 +2000,7 @@ public class MainWindow extends javax.swing.JFrame
                 if (!status)
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                }            
+                }
             } catch (java.lang.NumberFormatException e)
             {
                 surfaceXField.setText(String.valueOf(Utilities.mmToFeet(selectedSurface.getBounds2D().getX())));
@@ -2063,7 +2020,7 @@ public class MainWindow extends javax.swing.JFrame
                 boolean status = controller.setRectangularSurfaceY(y,
                         (RectangularSurface) selectedSurface);
                 surfaceYField.setText(String.format("%.03f",
-                        selectedSurface.getBounds2D().getX() / 1000.));
+                        selectedSurface.getBounds2D().getY() / 1000.));
                 canvasPanel.repaint();
                 updateScrollbars();
                 if (!status)
@@ -2075,8 +2032,7 @@ public class MainWindow extends javax.swing.JFrame
                 surfaceYField.setText(String.format("%.03f",
                         selectedSurface.getBounds2D().getY() / 1000.));
             }
-        }
-        else
+        } else
         {
             try
             {
@@ -2095,7 +2051,7 @@ public class MainWindow extends javax.swing.JFrame
                 if (!status)
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                }            
+                }
             } catch (java.lang.NumberFormatException e)
             {
                 surfaceYField.setText(String.valueOf(Utilities.mmToFeet(selectedSurface.getBounds2D().getY())));
@@ -2127,8 +2083,7 @@ public class MainWindow extends javax.swing.JFrame
                 surfaceHeightField.setText(String.format("%.03f",
                         selectedSurface.getBounds2D().getHeight() / 1000.));
             }
-        }
-        else
+        } else
         {
             try
             {
@@ -2147,7 +2102,7 @@ public class MainWindow extends javax.swing.JFrame
                 if (!status)
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                }            
+                }
             } catch (java.lang.NumberFormatException e)
             {
                 surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(selectedSurface.getBounds2D().getHeight())));
@@ -2192,6 +2147,60 @@ public class MainWindow extends javax.swing.JFrame
         // TODO add your handling code here:
     }//GEN-LAST:event_jTextField2ActionPerformed
 
+    private void metricButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_metricButtonActionPerformed
+    {//GEN-HEADEREND:event_metricButtonActionPerformed
+        setIsMetric(true);
+        xPixelCoordsLabel.setText("X: 0 pixels");
+        yPixelCoordsLabel.setText("Y: 0 pixels");
+        xMeasureCoordsLabel.setText("X: 0.000 mètres");
+        yMeasureCoordsLabel.setText("Y: 0.000 mètres");
+        xFtLabel.setText("m");
+        yFtLabel.setText("m");
+        widthFtLabel.setText("m");
+        heightFtLabel.setText("m");
+        surfaceXFieldInches.setVisible(false);
+        xInLabel.setVisible(false);
+        surfaceYFieldInches.setVisible(false);
+        yInLabel.setVisible(false);
+        surfaceWidthFieldInches.setVisible(false);
+        widthInLabel.setVisible(false);
+        surfaceHeightFieldInches.setVisible(false);
+        heightInLabel.setVisible(false);
+
+        if (selectedSurface != null)
+        {
+            updateSurfaceDimensionsPanel();
+        }
+
+    }//GEN-LAST:event_metricButtonActionPerformed
+
+    private void imperialButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_imperialButtonActionPerformed
+    {//GEN-HEADEREND:event_imperialButtonActionPerformed
+        setIsMetric(false);
+        xPixelCoordsLabel.setText("X: 0 pixels");
+        yPixelCoordsLabel.setText("Y: 0 pixels");
+        xMeasureCoordsLabel.setText("X: 0ft 0.00in");
+        yMeasureCoordsLabel.setText("Y: 0ft 0.00in");
+        xFtLabel.setText("ft");
+        yFtLabel.setText("ft");
+        widthFtLabel.setText("ft");
+        heightFtLabel.setText("ft");
+        surfaceXFieldInches.setVisible(true);
+        xInLabel.setVisible(true);
+        surfaceYFieldInches.setVisible(true);
+        yInLabel.setVisible(true);
+        surfaceWidthFieldInches.setVisible(true);
+        widthFtLabel.setVisible(true);
+        widthInLabel.setVisible(true);
+        surfaceHeightFieldInches.setVisible(true);
+        heightInLabel.setVisible(true);
+
+        if (selectedSurface != null)
+        {
+            updateSurfaceDimensionsPanel();
+        }
+    }//GEN-LAST:event_imperialButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -2228,6 +2237,7 @@ public class MainWindow extends javax.swing.JFrame
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroupMesures;
     private VirtuTuile.GUI.CanvasPanel canvasPanel;
     private javax.swing.ButtonGroup coverButtonGroup;
     private javax.swing.JRadioButton coverRadioButton;
@@ -2242,6 +2252,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JLabel heightFtLabel;
     private javax.swing.JLabel heightInLabel;
     private javax.swing.JScrollBar horizontalScrollBar;
+    private javax.swing.JToggleButton imperialButton;
     private javax.swing.JDialog imperialGridDistanceDialog;
     private javax.swing.JLabel imperialGridDistanceLabel;
     private javax.swing.JButton imperialGridDistanceOKButton;
@@ -2300,7 +2311,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JPanel leftPanel;
     private javax.swing.JToggleButton magnetButton;
     private javax.swing.JPanel mainPanel;
-    private javax.swing.JButton measurementButton;
     private javax.swing.JMenu menuAffichage;
     private javax.swing.JMenu menuAide;
     private javax.swing.JMenuItem menuAidePropos;
@@ -2315,6 +2325,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem menuFichierOuvrirProjet;
     private javax.swing.JMenuItem menuFichierQuitter;
     private javax.swing.JMenuItem menuGridDistance;
+    private javax.swing.JToggleButton metricButton;
     private javax.swing.JToggleButton moveToggle;
     private javax.swing.JLabel percentLabel;
     private javax.swing.JToggleButton polygonToggle;
