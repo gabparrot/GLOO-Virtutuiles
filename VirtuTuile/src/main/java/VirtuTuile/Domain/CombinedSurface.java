@@ -2,6 +2,7 @@ package VirtuTuile.Domain;
 
 import java.awt.Color;
 import java.awt.geom.Area;
+import java.util.ArrayList;
 
 /**
  *
@@ -12,20 +13,38 @@ public class CombinedSurface extends Area implements Surface
     private boolean isHole;
     private Color color;
     private Covering covering;
+    private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
 
     /**
      * Constructeur.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
-     * @param shape juste pour TEST, tu peux l'enlever!
+     * @param surfaces : la liste des surfaces a fusionner
      */
-    public CombinedSurface(boolean isHole, Color color, java.awt.Shape shape)
+    public CombinedSurface(boolean isHole, Color color, ArrayList<Surface> surfaces)
     {
-        super(shape);
         this.isHole = isHole;
         this.color = color;
+        addAbsorbedSurfaces(surfaces);
     }
-
+    
+    public void addAbsorbedSurfaces(ArrayList<Surface> surfaces)
+    {
+        for (int i = 0; i < surfaces.size(); i++)
+            if (surfaces.get(i) instanceof ElementarySurface)
+            {
+                absorbedSurfaces.add(surfaces.get(i));
+            }
+            else 
+            {
+                addAbsorbedSurfaces(((CombinedSurface) surfaces.get(i)).getAbsorbedSurfaces());
+            }
+    }
+   
+    public ArrayList<Surface> getAbsorbedSurfaces()
+    {
+        return absorbedSurfaces;
+    }
     @Override
     public boolean isHole()
     {

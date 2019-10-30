@@ -95,6 +95,11 @@ public class Controller
         throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    public boolean mergeSelectedSurfaces()
+    {
+        return project.mergeSelectedSurfaces();
+    }
+    
     /**
      * Déplace une surface à une nouvelle position.
      * @param newPos : nouvelle position.

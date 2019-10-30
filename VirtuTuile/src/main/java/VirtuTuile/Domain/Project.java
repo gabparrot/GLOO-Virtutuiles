@@ -20,6 +20,7 @@ public class Project
     private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
     private final ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
+    private final ArrayList<Surface> surfacesToMerge = new ArrayList<>();
     
     /**
      * Constructeur.
@@ -28,12 +29,13 @@ public class Project
     public Project(String projectName)
     {
         this.projectName = projectName;
-        java.awt.Polygon poly = new java.awt.Polygon();                             // Test
+        /*java.awt.Polygon poly = new java.awt.Polygon();                             // Test
         poly.addPoint(2000, 4000);                                                  // Test
         poly.addPoint(4000, 4000);                                                  // Test
         poly.addPoint(4000, 2000);                                                  // Test
         CombinedSurface surface = new CombinedSurface(false, Color.GREEN, poly);    // Test
         surfaces.add(surface);
+        */
     }
     
     /**
@@ -117,6 +119,170 @@ public class Project
         }
         return status;
     }
+    
+    public boolean mergeSelectedSurfaces()
+    {
+        boolean boolSuccess = false;
+        
+        if (surfacesToMerge.isEmpty())
+        {
+            surfacesToMerge.add(selectedSurface);
+            boolSuccess = true;
+        }
+        else if (surfacesToMerge.size() == 1)
+        {
+            surfacesToMerge.add(selectedSurface);
+            int bigSurface;
+            int smallSurface;
+            
+            if (getSurfaceArea(surfacesToMerge.get(0)) > getSurfaceArea(surfacesToMerge.get(1)))
+            {
+                bigSurface = 0;
+                smallSurface = 1;
+            }
+            else
+            {
+                bigSurface = 1;
+                smallSurface = 0;
+            }
+            surfacesToMerge.add(selectedSurface);
+            Rectangle2D mergedSurface = 
+                    surfacesToMerge.get(bigSurface).getBounds().union(surfacesToMerge.get(smallSurface).getBounds());
+            
+        }
+        
+    
+        
+        
+        return boolSuccess;
+        
+        //TODO
+        /**
+         * Changer de mode
+         * Unselect
+         * Permettre 2 select, select pointe maintenant sur une array list séparée
+         * Ça va aussi changer le selectedSurface normal en plus de celui dans l'array list, pour le highlight
+         * Dès que l'arraylist a 2 surfaces, attempt merge
+         * Retourner booléen de confirmation
+         * si réussi: change selectedSurface normal pour la nouvelle fusionnée,
+         *            retombe en mode select?
+         *            purger la liste
+         *            Redessiner le canevas
+         * Si pas réussi: msgbox d'erreur
+         * le merge:
+         *      Verifier surface commune d'une dimension minimum (meme que minimum pour tuiles ou plus?
+         *      Déterminer quelle est plus grosse surface
+         *      Si aire égale, priorise plus complexe donc combined gagne sur elem, combined 3 gagne sur combined 2
+         *      Sinon randomize ou prendre le point le plus en haut à gauche ? 
+         *      Prendre chacune des bornes des 2 surfaces
+         *      Creer nouvelle surfaceCombinee avec ces bornes, qui prend le covering de la plus grosse surface
+         *      Pour defusion eventuelle:
+         *          surfaceCombinee recoit en attribut les 2 Surfaces initiales
+         *          S'il y avait une surfaceCombinee dans les 2 initiales, prendre sa liste de surface aussi
+         *          Modifier bornes de la surfaceCombinee (move, resize) modifie aussi les bornes élémentaires
+         *          ** Faudra trouver comment je gère le 1 pixel de différence qui disparait entre les 2 bornes
+         *          Défusion replace toutes les surfaces élémentaires dans la liste de surface du projet
+         *          Toutes les surfaces élémentaires prennent covering de la Combinée
+         *          Combinée est supprimée
+         *      
+         *      
+         * 
+        */
+        
+    }
+    
+    public double getSurfaceArea(Surface surface)
+    {
+        double area = 0;
+        
+        if (surface instanceof RectangularSurface)
+        {
+            return (surface.getBounds2D().getHeight() * surface.getBounds2D().getWidth());
+        }
+        else if (surface instanceof CombinedSurface)
+        {
+            if (((CombinedSurface) surface).isRectangular())
+            {
+                return (surface.getBounds2D().getHeight() * surface.getBounds2D().getWidth());
+            }
+            else
+            {
+                for (int i = 0; i < ((CombinedSurface) surface).getAbsorbedSurfaces().size(); i++)
+                {
+                    area = area + getSurfaceArea(((CombinedSurface) surface).getAbsorbedSurfaces().get(i));
+                }
+            }
+        }
+        else if (surface instanceof IrregularSurface)
+        {
+            ArrayList<Double> allX = new ArrayList<>();
+            ArrayList<Double> allY = new ArrayList<>();
+            int nbPoints = 0;
+            java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
+            java.awt.geom.PathIterator iter = ((IrregularSurface) surface).getPathIterator(at);
+            
+            for (; iter.isDone(); iter.next())
+            {
+                nbPoints++;
+                double[] currentCoords = new double[2];
+                iter.currentSegment(currentCoords);
+                allX.add(currentCoords[0]);
+                allY.add(currentCoords[1]);
+            }
+            
+            double base;
+            double height;
+            switch (nbPoints)
+            {   
+                
+                // Cas d'erreurs retournent 0            }
+                case 0:
+                    area = 0;
+                    break;
+                    
+                case 1:
+                    area = 0;
+                    break;
+                case 2:
+                    area = 0;
+                    break;
+                    
+                //triangle
+                case 3:
+                    base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + 
+                                            Math.pow(allY.get(0) - allY.get(1),2));
+                    height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + 
+                                            Math.pow(allY.get(0) - allY.get(2),2));
+                    area = (base * height)/2;
+                    break;
+                
+                //Rectangle (Pourrait exister par fusion 2 triangle par exemple)
+                case 4: 
+                    base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + 
+                                            Math.pow(allY.get(0) - allY.get(1),2));
+                    height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + 
+                                            Math.pow(allY.get(0) - allY.get(2),2));
+                    area = (base * height);
+                    break;
+                    
+                default:
+                    
+                    int j = nbPoints - 1;
+                    
+                    for (int i = 0; i < nbPoints; i++)
+                    {
+                        area = area + (allX.get(j) + allX.get(i)) * (allY.get(j) - allY.get(i));
+                        j = i;
+                    }
+                    
+                    area = area / 2;
+                    return area;                   
+            }
+    }
+        return area;
+    }
+    
+    
     
     /**
      * Déplace une surface à une nouvelle position.
