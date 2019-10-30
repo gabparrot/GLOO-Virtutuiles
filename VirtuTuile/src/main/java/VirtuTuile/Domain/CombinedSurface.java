@@ -28,6 +28,11 @@ public class CombinedSurface extends Area implements Surface
         addAbsorbedSurfaces(surfaces);
     }
     
+    /**
+     * Ajoute toutes les surfaces de la liste recuee a absorbedSurfaces. S'il y a une combined, prend toutes les 
+     * ElementarySurface contenues par recursion
+     * @param surfaces 
+     */
     public void addAbsorbedSurfaces(ArrayList<Surface> surfaces)
     {
         for (int i = 0; i < surfaces.size(); i++)
@@ -41,6 +46,10 @@ public class CombinedSurface extends Area implements Surface
             }
     }
    
+    /**
+     * getter de absorbedSurfaces
+     * @return absorbedSurfaces, ArrayList des ElementarySurface qui composent la CombinedSurface
+     */
     public ArrayList<Surface> getAbsorbedSurfaces()
     {
         return absorbedSurfaces;

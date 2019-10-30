@@ -9,6 +9,39 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Area;
 
+//TODO FOR MERGE
+/**
+ * Changer de mode
+ * Unselect
+ * Permettre 2 select, select pointe maintenant sur une array list séparée
+ * Ça va aussi changer le selectedSurface normal en plus de celui dans l'array list, pour le highlight
+ * Dès que l'arraylist a 2 surfaces, attempt merge
+ * Retourner booléen de confirmation
+ * si réussi: change selectedSurface normal pour la nouvelle fusionnée,
+ *            retombe en mode select?
+ *            purger la liste
+ *            Redessiner le canevas
+ * Si pas réussi: msgbox d'erreur
+ * le merge:
+ *      Verifier surface commune d'une dimension minimum (meme que minimum pour tuiles ou plus?
+ *      Déterminer quelle est plus grosse surface
+ *      Si aire égale, priorise plus complexe donc combined gagne sur elem, combined 3 gagne sur combined 2
+ *      Sinon randomize ou prendre le point le plus en haut à gauche ? 
+ *      Prendre chacune des bornes des 2 surfaces
+ *      Creer nouvelle surfaceCombinee avec ces bornes, qui prend le covering de la plus grosse surface
+ *      Pour defusion eventuelle:
+ *          surfaceCombinee recoit en attribut les 2 Surfaces initiales
+ *          S'il y avait une surfaceCombinee dans les 2 initiales, prendre sa liste de surface aussi
+ *          Modifier bornes de la surfaceCombinee (move, resize) modifie aussi les bornes élémentaires
+ *          ** Faudra trouver comment je gère le 1 pixel de différence qui disparait entre les 2 bornes
+ *          Défusion replace toutes les surfaces élémentaires dans la liste de surface du projet
+ *          Toutes les surfaces élémentaires prennent covering de la Combinée
+ *          Combinée est supprimée
+ *      
+ *      
+ * 
+*/
+
 /**
  * @class definissant le projet en cours
  * @author gabparrot
@@ -120,6 +153,9 @@ public class Project
         return status;
     }
     
+    /**
+     * Fusionne les 2 surfaces marquees comme selectionnees par surfacesToMerge
+     */
     public boolean mergeSelectedSurfaces()
     {
         boolean boolSuccess = false;
@@ -150,47 +186,14 @@ public class Project
                     surfacesToMerge.get(bigSurface).getBounds().union(surfacesToMerge.get(smallSurface).getBounds());
             
         }
-        
-    
-        
-        
         return boolSuccess;
-        
-        //TODO
-        /**
-         * Changer de mode
-         * Unselect
-         * Permettre 2 select, select pointe maintenant sur une array list séparée
-         * Ça va aussi changer le selectedSurface normal en plus de celui dans l'array list, pour le highlight
-         * Dès que l'arraylist a 2 surfaces, attempt merge
-         * Retourner booléen de confirmation
-         * si réussi: change selectedSurface normal pour la nouvelle fusionnée,
-         *            retombe en mode select?
-         *            purger la liste
-         *            Redessiner le canevas
-         * Si pas réussi: msgbox d'erreur
-         * le merge:
-         *      Verifier surface commune d'une dimension minimum (meme que minimum pour tuiles ou plus?
-         *      Déterminer quelle est plus grosse surface
-         *      Si aire égale, priorise plus complexe donc combined gagne sur elem, combined 3 gagne sur combined 2
-         *      Sinon randomize ou prendre le point le plus en haut à gauche ? 
-         *      Prendre chacune des bornes des 2 surfaces
-         *      Creer nouvelle surfaceCombinee avec ces bornes, qui prend le covering de la plus grosse surface
-         *      Pour defusion eventuelle:
-         *          surfaceCombinee recoit en attribut les 2 Surfaces initiales
-         *          S'il y avait une surfaceCombinee dans les 2 initiales, prendre sa liste de surface aussi
-         *          Modifier bornes de la surfaceCombinee (move, resize) modifie aussi les bornes élémentaires
-         *          ** Faudra trouver comment je gère le 1 pixel de différence qui disparait entre les 2 bornes
-         *          Défusion replace toutes les surfaces élémentaires dans la liste de surface du projet
-         *          Toutes les surfaces élémentaires prennent covering de la Combinée
-         *          Combinée est supprimée
-         *      
-         *      
-         * 
-        */
-        
     }
     
+    /**
+     * Donne l'aire de la surface demandee
+     * @param surface L'object Surface dont on veut connaître l'aire
+     * @return area l'aire de la surface, un double
+     */
     public double getSurfaceArea(Surface surface)
     {
         double area = 0;
@@ -243,6 +246,7 @@ public class Project
                 case 1:
                     area = 0;
                     break;
+                    
                 case 2:
                     area = 0;
                     break;
@@ -278,7 +282,7 @@ public class Project
                     area = area / 2;
                     return area;                   
             }
-    }
+        }
         return area;
     }
     
