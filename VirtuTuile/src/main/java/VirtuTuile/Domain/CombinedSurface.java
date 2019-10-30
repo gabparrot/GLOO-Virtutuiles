@@ -13,7 +13,7 @@ public class CombinedSurface extends Area implements Surface
     private boolean isHole;
     private Color color;
     private Covering covering;
-    private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
+    private final ArrayList<Surface> absorbedSurfaces;
 
     /**
      * Constructeur.
@@ -21,8 +21,10 @@ public class CombinedSurface extends Area implements Surface
      * @param color : la couleur de la surface.
      * @param surfaces : la liste des surfaces a fusionner
      */
-    public CombinedSurface(boolean isHole, Color color, ArrayList<Surface> surfaces)
+    public CombinedSurface(ArrayList<Surface> surfaces, boolean isHole, Color color)
     {
+        super(surfaces.get(0));
+        absorbedSurfaces = new ArrayList<>();
         this.isHole = isHole;
         this.color = color;
         addAbsorbedSurfaces(surfaces);
@@ -39,6 +41,8 @@ public class CombinedSurface extends Area implements Surface
             if (surfaces.get(i) instanceof ElementarySurface)
             {
                 absorbedSurfaces.add(surfaces.get(i));
+                Area toAbsorb = new Area(surfaces.get(i));
+                this.add(toAbsorb);
             }
             else 
             {
@@ -54,6 +58,7 @@ public class CombinedSurface extends Area implements Surface
     {
         return absorbedSurfaces;
     }
+    
     @Override
     public boolean isHole()
     {

@@ -514,6 +514,9 @@
         </Component>
         <Component class="javax.swing.JToggleButton" name="mergeToggle">
           <Properties>
+            <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+              <ComponentRef name="toggleGroup"/>
+            </Property>
             <Property name="text" type="java.lang.String" value="merge"/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>

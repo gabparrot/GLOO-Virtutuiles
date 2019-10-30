@@ -548,6 +548,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         toolBar.add(polygonToggle);
 
+        toggleGroup.add(mergeToggle);
         mergeToggle.setText("merge");
         mergeToggle.setFocusable(false);
         mergeToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -1560,7 +1561,8 @@ public class MainWindow extends javax.swing.JFrame
             {
                 controller.mergeSelectedSurfaces();
             }
-        
+        unselect();
+        selectSurface(point);
     }
     
     /**
@@ -1577,7 +1579,7 @@ public class MainWindow extends javax.swing.JFrame
 
             updateSurfaceDimensionsPanel();
 
-            if (surface instanceof VirtuTuile.Domain.RectangularSurface)
+            if (surface instanceof VirtuTuile.Domain.RectangularSurface || surface instanceof VirtuTuile.Domain.CombinedSurface) // TEST
             {
                 surfaceXField.setEditable(true);
                 surfaceXFieldInches.setEditable(true);
