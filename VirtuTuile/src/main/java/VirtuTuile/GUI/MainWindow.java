@@ -1607,6 +1607,7 @@ public class MainWindow extends javax.swing.JFrame
         } else
         {
             unselect();
+            controller.purgeSurfacesToMerge();
         }
     }
 

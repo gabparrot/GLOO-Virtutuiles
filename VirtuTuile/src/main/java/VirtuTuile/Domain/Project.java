@@ -78,6 +78,12 @@ public class Project
     public void unselect()
     {
         selectedSurface = null;
+        
+    }
+    
+    public void purgeSurfacesToMerge()
+    {
+        this.surfacesToMerge.removeAll(this.surfacesToMerge);
     }
         
     /**

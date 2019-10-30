@@ -56,6 +56,12 @@ public class Controller
         project.unselect();
     }
     
+    public void purgeSurfacesToMerge()
+    {
+        project.purgeSurfacesToMerge();
+    }
+    
+    
     /**
      * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
      * peut être déplacée dans les quatre directions.
