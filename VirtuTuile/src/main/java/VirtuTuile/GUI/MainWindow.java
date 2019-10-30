@@ -1562,7 +1562,9 @@ public class MainWindow extends javax.swing.JFrame
                 controller.mergeSelectedSurfaces();
             }
         unselect();
+        this.selectedMode = ApplicationModes.SELECT;
         selectSurface(point);
+        this.selectedMode = ApplicationModes.MERGE;
     }
     
     /**

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Area;
-import java.awt.geom.Path2D;
+import java.awt.geom.AffineTransform;
 
 //TODO FOR MERGE
 /**
@@ -79,7 +79,7 @@ public class Project
     {
         selectedSurface = null;
     }
-    
+        
     /**
      * Getter pour la liste des surfaces.
      * @return la liste des surfaces du projet.
@@ -122,14 +122,18 @@ public class Project
     public boolean boundsConflictCheck(Shape shape)
     {
         boolean status = true;
+        
         for (Surface surface : surfaces)
         {
             Rectangle2D intersection = shape.getBounds2D().createIntersection(surface.getBounds2D());
+            
             if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1 && surface != shape)
             {
                 status = false;
             }
+            
         }
+        
         return status;
     }
     
@@ -142,15 +146,18 @@ public class Project
     {
         boolean status = true;
         Area newArea = new Area(shape);
+        
         for (Surface surface : surfaces)
         {
             Area area = new Area(surface);
             area.intersect(newArea);
+            
             if (!area.isEmpty() && surface != shape)
             {
                 status = false;
             }
         }
+        
         return status;
     }
     
@@ -187,27 +194,15 @@ public class Project
             surfacesToMerge.add(selectedSurface);
             boolean mergedIsHole = surfacesToMerge.get(bigSurface).isHole();
             Color mergedColor = surfacesToMerge.get(bigSurface).getColor();
-            // Partie test avec seulement rectangles
-            //Rectangle2D mergedBox = 
-            //        surfacesToMerge.get(bigSurface).getBounds().union(surfacesToMerge.get(smallSurface).getBounds());
-            //CombinedSurface test = new CombinedSurface(mergedBox, mergedIsHole, mergedColor);
-            //Point2D.Double coinUn = new Point2D.Double(mergedBox.getX(), mergedBox.getY());
-            /*Point2D.Double coinUn = new Point2D.Double(((RectangularSurface) surfacesToMerge.get(0)).getX(), mergedBox.getY());
-            Point2D.Double coinDeux = new Point2D.Double(coinUn.getX() + mergedBox.getWidth(),
-                                                         coinUn.getY() + mergedBox.getHeight());
-            Rectangle2D.Double doubleBox = VirtuTuile.Infrastructure.Utilities.cornersToRectangle(coinDeux, coinDeux);
-            
-            surfaces.add(new RectangularSurface(doubleBox, mergedIsHole, mergedColor));
-            */
             surfaces.add(new CombinedSurface(surfacesToMerge, mergedIsHole, mergedColor));
             surfaces.remove(surfacesToMerge.get(0));
             surfaces.remove(surfacesToMerge.get(1));
             surfacesToMerge.removeAll(surfacesToMerge);
-               
         }
+        
         return boolSuccess;
     }
-    
+        
     /**
      * Donne l'aire de la surface demandee
      * @param surface L'object Surface dont on veut connaître l'aire
@@ -243,6 +238,7 @@ public class Project
             java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
             java.awt.geom.PathIterator iter = ((IrregularSurface) surface).getPathIterator(at);
             
+            // Compter le nombre de points et placer les X et Y dans des listes
             for (; iter.isDone(); iter.next())
             {
                 nbPoints++;
@@ -254,6 +250,7 @@ public class Project
             
             double base;
             double height;
+            
             switch (nbPoints)
             {
                 // Cas d'erreurs retournent 0            }
@@ -286,7 +283,8 @@ public class Project
                                             Math.pow(allY.get(0) - allY.get(2),2));
                     area = (base * height);
                     break;
-                    
+                
+                // Calcule l'aire de tout polygone de 5+ sommets
                 default:
                     
                     int j = nbPoints - 1;
@@ -315,60 +313,23 @@ public class Project
     {
         if (surface instanceof RectangularSurface)
         {
-            System.out.println(newPos.getX() +  " + " + newPos.getY()); // TEST
             setRectangularSurfaceXY(newPos.getX(), newPos.getY(), (RectangularSurface) surface);
         }
         else if (surface instanceof IrregularSurface)
         {
-            //ArrayList<Double> oldX = new ArrayList<>();
-            //ArrayList<Double> oldY = new ArrayList<>();
-           // ArrayList<Double> newX = new ArrayList<>();
-            //ArrayList<Double> newY = new ArrayList<>();
             java.awt.geom.AffineTransform translationAT = new java.awt.geom.AffineTransform();
             translationAT.setToTranslation(newPos.getX(), newPos.getY());
-            
-            //java.awt.geom.PathIterator iter = surface.getPathIterator(translationAT);
-            
             ((IrregularSurface) surface).moveTo(newPos.getX(), newPos.getY());
-            //((IrregularSurface) surface).createTransformedShape(translationAT);
-            /*
-            for  (; iter.isDone(); iter.next())
-            {
-                
-                java.awt.geom.AffineTransform t = new java.awt.geom.AffineTransform();
-                t.translate(newPos.getX(), newPos.getY());
-                surface = t.createTransformedShape(surface);
-                /* double[] currentCoords = new double[2];
-                iter.currentSegment(currentCoords);
-                oldX.add(currentCoords[0]);
-                oldY.add(currentCoords[1]); 
-            
-            }
-            
-            /*for (int i = 0; i < oldX.size(); i++)
-            {
-                newX.add(oldX.get(i) + newPos.getX());
-                newY.add(oldY.get(i) + newPos.getY());
-            }
-            Path2D.Double newSurface = new Path2D.Double(surface);*/
         }
-        else
+        else if (surface instanceof CombinedSurface)
         {
-            double x = newPos.getX();
-            double y = newPos.getY();
-            if (x < 0) x = 0;
-            if (y < 0) y = 0;
-            
-            java.awt.geom.AffineTransform translationAT = new java.awt.geom.AffineTransform();
-            translationAT.translate(x, y);
-            //translationAT.setToTranslation(x,y);
-            System.out.println(x +  " + " + y);
-            ((Area) surface).transform(translationAT);
-            
-        }
-        
+           double deltaX = newPos.getX() - ((CombinedSurface) surface).getBounds2D().getX();
+           double deltaY = newPos.getY() - ((CombinedSurface) surface).getBounds2D().getY();
+           AffineTransform translationTransform = new AffineTransform();
+           translationTransform.translate(deltaX, deltaY);
+           ((CombinedSurface) surface).transform(translationTransform);
+        }   
     }
-    
     
     /**
      * Déplace une surface rectangulaire à une nouvelle position x y.

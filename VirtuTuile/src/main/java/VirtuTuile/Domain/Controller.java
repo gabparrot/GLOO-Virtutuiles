@@ -180,7 +180,7 @@ public class Controller
     {
         project.deleteSelectedSurface();
     }
-
+    
     /**
      * Ajoute un type de tuile dans la liste des tuiles disponibles.
      * @param width : la largeur de la tuile.
