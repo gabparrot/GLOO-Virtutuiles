@@ -27,15 +27,20 @@ public class CombinedSurface extends Area implements Surface
         absorbedSurfaces = new ArrayList<>();
         this.isHole = isHole;
         this.color = color;
-        addAbsorbedSurfaces(surfaces);
+        for (int i = 0; i < surfaces.size(); i++)
+        {
+            absorbedSurfaces.add(surfaces.get(i));
+            Area toAbsorb = new Area(surfaces.get(i));
+            this.add(toAbsorb);
+        }
     }
     
-    /**
+    /** Désactivée, nécessaire pour défusion plus tard? 
      * Ajoute toutes les surfaces de la liste recuee a absorbedSurfaces. S'il y a une combined, prend toutes les 
      * ElementarySurface contenues par recursion
      * @param surfaces 
      */
-    public void addAbsorbedSurfaces(ArrayList<Surface> surfaces)
+    /*public void addAbsorbedSurfaces(ArrayList<Surface> surfaces)
     {
         for (int i = 0; i < surfaces.size(); i++)
             if (surfaces.get(i) instanceof ElementarySurface)
@@ -48,7 +53,7 @@ public class CombinedSurface extends Area implements Surface
             {
                 addAbsorbedSurfaces(((CombinedSurface) surfaces.get(i)).getAbsorbedSurfaces());
             }
-    }
+    }*/
    
     /**
      * getter de absorbedSurfaces

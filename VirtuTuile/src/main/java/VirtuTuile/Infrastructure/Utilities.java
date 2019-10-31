@@ -1,8 +1,15 @@
 package VirtuTuile.Infrastructure;
 
+import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Domain.IrregularSurface;
+import VirtuTuile.Domain.RectangularSurface;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 
 /**
  * Rassemblement de constantes et de fonctions utilitaires. Tout est statique.
@@ -143,5 +150,75 @@ public final class Utilities
             newY = point.getY() + gridDistance - deltaY;
         }
         point.setLocation(newX, newY);
+    }
+
+    /**
+     * Donne l'aire de la Shape demandee (ou surface)
+     * @param surface L'object Surface dont on veut connaître l'aire
+     * @return area l'aire de la surface, un double
+     */
+    public static double getSurfaceArea(Shape surface) {
+        double area = 0;
+        if (surface instanceof RectangularSurface) {
+            return surface.getBounds2D().getHeight() * surface.getBounds2D().getWidth();
+        } else if (surface instanceof CombinedSurface) {
+            if (((CombinedSurface) surface).isRectangular()) {
+                return surface.getBounds2D().getHeight() * surface.getBounds2D().getWidth();
+            } else {
+                for (int i = 0; i < ((CombinedSurface) surface).getAbsorbedSurfaces().size(); i++) {
+                    area = area + getSurfaceArea(((CombinedSurface) surface).getAbsorbedSurfaces().get(i));
+                }
+            }
+        } else if (surface instanceof IrregularSurface) {
+            ArrayList<Double> allX = new ArrayList<>();
+            ArrayList<Double> allY = new ArrayList<>();
+            int nbPoints = 0;
+            AffineTransform at = new AffineTransform();
+            PathIterator iter = ((IrregularSurface) surface).getPathIterator(at);
+            // Compter le nombre de points et placer les X et Y dans des listes
+            for (; iter.isDone(); iter.next()) {
+                nbPoints++;
+                double[] currentCoords = new double[2];
+                iter.currentSegment(currentCoords);
+                allX.add(currentCoords[0]);
+                allY.add(currentCoords[1]);
+            }
+            double base;
+            double height;
+            switch (nbPoints) {
+            // Cas d'erreurs retournent 0            }
+                case 0:
+                    area = 0;
+                    break;
+                case 1:
+                    area = 0;
+                    break;
+                case 2:
+                    area = 0;
+                    break;
+            //triangle
+                case 3:
+                    base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + Math.pow(allY.get(0) - allY.get(1), 2));
+                    height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + Math.pow(allY.get(0) - allY.get(2), 2));
+                    area = (base * height) / 2;
+                    break;
+            //Rectangle (Pourrait exister par fusion 2 triangle par exemple)
+                case 4:
+                    base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + Math.pow(allY.get(0) - allY.get(1), 2));
+                    height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + Math.pow(allY.get(0) - allY.get(2), 2));
+                    area = (base * height);
+                    break;
+            // Calcule l'aire de tout polygone de 5+ sommets
+                default:
+                    int j = nbPoints - 1;
+                    for (int i = 0; i < nbPoints; i++) {
+                        area = area + (allX.get(j) + allX.get(i)) * (allY.get(j) - allY.get(i));
+                        j = i;
+                    }
+                    area = area / 2;
+                    return area;
+            }
+        }
+        return area;
     }
 }
