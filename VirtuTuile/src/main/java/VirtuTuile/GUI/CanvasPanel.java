@@ -159,15 +159,30 @@ public class CanvasPanel extends javax.swing.JPanel
     /**
      * Déplacement (positive ou négative) du zoom en sauts de 5%.
      * @param increment : le nombre de clics de rotation de la roue de souris.
+     * @param x : la position x de la souris.
+     * @param y : la position y de la souris.
+     * @param maxHorizontal : la valeur maximale du horizontalScrollbar.
+     * @param maxVertical : la valeur maximale du verticalScrollbar.
      * @return le nouveau facteur de zoom.
      */
-    public double changeZoom(int increment)
+    public double changeZoom(int increment, int x, int y, int maxHorizontal, int maxVertical)
     {
+        int lx = x + horizontalOffset;
+        int ly = y + verticalOffset;
+        double oldZoom = zoom;
+        
         double newZoom = (Math.round(zoom * 100) - increment * 5) / 100.;
         if (newZoom >= 0.1)
         {
             zoom = newZoom;
         }
+        
+        double zoomFactor = zoom / oldZoom;
+        int lx2 = (int) (lx * zoomFactor);
+        int ly2 = (int) (ly * zoomFactor);
+        horizontalOffset = Math.min(maxHorizontal, Math.max(0, lx2 - x));
+        verticalOffset = Math.min(maxVertical, Math.max(0, ly2 - y));
+        
         return zoom;
     }
     
@@ -224,7 +239,13 @@ public class CanvasPanel extends javax.swing.JPanel
     protected void paintComponent(Graphics g)
     {
         super.paintComponent(g);
-                
+        
+        try
+        {
+            ((MainWindow) javax.swing.SwingUtilities.getWindowAncestor(this)).updateScrollbars();
+        }
+        catch (Exception e) {}
+            
         Graphics2D g2d = (Graphics2D) g.create();
         
         drawer.draw(g2d);

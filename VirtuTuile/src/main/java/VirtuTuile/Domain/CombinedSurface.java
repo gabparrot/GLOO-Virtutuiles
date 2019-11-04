@@ -5,102 +5,135 @@ import java.awt.geom.Area;
 import java.util.ArrayList;
 
 /**
- *
+ * Une surface combinée à partir de deux autres surfaces.
  * @author gabparrot
  */
 public class CombinedSurface extends Area implements Surface
 {
     private boolean isHole;
     private Color color;
-    private Covering covering;
-    private final ArrayList<Surface> absorbedSurfaces;
+    private final Covering covering = new Covering();
+    private final Area uncoveredArea = new Area();
+    private final ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
 
     /**
      * Constructeur.
+     * @param s1: la première surface fusionnée.
+     * @param s2: la deuxième surface fusionnée.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
-     * @param surfaces : la liste des surfaces a fusionner
      */
-    public CombinedSurface(ArrayList<Surface> surfaces, boolean isHole, Color color)
+    public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color)
     {
-        super(surfaces.get(0));
-        absorbedSurfaces = new ArrayList<>();
+        super(s1);
+        this.add(new Area(s2));
+        
+        if (s1.isHole())
+        {
+            uncoveredArea.add(new Area(s1));
+        }
+        else if (s1 instanceof CombinedSurface)
+        {
+            uncoveredArea.add(((CombinedSurface) s1).getUncoveredArea());
+        }
+        
+        if (s2.isHole())
+        {
+            uncoveredArea.add(new Area(s2));
+        }
+        else if (s2 instanceof CombinedSurface)
+        {
+            uncoveredArea.add(((CombinedSurface) s2).getUncoveredArea());
+        }
+        
+        absorbedSurfaces.add(s1);
+        absorbedSurfaces.add(s2);
         this.isHole = isHole;
         this.color = color;
-        for (int i = 0; i < surfaces.size(); i++)
-        {
-            absorbedSurfaces.add(surfaces.get(i));
-            Area toAbsorb = new Area(surfaces.get(i));
-            this.add(toAbsorb);
-        }
     }
-    
-    /** Désactivée, nécessaire pour défusion plus tard? 
-     * Ajoute toutes les surfaces de la liste recuee a absorbedSurfaces. S'il y a une combined, prend toutes les 
-     * ElementarySurface contenues par recursion
-     * @param surfaces 
-     */
-    /*public void addAbsorbedSurfaces(ArrayList<Surface> surfaces)
-    {
-        for (int i = 0; i < surfaces.size(); i++)
-            if (surfaces.get(i) instanceof ElementarySurface)
-            {
-                absorbedSurfaces.add(surfaces.get(i));
-                Area toAbsorb = new Area(surfaces.get(i));
-                this.add(toAbsorb);
-            }
-            else 
-            {
-                addAbsorbedSurfaces(((CombinedSurface) surfaces.get(i)).getAbsorbedSurfaces());
-            }
-    }*/
    
     /**
-     * getter de absorbedSurfaces
-     * @return absorbedSurfaces, ArrayList des ElementarySurface qui composent la CombinedSurface
+     * Retourne l'aire de la surface qui ne doit pas être couverte.
+     * @return l'aire de la surface qui ne doit pas être couverte.
      */
-    public ArrayList<Surface> getAbsorbedSurfaces()
+    public Area getUncoveredArea()
     {
-        return absorbedSurfaces;
-    }
-    
-    @Override
-    public boolean isHole()
-    {
-        return isHole;
+        return uncoveredArea;
     }
 
+    /**
+     * Getter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
+     * @return color objet Color
+     */
     @Override
     public Color getColor()
     {
         return color;
     }
 
+    /**
+     * Setter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
+     * @param newColor objet Color
+     */
     @Override
     public void setColor(Color newColor)
     {
         this.color =  newColor;
     }
 
+    /**
+     * Getter du statut de trou (non couvrable)
+     * @return isHole booleen representant si oui ou non la surface est un trou
+     */    
+    @Override
+    public boolean isHole()
+    {
+        return isHole;
+    }
+    
+    /**
+     * Setter du statut de trou (non couvrable)
+     * @param newStatus Booleen representant si oui ou non la surface devra etre un trou non couvrable
+     */
     @Override
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
+        if (newStatus)
+        {
+            covering.clearCovering();
+        }
     }
     
+    /**
+     * Getter du covering representant les tuiles sur la surface, si elle est couverte
+     * @return covering l'objet covering 
+     */
     @Override
     public Covering getCovering()
-    {
+    {   
         return covering;
     }
-
+    
+    /**
+     * Retourne l'aire de cette CombinedSurface
+     * @return area Un double representant l'aire
+     */
     @Override
-    public void setCovering(double offsetX, double offsetY, Color groutColor,
-                            double groutWidth, int angle, Pattern pattern, 
-                            TileType tileType, Color tileColor)
+    public double getArea()
     {
-        this.covering = new Covering(offsetX, offsetY, groutColor,
-                                     groutWidth, angle, pattern, tileType, 
-                                     tileColor);
+        double area = 0;
+        if (this.isRectangular()) 
+        {
+            return getBounds2D().getHeight() * getBounds2D().getWidth();
+        } 
+        else 
+        {
+            for (int i = 0; i < absorbedSurfaces.size(); i++) 
+            {
+                area = area + absorbedSurfaces.get(i).getArea();
+            }
+        }
+        return area;
     }
 }

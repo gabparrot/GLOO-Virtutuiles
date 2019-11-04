@@ -1,5 +1,6 @@
 package VirtuTuile.Domain;
 
+import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Shape;
 
@@ -8,64 +9,109 @@ import java.awt.Shape;
  * @author gabparrot
  */
 public class Covering
-        
-       /* 
-        TODO ici, je ne vois pas comment on va retourner des trucs comme tiles.color
-        et getTiles
-        */
 {
-    private double offsetX;
-    private double offsetY;
-    private Color groutColor;
-    private double groutWidth;
-    private int angle;
-    private Pattern pattern;
-    private java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
-    private TileType tileType;
-    private Color tileColor;
-
-    /**
-     * Contructeur avec parametres
-     * //TODO ajouter descriptions params
-     * @param offsetX
-     * @param offsetY
-     * @param groutColor
-     * @param groutWidth
-     * @param angle
-     * @param pattern 
-     * @param tileType
-     * @param tileColor
-     */
-    public Covering(double offsetX, double offsetY, Color groutColor, double groutWidth, 
-                    int angle, Pattern pattern, TileType tileType, 
-                    Color tileColor)
+    private double offsetX = 0;
+    private double offsetY = 0;
+    private Color jointColor = Color.GRAY;
+    private double jointWidth = 5;
+    private boolean isNinetyDegree = false;
+    private Pattern pattern = Pattern.A;
+    private final java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
+    private TileType tileType = Utilities.DEFAULT_TILE_1;
+    private Color tileColor = Utilities.DEFAULT_TILE_1.getColorArray()[0];
+    
+    public void clearCovering()
     {
-        // Attributs du tuilage
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
-        this.groutColor = groutColor;
-        this.groutWidth = groutWidth;
-        this.angle = angle;
-        this.pattern = pattern;
-        this.tileType = tileType;
-        this.tileColor = tileColor;
-        
-        // Appliquer le tuilage
-        this.coverSurface();
+        tiles.clear();
     }
     
-    private void coverSurface()
+    /**
+     * Cette fonction est appelée chaque fois que le Covering doit être modifié.
+     */
+    public void coverSurface()
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        if (tileType == null || tileColor == null)
+        {
+            return;
+        }
+        else
+        {
+            tiles.clear();
+        }
+        switch (pattern)
+        {
+            case A:
+                coverSurfaceA();
+                break;
+                
+            case B:
+                coverSurfaceB();
+                break;
+            
+            case C:
+                coverSurfaceC();
+                break;
+            
+            case D:
+                coverSurfaceD();
+                break;
+                
+            case E:
+                coverSurfaceE();
+                break;
+        }
     }
-
-    private int getNbTiles()
+    
+    private void coverSurfaceA()
+    {
+        /**
+        * Plan du covering:
+        * Creer un array d'objets tuiles(shape)
+        * Dessiner à partir de la coord max X max Y (coin en haut a gauche)
+        * Pour la premiere tuile, si offset plus petit que dimension (x ou y), arreter tuile a cette dimension
+        * Le GUI inspetor mode s'occupera de montrer les tuiles trop petites, on les cree quand même
+        * Pour les autres tuiles, on trace la tuile selon la dimension du tileType donne
+        * On parcourt de gauche a droite de haut en bas
+        * apres chaque tuile on cree la nouvelle tuile le nombre de pixels plus loin donne par groutWidth
+        * Comme la couleur est pareille pour chaque tuile, pas besoin de donner l'attribut a chaque
+        * Il sera lu par le GUI directement comme attribut de covering
+        * Arreter de tracer la tuile quand on atteint la bordure et passer a la suivante
+        * Chaque fois qu'on atteint une bordure en X, se deplacer de hauteur de tuile + coulis vers le bas
+        * Si surface irreguliere, possiblement parcourir tout le canevas avec contains pour ne pas skip
+        * Le GUI doit recevoir l'array de tuiles au complet en retour
+        * Le GUI pourrait simplement imposer une couleur de background = groutColor prioritaire sur surface color
+        * Le GUI dessine ensuite toutes les tuiles (rect shape) et les fill avec la tileColor
+        * La balance est la couleur de coulis qui apparait entre les tuiles
+        * Le deplacement flush tout et refait toutes les tuiles en temps 
+        */
+    }
+    
+    private void coverSurfaceB()
+    {
+        
+    }
+    
+    private void coverSurfaceC()
+    {
+        
+    }
+    
+    private void coverSurfaceD()
+    {
+        
+    }
+    
+    private void coverSurfaceE()
+    {
+        
+    }
+    
+    // Getters et Setters
+    public int getNbTiles()
     {
         return tiles.size();
     }
     
-    // Getters et Setters
     public double getOffsetX()
     {
         return offsetX;
@@ -86,34 +132,34 @@ public class Covering
         this.offsetY = offsetY;
     }
 
-    public Color getGroutColor()
+    public Color getJointColor()
     {
-        return groutColor;
+        return jointColor;
     }
 
-    public void setGroutColor(Color groutColor)
+    public void setJointColor(Color groutColor)
     {
-        this.groutColor = groutColor;
+        this.jointColor = groutColor;
     }
 
-    public double getGroutWidth()
+    public double getJointWidth()
     {
-        return groutWidth;
+        return jointWidth;
     }
 
-    public void setGroutWidth(double groutWidth)
+    public void setJointWidth(double groutWidth)
     {
-        this.groutWidth = groutWidth;
+        this.jointWidth = groutWidth;
     }
 
-    public int getAngle()
+    public boolean isNinetyDegree()
     {
-        return angle;
+        return isNinetyDegree;
     }
 
-    public void setAngle(int angle)
+    public void setIsNinetyDegree(boolean isNinetyDegree)
     {
-        this.angle = angle;
+        this.isNinetyDegree = isNinetyDegree;
     }
 
     public Pattern getPattern()
@@ -140,19 +186,29 @@ public class Covering
     {
         return tiles;
     }
-
-    public void setTiles(java.util.ArrayList<Shape> tiles)
-    {
-        this.tiles = tiles;
-    }
     
     public Color getTileColor()
     {
         return tileColor;
     }
     
-    public void setTileColor(Color tileColor)
+    public void setTileColorByIndex(int index)
     {
-        this.tileColor = tileColor;
-    }  
+        this.tileColor = tileType.getColors().get(index);
+    }
+    
+    public void setTileColor(Color color)
+    {
+        this.tileColor = color;
+    }
+    
+    public int getTileColorIndex()
+    {
+        return tileType.getColors().indexOf(tileColor);
+    }
+
+    public Object getColorString()
+    {
+        return tileColor;
+    }
 }

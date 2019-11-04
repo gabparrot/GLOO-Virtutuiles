@@ -1,11 +1,19 @@
 package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
-import java.awt.*;
-import java.awt.geom.*;
+import VirtuTuile.Domain.CombinedSurface;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
 import java.util.ArrayList;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import javax.swing.ImageIcon;
 
 /**
  * Objet qui permet de dessiner sur le canevas.
@@ -19,6 +27,8 @@ public class CanvasDrawer
     // Référence au controller.
     private VirtuTuile.Domain.Controller controller;
     
+    private final TexturePaint holeTexture;
+    
     /**
      * Constructeur.
      * @param parent : le canevas qui contient l'afficheur.
@@ -26,6 +36,14 @@ public class CanvasDrawer
     public CanvasDrawer(VirtuTuile.GUI.CanvasPanel parent)
     {
         this.parent = parent;
+        
+        // Mise en place de la texture pour les trous:
+        BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+        ImageIcon icon = new ImageIcon("src/main/resources/dots.png");
+        Graphics g = bi.createGraphics();
+        icon.paintIcon(null, g, 0, 0);
+        g.dispose();
+        holeTexture = new TexturePaint(bi, new Rectangle(0, 0, 100, 100));
     }
     
     /**
@@ -44,7 +62,7 @@ public class CanvasDrawer
     public void draw(Graphics2D g2d)
     {
         drawGrid(g2d);
-        if (controller != null) drawSurfaces(g2d);
+        if (controller != null && controller.projectExists()) drawSurfaces(g2d);
     }
     
     /**
@@ -70,8 +88,8 @@ public class CanvasDrawer
         
         for (int row = 0; row < nbRows; row++)
         {
-            g2d.drawLine(0, (int) (row * gridDistance - verticalOffset),
-                         parent.getWidth(), (int) (row * gridDistance - verticalOffset));
+            g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
+                         parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
         }
     }
     
@@ -104,6 +122,23 @@ public class CanvasDrawer
             // Dessine l'interieur de la surface.
             g2d.setColor(surface.getColor());
             g2d.fill(copy);
+            
+            // Dessine une texture pour les surfaces troues.
+            if (surface.isHole())
+            {
+                g2d.setPaint(holeTexture);
+                g2d.fill(copy);
+            }
+            else if (surface instanceof CombinedSurface)
+            {
+                Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
+                uncoveredArea.transform(scaleTransform);
+                uncoveredArea.transform(translationTransform);
+                g2d.setPaint(holeTexture);
+                g2d.fill(uncoveredArea);
+                g2d.setColor(Color.BLACK);
+                g2d.draw(uncoveredArea);
+            }
             
             // Dessine le contour de la surface.
             g2d.setColor(Color.BLACK);

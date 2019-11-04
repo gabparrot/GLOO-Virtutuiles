@@ -9,12 +9,10 @@ import java.awt.Color;
  */
 public interface Surface extends Shape
 {
-    boolean     isHole          ();
-    void        setIsHole       (boolean newStatus);  
-    Color       getColor        ();
-    void        setColor        (Color color);
-    Covering    getCovering     ();
-    void        setCovering     (double offsetX, double offsetY, Color groutColor,
-                                 double groutWidth, int angle, Pattern pattern, 
-                                 TileType tileType, Color color);
+    public  boolean     isHole          ();
+    public  void        setIsHole       (boolean newStatus);  
+    public  Color       getColor        ();
+    public  void        setColor        (Color color);
+    public  Covering    getCovering     ();
+    public  double      getArea         ();
 }

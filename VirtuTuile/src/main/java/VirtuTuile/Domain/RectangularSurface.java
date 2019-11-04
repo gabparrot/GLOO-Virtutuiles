@@ -16,7 +16,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     private Color color;
     
     // Le revêtement de la surface.
-    private Covering covering;
+    private final Covering covering = new Covering();
     
     /**
      * Constructeur.
@@ -30,8 +30,6 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         this.isHole = isHole;
         this.color = color;
     }
-
-    // Implémentation des méthodes de Surface
 
     /**
      * La surface doit-elle être couverte?
@@ -73,18 +71,23 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         this.color = color;
     }
     
+    /**
+     * Getter du covering representant les tuiles sur la surface, si elle est couverte
+     * @return covering l'objet covering 
+     */
     @Override
     public Covering getCovering()
     {
         return covering;
     }
-
+    
+    /**
+     * Retourne l'aire de la surface rectangulaire.
+     * @return area Un double representant l'aire
+     */
     @Override
-    public void setCovering(double offsetX, double offsetY, Color groutColor,
-                            double groutWidth, int angle, Pattern pattern, 
-                            TileType tileType, Color tileColor)
+    public double getArea()
     {
-        this.covering = new Covering(offsetX, offsetY, groutColor,
-                                     groutWidth, angle, pattern, tileType, tileColor);
+        return width * height;
     }
 }

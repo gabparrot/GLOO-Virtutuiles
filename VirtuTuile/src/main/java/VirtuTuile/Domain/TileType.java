@@ -1,8 +1,7 @@
 package VirtuTuile.Domain;
 
 import java.awt.Color;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
 
 /**
  * @class definissant un type de tuiles disponibles pour le tuilage
@@ -12,17 +11,19 @@ public class TileType
 {
     private double width;
     private double height;
-    private Set<Color> colors = new HashSet<>();
+    private ArrayList<Color> colors;
     private String name;
     private int nbPerBox;
 
     // Constructeur avec paramètres
-    public TileType(double widthInput, double heightInput, String nameInput, int nbPerBoxInput)
+    public TileType(double widthInput, double heightInput, String nameInput,
+            int nbPerBoxInput,ArrayList<Color> colors)
     {
         this.width = widthInput;
         this.height = heightInput;
         this.name = nameInput;
         this.nbPerBox = nbPerBoxInput;
+        this.colors = colors;
     }
     
     // Getters et Setters
@@ -66,12 +67,33 @@ public class TileType
         this.nbPerBox = nbPerBox;
     }
     
-    public Set<Color> getColors()
+    public ArrayList<Color> getColors()
     {
         return colors;
     }
+    
+    public Color[] getColorArray()
+    {
+        Color[] colorArray = new Color[colors.size()];
+        for (int i = 0; i < colors.size(); i++)
+        {
+            colorArray[i] = colors.get(i);
+        }
+        return colorArray;
+    }
+    
+    public String[] getColorStrings()
+    {
+        String[] colorStrings = new String[colors.size()];
+        for (int i = 0; i < colors.size(); i++)
+        {
+            Color c = colors.get(i);
+            colorStrings[i] = c.getRed() + "," + c.getGreen() + "," + c.getBlue();
+        }
+        return colorStrings;
+    }
 
-    public void setColors(HashSet<Color> colors)
+    public void setColors(ArrayList<Color> colors)
     {
         this.colors = colors;
     }   
