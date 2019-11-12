@@ -1,20 +1,27 @@
 package VirtuTuile.Domain;
 
 import java.awt.Color;
+import java.awt.Shape;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  * Une surface combinée à partir de deux autres surfaces.
  * @author gabparrot
  */
-public class CombinedSurface extends Area implements Surface
+public class CombinedSurface extends Area implements Surface, Serializable
 {
     private boolean isHole;
     private Color color;
-    private final Covering covering = new Covering();
-    private final Area uncoveredArea = new Area();
-    private final ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
+    private Covering covering = new Covering();
+    private Area uncoveredArea = new Area();
+    private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
 
     /**
      * Constructeur.
@@ -135,5 +142,30 @@ public class CombinedSurface extends Area implements Surface
             }
         }
         return area;
+    }
+    
+    private void writeObject(ObjectOutputStream out) throws IOException
+    {
+        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(this));
+        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(uncoveredArea));
+        out.writeObject(isHole);
+        out.writeObject(color);
+        out.writeObject(covering);
+        out.writeObject(absorbedSurfaces);
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+        add(new Area((Shape) in.readObject()));
+        uncoveredArea = new Area((Shape) in.readObject());
+        isHole = (boolean) in.readObject();
+        color = (Color) in.readObject();
+        covering = (Covering) in.readObject();
+        absorbedSurfaces = (ArrayList<Surface>) in.readObject();
+    }
+    
+    public void coverSurface()
+    {
+        covering.coverSurface(this.getBounds2D());
     }
 }

@@ -21,12 +21,8 @@ import javax.swing.ImageIcon;
  */
 public class CanvasDrawer
 {
-    // Référence au parent.
     private final VirtuTuile.GUI.CanvasPanel parent;
-    
-    // Référence au controller.
     private VirtuTuile.Domain.Controller controller;
-    
     private final TexturePaint holeTexture;
     
     /**
@@ -56,18 +52,39 @@ public class CanvasDrawer
     }
     
     /**
-     * Déssine tous les éléments du canevas.
+     * Dessine tous les éléments du canevas.
      * @param g2d : Graphics du canevas.
      */
     public void draw(Graphics2D g2d)
     {
-        drawGrid(g2d);
-        if (controller != null && controller.projectExists()) drawSurfaces(g2d);
+        if (controller != null && controller.projectExists())
+        {
+            ArrayList<Surface> surfaces = controller.getSurfaces();
+            Surface selectedSurface = controller.getSelectedSurface();
+            AffineTransform transform = getTransform();
+        
+            drawGrid(g2d);
+            drawSurfaces(g2d, surfaces, transform);
+            drawSelectedSurface(g2d, selectedSurface, transform);
+            drawTempRect(g2d, transform);
+            drawDebug(g2d, selectedSurface, transform);
+        }
+    }
+    
+    /**
+     * Réglage de la transformation en fonction du zoom et des offsets.
+     */
+    private AffineTransform getTransform()
+    {
+        AffineTransform transform = new AffineTransform();
+        transform.translate(-parent.getHorizontalOffset(), - parent.getVerticalOffset());
+        transform.scale(0.1, 0.1);
+        transform.scale(parent.getZoom(), parent.getZoom());
+        return transform;
     }
     
     /**
      * Dessine la grille du canevas.
-     * @param g2d : Graphics du canevas.
      */
     private void drawGrid(Graphics2D g2d)
     {
@@ -83,41 +100,28 @@ public class CanvasDrawer
         for (int column = 0; column < nbColumns; column++)
         {
             g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
-                         (int) Math.round(column * gridDistance - horizontalOffset), parent.getHeight());
+                         (int) Math.round(column * gridDistance - horizontalOffset),
+                         parent.getHeight());
         }
         
         for (int row = 0; row < nbRows; row++)
         {
             g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
-                         parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
+                    parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
         }
     }
     
     /**
-     * Déssine les surfaces sur le canevas.
-     * @param g : Graphics du canevas.
+     * Dessine les surfaces sur le canevas.
      */
-    private void drawSurfaces(Graphics2D g2d)
+    private void drawSurfaces(Graphics2D g2d, ArrayList<Surface> surfaces,
+                              AffineTransform transform)
     {
-        double zoom = parent.getZoom();
-        int verticalOffset = parent.getVerticalOffset();
-        int horizontalOffset = parent.getHorizontalOffset();
-        Surface selectedSurface = controller.getSelectedSurface();
-        ArrayList<Surface> surfaces = controller.getSurfaces();
-        
-        // Réglage des transformations en fonction du zoom et des offsets.
-        AffineTransform scaleTransform = new AffineTransform();
-        scaleTransform.scale(0.1, 0.1);
-        scaleTransform.scale(zoom, zoom);
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(-horizontalOffset, -verticalOffset);
-
         // Dessine chaque surface du projet.
         for (Surface surface : surfaces)
         {   
             Area copy = new Area(surface);
-            copy.transform(scaleTransform);
-            copy.transform(translationTransform);
+            copy.transform(transform);
             
             // Dessine l'interieur de la surface.
             g2d.setColor(surface.getColor());
@@ -132,8 +136,7 @@ public class CanvasDrawer
             else if (surface instanceof CombinedSurface)
             {
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
-                uncoveredArea.transform(scaleTransform);
-                uncoveredArea.transform(translationTransform);
+                uncoveredArea.transform(transform);
                 g2d.setPaint(holeTexture);
                 g2d.fill(uncoveredArea);
                 g2d.setColor(Color.BLACK);
@@ -144,25 +147,34 @@ public class CanvasDrawer
             g2d.setColor(Color.BLACK);
             g2d.draw(copy);
         }
-        
-        // Dessine le contour de la surface sélectionnée.
+    }
+    
+    /**
+     * Dessine le contour de la surface sélectionnée.
+     */
+    private void drawSelectedSurface(Graphics2D g2d, Surface selectedSurface,
+                                     AffineTransform transform)
+    {
         if (selectedSurface != null)
         {
             Area copy = new Area(selectedSurface);
-            copy.transform(scaleTransform);
-            copy.transform(translationTransform);
+            copy.transform(transform);
             g2d.setStroke(new BasicStroke(5));
             g2d.draw(copy);
             g2d.setStroke(new BasicStroke(1));
         }
-        
-        // Dessine un rectangle temporaire lors de la création de surface rectangulaire.
+    }
+    
+    /**
+     * Dessine un rectangle temporaire lors de la création de surface rectangulaire.
+     */
+    private void drawTempRect(Graphics2D g2d, AffineTransform transform)
+    {
         Rectangle2D.Double temp = parent.getTemporaryRectangle();
         if (temp != null)
         {
             Area copy = new Area(temp);
-            copy.transform(scaleTransform);
-            copy.transform(translationTransform);
+            copy.transform(transform);
             
             // Dessine le rectangle temporaire.
             g2d.setColor(new Color(113, 148, 191));
@@ -170,11 +182,14 @@ public class CanvasDrawer
             g2d.setColor(Color.BLACK);
             g2d.draw(copy);
         }
-        
-        /**
-         * Dessine un rectangle montrant les bornes extérieures de la surface sélectionnée
-         * si le mode debug est activé.
-         */
+    }
+    
+    /**
+    * Dessine un rectangle montrant les bornes extérieures de la surface sélectionnée
+    * si le mode debug est actif.
+    */
+    private void drawDebug(Graphics2D g2d, Surface selectedSurface, AffineTransform transform)
+    {
         if (parent.isDebug() && selectedSurface != null)
         {
             double surroundingBounds[] = controller.getSurroundingBounds(selectedSurface);
@@ -182,8 +197,7 @@ public class CanvasDrawer
                     surroundingBounds[1], surroundingBounds[2] - surroundingBounds[0],
                     surroundingBounds[3] - surroundingBounds[1]);
             Area devArea = new Area(devRec);
-            devArea.transform(scaleTransform);
-            devArea.transform(translationTransform);
+            devArea.transform(transform);
             g2d.setColor(Color.MAGENTA);
             g2d.setStroke(new BasicStroke(3));
             g2d.draw(devArea);

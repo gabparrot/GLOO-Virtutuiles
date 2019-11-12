@@ -23,7 +23,6 @@ public class UndoSetJointColor implements javax.swing.undo.UndoableEdit
     public void undo() throws CannotUndoException
     {
         covering.setJointColor(oldColor);
-        covering.coverSurface();
     }
 
     @Override
@@ -36,7 +35,6 @@ public class UndoSetJointColor implements javax.swing.undo.UndoableEdit
     public void redo() throws CannotRedoException
     {
         covering.setJointColor(newColor);
-        covering.coverSurface();
     }
     
     @Override

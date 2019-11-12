@@ -23,7 +23,6 @@ public class UndoSetPattern implements javax.swing.undo.UndoableEdit
     public void undo() throws CannotUndoException
     {
         covering.setPattern(oldPattern);
-        covering.coverSurface();
     }
 
     @Override
@@ -36,7 +35,6 @@ public class UndoSetPattern implements javax.swing.undo.UndoableEdit
     public void redo() throws CannotRedoException
     {
         covering.setPattern(newPattern);
-        covering.coverSurface();
     }
     
     @Override

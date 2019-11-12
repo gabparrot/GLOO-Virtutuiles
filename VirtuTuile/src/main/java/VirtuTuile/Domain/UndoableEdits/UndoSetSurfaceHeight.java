@@ -1,7 +1,7 @@
 package VirtuTuile.Domain.UndoableEdits;
 
 import VirtuTuile.Domain.Project;
-import VirtuTuile.Domain.RectangularSurface;
+import VirtuTuile.Domain.Surface;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
@@ -11,10 +11,10 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     Project project;
     double oldHeight;
     double newHeight;
-    RectangularSurface surface;
+    Surface surface;
     
     public UndoSetSurfaceHeight(Project project, double oldHeight,
-            double newHeight, RectangularSurface surface)
+            double newHeight, Surface surface)
     {
         this.project = project;
         this.oldHeight = oldHeight;
@@ -25,7 +25,7 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
-        project.setRectangularSurfaceHeight(oldHeight, surface);
+        project.setSurfaceHeight(oldHeight, surface);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.setRectangularSurfaceHeight(newHeight, surface);
+        project.setSurfaceHeight(newHeight, surface);
     }
     
     @Override
@@ -72,7 +72,7 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     @Override
     public String getPresentationName()
     {
-        return "Modification de la hauteur d'une surface rectangulaire";
+        return "Modification de la hauteur d'une surface";
     }
 
     @Override

@@ -20,7 +20,6 @@ public class UndoSetIsNinetyDegree implements javax.swing.undo.UndoableEdit
     public void undo() throws CannotUndoException
     {
         covering.setIsNinetyDegree(!newValue);
-        covering.coverSurface();
     }
 
     @Override
@@ -33,7 +32,6 @@ public class UndoSetIsNinetyDegree implements javax.swing.undo.UndoableEdit
     public void redo() throws CannotRedoException
     {
         covering.setIsNinetyDegree(newValue);
-        covering.coverSurface();
     }
     
     @Override

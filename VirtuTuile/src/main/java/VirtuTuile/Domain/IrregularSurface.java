@@ -9,6 +9,7 @@ import java.awt.geom.Path2D;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 /**
@@ -144,5 +145,10 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
                 area = area / 2;
         }
         return area;
+    }
+    
+    public void coverSurface()
+    {
+        covering.coverSurface(this.getBounds2D());
     }
 }

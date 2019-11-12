@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import javax.swing.undo.UndoManager;
 
 /**
@@ -208,38 +209,38 @@ public class Controller
     }
 
     /**
-     * Set le paramètre width d'une surface rectangulaire.
+     * Set le paramètre width d'une surface.
      * [UNDOABLE]
      * @param width : le nouveau paramètre width.
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceWidth(double width, RectangularSurface surface)
+    public boolean setSurfaceWidth(double width, Surface surface)
     {
-        double oldWidth = surface.width;
-        boolean status = project.setRectangularSurfaceWidth(width, surface);
+        double oldWidth = surface.getBounds2D().getWidth();
+        boolean status = project.setSurfaceWidth(width, surface);
         if (status)
         {
-            double newWidth = surface.width;
+            double newWidth = surface.getBounds2D().getWidth();
             undoManager.addEdit(new UndoSetSurfaceWidth(project, oldWidth, newWidth, surface));
         }
         return status;
     }
 
     /**
-     * Set le paramètre height d'une surface rectangulaire.
+     * Set le paramètre height d'une surface.
      * [UNDOABLE]
      * @param height : le nouveau paramètre height.
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceHeight(double height, RectangularSurface surface)
+    public boolean setSurfaceHeight(double height, Surface surface)
     {
-        double oldHeight = surface.height;
-        boolean status = project.setRectangularSurfaceHeight(height, surface);
+        double oldHeight = surface.getBounds2D().getHeight();
+        boolean status = project.setSurfaceHeight(height, surface);
         if (status)
         {
-            double newHeight = surface.height;
+            double newHeight = surface.getBounds2D().getHeight();
             undoManager.addEdit(new UndoSetSurfaceHeight(project, oldHeight, newHeight, surface));
         }
         return status;
@@ -302,6 +303,12 @@ public class Controller
         return project.getTileTypeStrings();
     }
     
+    public void coverSurface(Surface surface, Pattern pattern, TileType tileType, Color tileColor, Color jointColor,
+                             double jointWidth, boolean isFlipped, double offsetX, double offsetY)
+    {
+        project.coverSurface();
+    }
+    
     /**
      * Bouge le revetement (motif) de la surface dans l'interface.
      * @param delta : le point sélectionné par la souris.
@@ -341,12 +348,19 @@ public class Controller
      * @param surface : la surface en question.
      * @param isNinetyDegree : true si les tuiles doivent être à 90 degrés.
      */
+    /*
     public void setIsNinetyDegree(Surface surface, boolean isNinetyDegree)
     {
         Covering covering = surface.getCovering();
         covering.setIsNinetyDegree(isNinetyDegree);
         undoManager.addEdit(new UndoSetIsNinetyDegree(isNinetyDegree, covering));
-        covering.coverSurface();
+        covering.setIsNinetyDegree(isNinetyDegree);
+    }*/
+    
+     public void setIsNinetyDegree(boolean isNinetyDegree)
+    {
+        project.setIsNinetyDegree(isNinetyDegree); // L'applique sur selected surface
+        undoManager.addEdit(new UndoSetIsNinetyDegree(isNinetyDegree, project.getSelectedSurface().getCovering()));
     }
 
     /**
@@ -363,7 +377,7 @@ public class Controller
         {
             covering.setPattern(pattern);
             undoManager.addEdit(new UndoSetPattern(oldPattern, pattern, covering));
-            covering.coverSurface();
+            project.coverSurface();
         }
     }
 
@@ -396,12 +410,12 @@ public class Controller
         TileType oldTileType = covering.getTileType();
         project.setTileTypeByIndex(surface, selectedIndex);
         TileType newTileType = covering.getTileType();
-        if (oldTileType != newTileType)
+        if (!oldTileType.getName().equals(newTileType.getName()))
         {
             Color oldColor = covering.getTileColor();
             covering.setTileColorByIndex(0);
             undoManager.addEdit(new UndoSetTileType(oldTileType, newTileType, covering, oldColor));
-            covering.coverSurface();
+            project.coverSurface();
         }
     }
 
@@ -417,6 +431,16 @@ public class Controller
         double oldWidth = covering.getJointWidth();
         surface.getCovering().setJointWidth(Math.max(0, width));
         undoManager.addEdit(new UndoSetJointWidth(oldWidth, width, covering));
-        covering.coverSurface();
+        project.coverSurface();
+    }
+
+    public void saveProject(File file)
+    {
+        project.saveSurfacesToFile(file);
+    }
+    
+    public void loadProject(File file)
+    {
+        project.loadSurfacesFromFile(file);
     }
 }

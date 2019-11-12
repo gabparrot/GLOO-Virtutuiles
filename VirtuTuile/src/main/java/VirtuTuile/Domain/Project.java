@@ -10,6 +10,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * @class definissant le projet en cours
@@ -18,7 +24,7 @@ import java.awt.geom.AffineTransform;
 public class Project
 {
     private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
-    private final ArrayList<Surface> surfaces = new ArrayList<>();
+    private ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
     private final ArrayList<TileType> tileTypes = new ArrayList<>();
     
@@ -450,15 +456,31 @@ public class Project
     }
     
     /**
-     * Set le paramètre width d'une surface rectangulaire.
+     * Set le paramètre width d'une surface.
      * @param width : le nouveau paramètre width.
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceWidth(double width, RectangularSurface surface)
+    public boolean setSurfaceWidth(double width, Surface surface)
     {
         if (width < 100) return false;
         
+        if (surface instanceof RectangularSurface)
+        {
+            return setSurfaceWidth(width, (RectangularSurface) surface);
+        }
+        else if (surface instanceof CombinedSurface)
+        {
+            return setSurfaceWidth(width, (CombinedSurface) surface);
+        }
+        else
+        {
+            return setSurfaceWidth(width, (IrregularSurface) surface);
+        }
+    }
+    
+    private boolean setSurfaceWidth(double width, RectangularSurface surface)
+    {
         double oldWidth = surface.width;
         
         surface.width = width;
@@ -474,16 +496,85 @@ public class Project
         }
     }
     
+    private boolean setSurfaceWidth(double width, IrregularSurface surface)
+    {
+        Rectangle2D bounds = surface.getBounds2D();
+        double oldWidth = bounds.getWidth();
+        double oldX = bounds.getX();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(width / oldWidth, 1);
+        surface.transform(scaleTransform);
+        setSurfaceX(oldX, surface);
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(oldWidth / width, 1);
+            surface.transform(scaleTransform);
+            setSurfaceX(oldX, surface);
+            return false;
+        }
+    }
+    
+    private boolean setSurfaceWidth(double width, CombinedSurface surface)
+    {
+        Area uncoveredArea = surface.getUncoveredArea();
+        Rectangle2D bounds = surface.getBounds2D();
+        double oldWidth = bounds.getWidth();
+        double oldX = bounds.getX();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(width / oldWidth, 1);
+        surface.transform(scaleTransform);
+        uncoveredArea.transform(scaleTransform);
+        setSurfaceX(oldX, surface);
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(oldWidth / width, 1);
+            surface.transform(scaleTransform);
+            uncoveredArea.transform(scaleTransform);
+            setSurfaceX(oldX, surface);
+            return false;
+        }
+    }
+    
     /**
-     * Set le paramètre height d'une surface rectangulaire.
+     * Set le paramètre height d'une surface.
      * @param height : le nouveau paramètre height.
      * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setRectangularSurfaceHeight(double height, RectangularSurface surface)
+    public boolean setSurfaceHeight(double height, Surface surface)
     {
         if (height < 100) return false;
         
+        if (surface instanceof RectangularSurface)
+        {
+            return setSurfaceHeight(height, (RectangularSurface) surface);
+        }
+        else if (surface instanceof CombinedSurface)
+        {
+            return setSurfaceHeight(height, (CombinedSurface) surface);
+        }
+        else
+        {
+            return setSurfaceHeight(height, (IrregularSurface) surface);
+        }
+    }
+    
+    private boolean setSurfaceHeight(double height, RectangularSurface surface)
+    {
         double oldHeight = surface.height;
         
         surface.height = height;
@@ -495,6 +586,59 @@ public class Project
         else
         {
             surface.height = oldHeight;
+            return false;
+        }
+    }
+    
+    private boolean setSurfaceHeight(double height, IrregularSurface surface)
+    {
+        Rectangle2D bounds = surface.getBounds2D();
+        double oldHeight = bounds.getHeight();
+        double oldY = bounds.getY();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(1, height / oldHeight);
+        surface.transform(scaleTransform);
+        setSurfaceY(oldY, surface);
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(1, oldHeight / height);
+            surface.transform(scaleTransform);
+            setSurfaceY(oldY, surface);
+            return false;
+        }
+    }
+    
+    private boolean setSurfaceHeight(double height, CombinedSurface surface)
+    {
+        Area uncoveredArea = surface.getUncoveredArea();
+        Rectangle2D bounds = surface.getBounds2D();
+        double oldHeight = bounds.getHeight();
+        double oldY = bounds.getY();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(1, height / oldHeight);
+        surface.transform(scaleTransform);
+        uncoveredArea.transform(scaleTransform);
+        setSurfaceY(oldY, surface);
+        
+        if (conflictCheck(surface))
+        {
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(1, oldHeight / height);
+            surface.transform(scaleTransform);
+            uncoveredArea.transform(scaleTransform);
+            setSurfaceY(oldY, surface);
             return false;
         }
     }
@@ -594,6 +738,66 @@ public class Project
         return tileTypeStrings;
     }
     
+    public void setIsNinetyDegree(boolean isNinetyDegree)
+    {
+        selectedSurface.getCovering().setIsNinetyDegree(isNinetyDegree);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setOffsetX(double offsetX)
+    {
+        selectedSurface.getCovering().setOffsetX(offsetX);
+        selectedSurface.coverSurface();
+    }
+        
+    public void setOffsetY(double offsetY)
+    {
+        selectedSurface.getCovering().setOffsetY(offsetY);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setJointColor(Color jointColor)
+    {
+       selectedSurface.getCovering().setJointColor(jointColor);
+       selectedSurface.coverSurface();
+    }
+    
+    public void setJointWidth(double width)
+    {
+        selectedSurface.getCovering().setJointWidth(width);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setPattern(Pattern pattern)
+    {
+        selectedSurface.getCovering().setPattern(pattern);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setTileType(TileType tileType)
+    {
+        selectedSurface.getCovering().setTileType(tileType);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setTileColor(Color color)
+    {
+        selectedSurface.getCovering().setTileColor(color);
+        selectedSurface.coverSurface();
+    }
+    
+    public void setTileColorByIndex(int index)
+    {
+        selectedSurface.getCovering().setTileColorByIndex(index);
+        selectedSurface.coverSurface();
+    }
+    
+    public void coverSurface()
+    {
+        selectedSurface.coverSurface();
+    }
+   
+    
     /**
      * Trouve le point le plus à droite et en-bas de toutes les surfaces.
      * @return le point le plus à droite et en-bas de toutes les surfaces. 
@@ -616,8 +820,35 @@ public class Project
         return point;
     }
 
-    void setTileTypeByIndex(Surface surface, int selectedIndex)
+    public void setTileTypeByIndex(Surface surface, int selectedIndex)
     {
         surface.getCovering().setTileType(tileTypes.get(selectedIndex));
+        surface.coverSurface();
+    }
+    
+    public void saveSurfacesToFile(File file)
+    {
+        try
+        {
+            try (FileOutputStream fileOut = new FileOutputStream(file);
+                    ObjectOutputStream out = new ObjectOutputStream(fileOut))
+            {
+                out.writeObject(surfaces);
+            }
+        }
+        catch(IOException i) { i.printStackTrace(System.out); }
+    }
+    
+    public void loadSurfacesFromFile(File file)
+    {
+        try
+        {
+            try (FileInputStream fileIn = new FileInputStream(file);
+                    ObjectInputStream in = new ObjectInputStream(fileIn))
+            {
+                surfaces = (ArrayList<Surface>) in.readObject();
+            }
+        }
+        catch (IOException | ClassNotFoundException i) { i.printStackTrace(System.out); }
     }
 }

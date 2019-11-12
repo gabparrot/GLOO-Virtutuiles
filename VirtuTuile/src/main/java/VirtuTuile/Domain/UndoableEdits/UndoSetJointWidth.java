@@ -22,7 +22,6 @@ public class UndoSetJointWidth implements javax.swing.undo.UndoableEdit
     public void undo() throws CannotUndoException
     {
         covering.setJointWidth(oldWidth);
-        covering.coverSurface();
     }
 
     @Override
@@ -35,7 +34,6 @@ public class UndoSetJointWidth implements javax.swing.undo.UndoableEdit
     public void redo() throws CannotRedoException
     {
         covering.setJointWidth(newWidth);
-        covering.coverSurface();
     }
     
     @Override

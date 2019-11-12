@@ -2,12 +2,13 @@ package VirtuTuile.Domain;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  * @class definissant un type de tuiles disponibles pour le tuilage
  * @author gabparrot
  */
-public class TileType
+public class TileType implements Serializable
 {
     private double width;
     private double height;

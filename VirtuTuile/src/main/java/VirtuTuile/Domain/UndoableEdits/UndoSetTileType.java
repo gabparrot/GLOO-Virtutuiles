@@ -27,7 +27,6 @@ public class UndoSetTileType implements javax.swing.undo.UndoableEdit
     {
         covering.setTileType(oldTile);
         covering.setTileColor(oldColor);
-        covering.coverSurface();
     }
 
     @Override
@@ -41,7 +40,6 @@ public class UndoSetTileType implements javax.swing.undo.UndoableEdit
     {
         covering.setTileType(newTile);
         covering.setTileColorByIndex(0);
-        covering.coverSurface();
     }
     
     @Override
