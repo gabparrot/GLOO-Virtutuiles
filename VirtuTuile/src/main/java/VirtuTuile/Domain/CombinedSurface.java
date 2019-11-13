@@ -19,7 +19,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
 {
     private boolean isHole;
     private Color color;
-    private Covering covering = new Covering();
+    private Covering covering = new Covering(this);
     private Area uncoveredArea = new Area();
     private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
 

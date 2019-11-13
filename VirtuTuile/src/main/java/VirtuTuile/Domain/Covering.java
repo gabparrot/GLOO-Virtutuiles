@@ -20,7 +20,12 @@ public class Covering implements Serializable
     private Pattern pattern = Pattern.A;
     private final java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
     private TileType tileType = Utilities.DEFAULT_TILE_1;
-    private Color tileColor = Utilities.DEFAULT_TILE_1.getColorArray()[0];
+    private final Surface parent;
+    
+    public Covering(Surface parent)
+    {
+        this.parent = parent;
+    }
     
     public void clearCovering()
     {
@@ -33,14 +38,11 @@ public class Covering implements Serializable
      */
     public void coverSurface(Rectangle2D bounds)
     {
-        if (this.tileType == null || this.tileColor == null)
+        if (parent.isHole())
         {
             return;
         }
-        else
-        {
-            tiles.clear();
-        }
+        tiles.clear();
         switch (pattern)
         {
             case A:
@@ -199,30 +201,5 @@ public class Covering implements Serializable
     public java.util.ArrayList<Shape> getTiles()
     {
         return tiles;
-    }
-    
-    public Color getTileColor()
-    {
-        return tileColor;
-    }
-    
-    public void setTileColorByIndex(int index)
-    {
-        this.tileColor = tileType.getColors().get(index);
-    }
-    
-    public void setTileColor(Color color)
-    {
-        this.tileColor = color;
-    }
-    
-    public int getTileColorIndex()
-    {
-        return tileType.getColors().indexOf(tileColor);
-    }
-
-    public Object getColorString()
-    {
-        return tileColor;
     }
 }

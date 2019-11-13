@@ -192,7 +192,7 @@ public class CanvasDrawer
     {
         if (parent.isDebug() && selectedSurface != null)
         {
-            double surroundingBounds[] = controller.getSurroundingBounds(selectedSurface);
+            double surroundingBounds[] = controller.getSurroundingBounds();
             Rectangle2D.Double devRec = new Rectangle2D.Double(surroundingBounds[0],
                     surroundingBounds[1], surroundingBounds[2] - surroundingBounds[0],
                     surroundingBounds[3] - surroundingBounds[1]);

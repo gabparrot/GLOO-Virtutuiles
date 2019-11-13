@@ -16,48 +16,73 @@ public class Controller
 {
     private Project project = null;
     private UndoManager undoManager = null;
+    private Surface firstSurfaceToMerge = null;
     
+    /**
+     * Crée un nouveau projet.
+     */
     public void newProject()
     {
         project = new Project();
         undoManager = new UndoManager();
     }
     
+    /**
+     * Ferme le projet en cours.
+     */
     public void closeProject()
     {
         project = null;
         undoManager = null;
     }
 
+    /**
+     * Annule la dernière opération.
+     */
     public void undo()
     {
         if (undoManager.canUndo()) undoManager.undo();
     }
     
+    /**
+     * Retourne un texte explicatif décrivant la dernière opération.
+     * @return un texte explicatif décrivant la dernière opération.
+     */
     public String getUndoPresentationName()
     {
         if (undoManager.canUndo()) return undoManager.getUndoPresentationName();
         else return "Rien";
     }
     
+    /**
+     * Refait la dernière opération annulée.
+     */
     public void redo()
     {
         if (undoManager.canRedo()) undoManager.redo();
     }
     
+    /**
+     * Retourne un texte explicatif décrivant la dernière opération annulée.
+     * @return un texte explicatif décrivant la dernière opération annulée.
+     */
     public String getRedoPresentationName()
     {
         if (undoManager.canRedo()) return undoManager.getRedoPresentationName();
         else return "Rien";
     }
     
+    /**
+     * Retourne true si un projet est ouvert en ce moment.
+     * @return true si un projet est ouvert en ce moment.
+     */
     public boolean projectExists()
     {
         return (project != null);
     }
 
     /**
-     * Fait une requête au projet pour la liste des surfaces.
+     * Retourne la liste des surfaces du projet.
      * @return la liste des surfaces du projet.
      */
     public ArrayList<Surface> getSurfaces()
@@ -71,17 +96,17 @@ public class Controller
     public void unselect()
     {
         project.unselect();
+        firstSurfaceToMerge = null;
     }
     
     /**
-     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
+     * Retourne les bornes entourantes d'une surface, qui décrivent jusqu'à quel point une surface
      * peut être déplacée dans les quatre directions.
-     * @param surface : la surface en question.
      * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
      */
-    public double[] getSurroundingBounds(Surface surface)
+    public double[] getSurroundingBounds()
     {
-        return project.getSurroundingBounds(surface);
+        return project.getSurroundingBounds(project.getSelectedSurface());
     }
     
     /**
@@ -114,26 +139,32 @@ public class Controller
     /**
      * Fusionne deux surfaces.
      * [UNDOABLE]
-     * @param s1 : la première surface à fusionner.
-     * @param s2 : la deuxième surface à fusionner.
      * @return true pour réussite, false pour échec (surfaces disjointes).
      */
-    public boolean mergeSurfaces(Surface s1, Surface s2)
+    public boolean mergeSurfaces()
     {
-        CombinedSurface combinedSurface = project.mergeSurfaces(s1, s2);
-        if (combinedSurface == null) return false;
-        undoManager.addEdit(new UndoMergeSurfaces(project, s1, s2, combinedSurface));
-        return true;
+        CombinedSurface combinedSurface = project.mergeSurfaces(firstSurfaceToMerge,
+                                                                project.getSelectedSurface());
+        if (combinedSurface == null)
+        {
+            return false;
+        }
+        else
+        {
+            undoManager.addEdit(new UndoMergeSurfaces(project, firstSurfaceToMerge,
+                    project.getSelectedSurface(), combinedSurface));
+            return true;
+        }
     }
     
     /**
-     * Déplace une surface à une nouvelle position.
+     * Déplace la surface sélectionnée à une nouvelle position.
      * [UNDOABLE]
      * @param newPos : nouvelle position.
-     * @param surface : la surface qui doit être déplacée.
      */
-    public void moveSurfaceToPoint(Point2D.Double newPos, Surface surface)
+    public void moveSurfaceToPoint(Point2D.Double newPos)
     {
+        Surface surface = project.getSelectedSurface();
         Rectangle2D bounds = surface.getBounds2D();
         Point2D.Double oldPoint = new Point2D.Double(bounds.getX(), bounds.getY());
         project.moveSurfaceToPoint(newPos, surface);
@@ -141,44 +172,47 @@ public class Controller
         // Sauvegarde
         bounds = surface.getBounds2D();
         Point2D.Double newPoint = new Point2D.Double(bounds.getX(), bounds.getY());
-        undoManager.addEdit(new UndoMoveSurfaceToPoint(project, oldPoint, newPoint, surface));
+        if (!oldPoint.equals(newPoint))
+        {
+            undoManager.addEdit(new UndoMoveSurfaceToPoint(project, oldPoint, newPoint, surface));
+        }
     }
     
     /**
-     * Change la couleur d'une surface.
+     * Change la couleur de la surface sélectionnée.
      * [UNDOABLE]
      * @param color : la nouvelle couleur.
-     * @param surface : la surface.
      */
-    public void setSurfaceColor(Color color, Surface surface)
+    public void setSurfaceColor(Color color)
     {
+        Surface surface = project.getSelectedSurface();
         Color oldColor = surface.getColor();
         surface.setColor(color);
         undoManager.addEdit(new UndoSetSurfaceColor(project, oldColor, color, surface));
     }
     
     /**
-     * Change le paramètre trou d'une surface.
+     * Change le paramètre trou de la surface sélectionnée.
      * [UNDOABLE]
      * @param isHole : si la surface doit être couverte.
-     * @param surface : la surface.
      */
-    public void setSurfaceIsHole(boolean isHole, Surface surface)
+    public void setSurfaceIsHole(boolean isHole)
     {
+        Surface surface = project.getSelectedSurface();
         boolean oldIsHole = surface.isHole();
         surface.setIsHole(isHole);
         undoManager.addEdit(new UndoSetSurfaceIsHole(project, oldIsHole, isHole, surface));
     }
     
     /**
-     * Set le paramètre x d'une surface.
+     * Set le paramètre x de la surface sélectionnée.
      * [UNDOABLE]
      * @param x : le nouveau paramètre x.
-     * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setSurfaceX(double x, Surface surface)
+    public boolean setSurfaceX(double x)
     {
+        Surface surface = project.getSelectedSurface();
         double oldX = surface.getBounds2D().getX();
         boolean status = project.setSurfaceX(x, surface);
         if (status)
@@ -190,14 +224,14 @@ public class Controller
     }
 
     /**
-     * Set le paramètre y d'une surface.
+     * Set le paramètre y de la surface sélectionnée.
      * [UNDOABLE]
      * @param y : le nouveau paramètre y.
-     * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setSurfaceY(double y, Surface surface)
+    public boolean setSurfaceY(double y)
     {
+        Surface surface = project.getSelectedSurface();
         double oldY = surface.getBounds2D().getY();
         boolean status = project.setSurfaceY(y, surface);
         if (status)
@@ -209,14 +243,14 @@ public class Controller
     }
 
     /**
-     * Set le paramètre width d'une surface.
+     * Set le paramètre width de la surface sélectionnée.
      * [UNDOABLE]
      * @param width : le nouveau paramètre width.
-     * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setSurfaceWidth(double width, Surface surface)
+    public boolean setSurfaceWidth(double width)
     {
+        Surface surface = project.getSelectedSurface();
         double oldWidth = surface.getBounds2D().getWidth();
         boolean status = project.setSurfaceWidth(width, surface);
         if (status)
@@ -228,14 +262,14 @@ public class Controller
     }
 
     /**
-     * Set le paramètre height d'une surface.
+     * Set le paramètre height de la surface sélectionnée.
      * [UNDOABLE]
      * @param height : le nouveau paramètre height.
-     * @param surface : la surface qui doit être modifiée.
      * @return : true si réussi, false sinon.
      */
-    public boolean setSurfaceHeight(double height, Surface surface)
+    public boolean setSurfaceHeight(double height)
     {
+        Surface surface = project.getSelectedSurface();
         double oldHeight = surface.getBounds2D().getHeight();
         boolean status = project.setSurfaceHeight(height, surface);
         if (status)
@@ -249,21 +283,28 @@ public class Controller
     /**
      * Sélectionne la surface qui contient le point.
      * @param point : le point qui doit être à l'intérieur de la surface.
-     * @return la surface sélectionnée, peut être null.
      */
-    public Surface selectSurface(Point2D.Double point)
+    public void selectSurface(Point2D.Double point)
     {
-        return project.selectSurface(point);
+        project.selectSurface(point);
     }
 
     /**
-     * Trouve la surface qui contient le point (sans la sélectionner).
+     * Trouve les bornes de la surface qui contient le point (sans la sélectionner).
      * @param point : le point qui doit être à l'intérieur de la surface.
      * @return la surface trouvée, peut être null.
      */
-    public Surface findSurface(Point2D.Double point)
+    public Rectangle2D findSurfaceBounds(Point2D.Double point)
     {
-        return project.findSurface(point);
+        Surface surface = project.findSurface(point);
+        if (surface != null)
+        {
+            return surface.getBounds2D();
+        }
+        else
+        {
+            return null;
+        }
     }
     
     /**
@@ -303,17 +344,11 @@ public class Controller
         return project.getTileTypeStrings();
     }
     
-    public void coverSurface(Surface surface, Pattern pattern, TileType tileType, Color tileColor, Color jointColor,
-                             double jointWidth, boolean isFlipped, double offsetX, double offsetY)
-    {
-        project.coverSurface();
-    }
-    
     /**
      * Bouge le revetement (motif) de la surface dans l'interface.
      * @param delta : le point sélectionné par la souris.
      */
-    public void MoveSelectedCovering(Point2D.Double delta)
+    public void moveSelectedCovering(Point2D.Double delta)
     {
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
@@ -329,13 +364,13 @@ public class Controller
     }
 
     /**
-     * Change le couleur des joints d'une surface.
+     * Change le couleur des joints de la surface sélectionnée.
      * [UNDOABLE]
      * @param c : la nouvelle couleur.
-     * @param surface : la surface en question.
      */
-    public void setJointColor(Color c, Surface surface)
+    public void setJointColor(Color c)
     {
+        Surface surface = project.getSelectedSurface();
         Covering covering = surface.getCovering();
         Color oldColor =  covering.getJointColor();
         covering.setJointColor(c);
@@ -343,34 +378,27 @@ public class Controller
     }
 
     /**
-     * Change l'orientation des tuiles d'une surface.
+     * Change l'orientation des tuiles de la surface sélectionnée.
      * [UNDOABLE]
-     * @param surface : la surface en question.
      * @param isNinetyDegree : true si les tuiles doivent être à 90 degrés.
      */
-    /*
-    public void setIsNinetyDegree(Surface surface, boolean isNinetyDegree)
+    public void setIsNinetyDegree(boolean isNinetyDegree)
     {
+        Surface surface = project.getSelectedSurface();
         Covering covering = surface.getCovering();
         covering.setIsNinetyDegree(isNinetyDegree);
         undoManager.addEdit(new UndoSetIsNinetyDegree(isNinetyDegree, covering));
         covering.setIsNinetyDegree(isNinetyDegree);
-    }*/
-    
-     public void setIsNinetyDegree(boolean isNinetyDegree)
-    {
-        project.setIsNinetyDegree(isNinetyDegree); // L'applique sur selected surface
-        undoManager.addEdit(new UndoSetIsNinetyDegree(isNinetyDegree, project.getSelectedSurface().getCovering()));
     }
 
     /**
-     * Change le motif d'une surface.
+     * Change le motif de la surface sélectionnée.
      * [UNDOABLE]
-     * @param surface : la surface en question.
      * @param pattern : le nouveau motif.
      */
-    public void setPattern(Surface surface, Pattern pattern)
+    public void setPattern(Pattern pattern)
     {
+        Surface surface = project.getSelectedSurface();
         Covering covering = surface.getCovering();
         Pattern oldPattern = covering.getPattern();
         if (oldPattern != pattern)
@@ -382,51 +410,32 @@ public class Controller
     }
 
     /**
-     * Change la couleur des tuiles d'une surface.
+     * Change le type de tuile de la surface sélectionnée.
      * [UNDOABLE]
-     * @param surface : la surface en question.
-     * @param index : l'index de la nouvelle couleur dans la liste des couleurs du type de tuile.
-     */
-    public void setCoveringTileColorByIndex(Surface surface, int index)
-    {
-        Covering covering = surface.getCovering();
-        int oldIndex = covering.getTileColorIndex();
-        if (oldIndex != index)
-        {
-            covering.setTileColorByIndex(index);
-            undoManager.addEdit(new UndoSetCoveringTileColor(oldIndex, index, covering));
-        }
-    }
-
-    /**
-     * Change le type de tuile d'une surface.
-     * [UNDOABLE]
-     * @param surface : la surface en question.
      * @param selectedIndex : l'index du type de tuile dans la liste du projet.
      */
-    public void setTileTypeByIndex(Surface surface, int selectedIndex)
+    public void setTileTypeByIndex(int selectedIndex)
     {
+        Surface surface = project.getSelectedSurface();
         Covering covering = surface.getCovering();
         TileType oldTileType = covering.getTileType();
         project.setTileTypeByIndex(surface, selectedIndex);
         TileType newTileType = covering.getTileType();
         if (!oldTileType.getName().equals(newTileType.getName()))
         {
-            Color oldColor = covering.getTileColor();
-            covering.setTileColorByIndex(0);
-            undoManager.addEdit(new UndoSetTileType(oldTileType, newTileType, covering, oldColor));
+            undoManager.addEdit(new UndoSetTileType(oldTileType, newTileType, covering));
             project.coverSurface();
         }
     }
 
     /**
-     * Change la largeur des joints d'une surface.
+     * Change la largeur des joints de la surface sélectionnée.
      * [UNDOABLE]
-     * @param surface la surface en question.
      * @param width : la nouvelle largeur des joints.
      */
-    public void setJointWidth(Surface surface, double width)
+    public void setJointWidth(double width)
     {   
+        Surface surface = project.getSelectedSurface();
         Covering covering = surface.getCovering();
         double oldWidth = covering.getJointWidth();
         surface.getCovering().setJointWidth(Math.max(0, width));
@@ -434,13 +443,119 @@ public class Controller
         project.coverSurface();
     }
 
+    /**
+     * Sauvegarde le projet.
+     * @param file : le fichier de sauvegarde.
+     */
     public void saveProject(File file)
     {
         project.saveSurfacesToFile(file);
     }
     
+    /**
+     * Charge un projet.
+     * @param file : le fichier de sauvegarde.
+     */
     public void loadProject(File file)
     {
         project.loadSurfacesFromFile(file);
+    }
+
+    /**
+     * Retourne les bornes de la surface sélectionnée.
+     * @return les bornes de la surface sélectionnée.
+     */
+    public Rectangle2D getBounds2D()
+    {
+        return project.getSelectedBounds2D();
+    }
+
+    /**
+     * Retourne la largeur des joints de la surface sélectionnée.
+     * @return la largeur des joints de la surface sélectionnée.
+     */
+    public double getJointWidth()
+    {
+        return project.getJointWidth();
+    }
+    
+    /**
+     * Retourne la couleur la surface sélectionnée.
+     * @return la couleur de la surface sélectionnée.
+     */
+    public Color getColor()
+    {
+        return project.getColor();
+    }
+
+    /**
+     * Retourne le paramètre trou de la surface sélectionnée.
+     * @return le paramètre trou de la surface sélectionnée.
+     */
+    public boolean isHole()
+    {
+        return project.isHole();
+    }
+
+    /**
+     * Retourne l'orientation du recouvrement de la surface sélectionnée.
+     * @return l'orientation du recouvrement de la surface sélectionnée.
+     */
+    public boolean isNinetyDegree()
+    {
+        return project.isNinetyDegree();
+    }
+
+    /**
+     * Retourne le motif du recouvrement de la surface sélectionnée.
+     * @return le motif du recouvrement de la surface sélectionnée.
+     */
+    public Pattern getPattern()
+    {
+        return project.getPattern();
+    }
+
+    /**
+     * Retourne la couleur de joint du recouvrement de la surface sélectionnée.
+     * @return la couleur de joint du recouvrement de la surface sélectionnée.
+     */
+    public Color getJointColor()
+    {
+        return project.getJointColor();
+    }
+
+    /**
+     * Retourne le type de tuile du recouvrement de la surface sélectionnée.
+     * @return le type de tuile du recouvrement de la surface sélectionnée.
+     */
+    public TileType getTileType()
+    {
+        return project.getTileType();
+    }
+
+    /**
+     * Retourne true si une surface est sélectionnée.
+     * @return true si une surface est sélectionnée.
+     */
+    public boolean surfaceIsSelected()
+    {
+        return project.surfaceIsSelected();
+    }
+    
+    /**
+     * Retourne true si une première surface a été sélectionnée pour une combinaison.
+     * @return true si une première surface a été sélectionnée pour une combinaison.
+     */
+    public boolean mergeInProgress()
+    {
+        return firstSurfaceToMerge != null;
+    }
+    
+    /**
+     * Indique que la surface sélectionnée devra être combinée.
+     */
+    public void setFirstSurfaceToMerge()
+    {
+        firstSurfaceToMerge = project.getSelectedSurface();
     }
 }

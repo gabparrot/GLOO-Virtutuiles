@@ -2,7 +2,6 @@ package VirtuTuile.Domain.UndoableEdits;
 
 import VirtuTuile.Domain.TileType;
 import VirtuTuile.Domain.Covering;
-import java.awt.Color;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
@@ -12,21 +11,18 @@ public class UndoSetTileType implements javax.swing.undo.UndoableEdit
     private final TileType oldTile;
     private final TileType newTile;
     private final Covering covering;
-    private final Color oldColor;
     
-    public UndoSetTileType(TileType oldTile, TileType newTile, Covering covering, Color oldColor)
+    public UndoSetTileType(TileType oldTile, TileType newTile, Covering covering)
     {
         this.oldTile = oldTile;
         this.newTile = newTile;
         this.covering = covering;
-        this.oldColor = oldColor;
     }
     
     @Override
     public void undo() throws CannotUndoException
     {
         covering.setTileType(oldTile);
-        covering.setTileColor(oldColor);
     }
 
     @Override
@@ -39,7 +35,6 @@ public class UndoSetTileType implements javax.swing.undo.UndoableEdit
     public void redo() throws CannotRedoException
     {
         covering.setTileType(newTile);
-        covering.setTileColorByIndex(0);
     }
     
     @Override

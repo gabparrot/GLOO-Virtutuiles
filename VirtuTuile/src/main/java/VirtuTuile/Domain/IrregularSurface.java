@@ -20,7 +20,7 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
 {
     private boolean isHole;
     private Color color;
-    private final Covering covering = new Covering();
+    private final Covering covering = new Covering(this);
     
     // TODO vérifier si attributs de coordonnées doivent être ajoutés
 

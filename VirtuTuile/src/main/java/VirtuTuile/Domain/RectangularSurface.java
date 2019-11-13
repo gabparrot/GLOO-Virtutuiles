@@ -16,7 +16,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     private Color color;
     
     // Le revêtement de la surface.
-    private final Covering covering = new Covering();
+    private final Covering covering = new Covering(this);
     
     /**
      * Constructeur.

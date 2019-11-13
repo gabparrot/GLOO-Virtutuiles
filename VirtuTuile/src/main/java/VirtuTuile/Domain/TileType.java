@@ -1,7 +1,6 @@
 package VirtuTuile.Domain;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.io.Serializable;
 
 /**
@@ -12,19 +11,19 @@ public class TileType implements Serializable
 {
     private double width;
     private double height;
-    private ArrayList<Color> colors;
+    private Color color;
     private String name;
     private int nbPerBox;
 
     // Constructeur avec paramètres
     public TileType(double widthInput, double heightInput, String nameInput,
-            int nbPerBoxInput,ArrayList<Color> colors)
+            int nbPerBoxInput, Color color)
     {
         this.width = widthInput;
         this.height = heightInput;
         this.name = nameInput;
         this.nbPerBox = nbPerBoxInput;
-        this.colors = colors;
+        this.color = color;
     }
     
     // Getters et Setters
@@ -68,34 +67,13 @@ public class TileType implements Serializable
         this.nbPerBox = nbPerBox;
     }
     
-    public ArrayList<Color> getColors()
+    public Color getColor()
     {
-        return colors;
-    }
-    
-    public Color[] getColorArray()
-    {
-        Color[] colorArray = new Color[colors.size()];
-        for (int i = 0; i < colors.size(); i++)
-        {
-            colorArray[i] = colors.get(i);
-        }
-        return colorArray;
-    }
-    
-    public String[] getColorStrings()
-    {
-        String[] colorStrings = new String[colors.size()];
-        for (int i = 0; i < colors.size(); i++)
-        {
-            Color c = colors.get(i);
-            colorStrings[i] = c.getRed() + "," + c.getGreen() + "," + c.getBlue();
-        }
-        return colorStrings;
+        return color;
     }
 
-    public void setColors(ArrayList<Color> colors)
+    public void setColor(Color color)
     {
-        this.colors = colors;
+        this.color = color;
     }   
 }

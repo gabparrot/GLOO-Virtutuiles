@@ -3,8 +3,6 @@ package VirtuTuile.Domain;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Shape;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -23,12 +21,11 @@ import java.io.ObjectOutputStream;
  */
 public class Project
 {
-    private Map<TileType, Integer> qtyPerTileType = new HashMap<>();
     private ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
     private final ArrayList<TileType> tileTypes = new ArrayList<>();
     
-    Project()
+    public Project()
     {
         tileTypes.add(Utilities.DEFAULT_TILE_1);
         tileTypes.add(Utilities.DEFAULT_TILE_2);
@@ -40,7 +37,6 @@ public class Project
     public void unselect()
     {
         selectedSurface = null;
-        
     }
 
     /**
@@ -238,7 +234,7 @@ public class Project
     }
 
     /**
-     * Retourne les bornes extérieures d'une surface, qui décrivent jusqu'à quel point une surface
+     * Retourne les bornes entourantes d'une surface, qui décrivent jusqu'à quel point une surface
      * peut être déplacée dans les quatre directions.
      * @param inputSurface : la surface en question.
      * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
@@ -646,20 +642,18 @@ public class Project
     /**
      * Sélectionne une surface.
      * @param point : le point qui doit être à l'intérieur de la surface.
-     * @return la surface sélectionnée, peut être null.
      */
-    public Surface selectSurface(Point2D.Double point)
+    public void selectSurface(Point2D.Double point)
     {
         for (Surface surface : surfaces)
         {
             if (surface.contains(point))
             {
                 selectedSurface = surface;
-                return surface;
+                return;
             }
         }
         selectedSurface = null;
-        return selectedSurface;
     }
     
     /**
@@ -704,15 +698,10 @@ public class Project
     {
         return selectedSurface;
     }
-
-    public Map<TileType, Integer> getQtyPerTileType()
+    
+    public boolean surfaceIsSelected()
     {
-        return qtyPerTileType;
-    }
-
-    public void setQtyPerTileType(Map<TileType, Integer> qtyPerTileType)
-    {
-        this.qtyPerTileType = qtyPerTileType;
+        return selectedSurface != null;
     }
     
     /**
@@ -780,23 +769,10 @@ public class Project
         selectedSurface.coverSurface();
     }
     
-    public void setTileColor(Color color)
-    {
-        selectedSurface.getCovering().setTileColor(color);
-        selectedSurface.coverSurface();
-    }
-    
-    public void setTileColorByIndex(int index)
-    {
-        selectedSurface.getCovering().setTileColorByIndex(index);
-        selectedSurface.coverSurface();
-    }
-    
     public void coverSurface()
     {
         selectedSurface.coverSurface();
-    }
-   
+    }   
     
     /**
      * Trouve le point le plus à droite et en-bas de toutes les surfaces.
@@ -850,5 +826,45 @@ public class Project
             }
         }
         catch (IOException | ClassNotFoundException i) { i.printStackTrace(System.out); }
+    }
+
+    public Rectangle2D getSelectedBounds2D()
+    {
+        return selectedSurface.getBounds2D();
+    }
+
+    public double getJointWidth()
+    {
+        return selectedSurface.getCovering().getJointWidth();
+    }
+
+    public Color getColor()
+    {
+        return selectedSurface.getColor();
+    }
+
+    public boolean isHole()
+    {
+        return selectedSurface.isHole();
+    }
+
+    public boolean isNinetyDegree()
+    {
+        return selectedSurface.getCovering().isNinetyDegree();
+    }
+
+    public Pattern getPattern()
+    {
+        return selectedSurface.getCovering().getPattern();
+    }
+
+    public Color getJointColor()
+    {
+        return selectedSurface.getCovering().getJointColor();
+    }
+
+    public TileType getTileType()
+    {
+        return selectedSurface.getCovering().getTileType();
     }
 }

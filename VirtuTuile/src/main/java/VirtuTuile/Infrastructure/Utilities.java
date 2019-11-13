@@ -4,7 +4,9 @@ import VirtuTuile.Domain.TileType;
 import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 /**
  * Rassemblement de constantes et de fonctions utilitaires. Tout est statique.
@@ -14,22 +16,22 @@ public final class Utilities
 {
     // Nombre de millimètres par pixel lorsque le zoom est à 100%.
     public static final int MM_PER_PIXEL = 10;
+    public static final TileType DEFAULT_TILE_1= new TileType(50, 100, "Céramique 5x10cm", 25, Color.RED);
+    public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm", 40, Color.GREEN);
     
-    public static final TileType DEFAULT_TILE_1;
-    static {
-        ArrayList<Color> colors = new ArrayList<>();
-        colors.add(new Color(219, 86, 112));
-        colors.add(new Color(139, 207, 214));
-        colors.add(new Color(90, 135, 86));
-        DEFAULT_TILE_1 = new TileType(50, 100, "Céramique 5x10cm", 25, colors);
-    }
-    public static final TileType DEFAULT_TILE_2;
-    static {
-        ArrayList<Color> colors = new ArrayList<>();
-        colors.add(new Color(84, 227, 122));
-        colors.add(new Color(250, 175, 245));
-        colors.add(new Color(247, 165, 77));
-        DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm", 40, colors);
+    private final static NumberFormat FORMAT = NumberFormat.getInstance(Locale.getDefault());
+    public static double parseDoubleLocale(String s) throws ParseException
+    {
+        try
+        {
+            Number number = FORMAT.parse(s);
+            return number.doubleValue();
+        }
+        catch (ParseException e)
+        {
+            System.out.println(e.getMessage());
+            throw e;
+        }
     }
     
     /**
