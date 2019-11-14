@@ -91,6 +91,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         return width * height;
     }
     
+    @Override
     public void coverSurface()
     {
         covering.coverSurface(this.getBounds2D());

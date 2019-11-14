@@ -15,9 +15,11 @@ import java.util.Locale;
 public final class Utilities
 {
     // Nombre de millimètres par pixel lorsque le zoom est à 100%.
-    public static final int MM_PER_PIXEL = 10;
-    public static final TileType DEFAULT_TILE_1= new TileType(50, 100, "Céramique 5x10cm", 25, Color.RED);
-    public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm", 40, Color.GREEN);
+    public static final int MM_PER_PIXEL = 5;
+    public static final TileType DEFAULT_TILE_1 = new TileType(200, 300, "Céramique 20x30cm",
+                                                               40, new Color(240, 168, 96));
+    public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm",
+                                                               25, new Color(168, 204, 215));
     
     private final static NumberFormat FORMAT = NumberFormat.getInstance(Locale.getDefault());
     public static double parseDoubleLocale(String s) throws ParseException

@@ -769,10 +769,11 @@ public class Project
         selectedSurface.coverSurface();
     }
     
-    public void coverSurface()
+    public void setTileTypeByIndex(int selectedIndex)
     {
+        selectedSurface.getCovering().setTileType(tileTypes.get(selectedIndex));
         selectedSurface.coverSurface();
-    }   
+    }
     
     /**
      * Trouve le point le plus à droite et en-bas de toutes les surfaces.
@@ -794,12 +795,6 @@ public class Project
             }
         }
         return point;
-    }
-
-    public void setTileTypeByIndex(Surface surface, int selectedIndex)
-    {
-        surface.getCovering().setTileType(tileTypes.get(selectedIndex));
-        surface.coverSurface();
     }
     
     public void saveSurfacesToFile(File file)
@@ -866,5 +861,15 @@ public class Project
     public TileType getTileType()
     {
         return selectedSurface.getCovering().getTileType();
+    }
+
+    public double getOffsetX()
+    {
+        return selectedSurface.getCovering().getOffsetX();
+    }
+    
+    public double getOffsetY()
+    {
+        return selectedSurface.getCovering().getOffsetY();
     }
 }

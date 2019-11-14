@@ -2,9 +2,10 @@ package VirtuTuile.Domain;
 
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
-import java.awt.Shape;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
+import java.awt.geom.Area;
 
 /**
  * @class definissant les tuiles et leur dispositions sur une surface
@@ -18,7 +19,7 @@ public class Covering implements Serializable
     private double jointWidth = 5;
     private boolean isNinetyDegree = false;
     private Pattern pattern = Pattern.A;
-    private final java.util.ArrayList<Shape> tiles = new java.util.ArrayList<>();
+    private final java.util.ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = Utilities.DEFAULT_TILE_1;
     private final Surface parent;
     
@@ -70,6 +71,49 @@ public class Covering implements Serializable
     
     private void coverSurfaceA(Rectangle2D bounds)
     {
+        Point2D.Double boundsTopLeft = new Point2D.Double(bounds.getX(), bounds.getY());
+        Point2D.Double boundsBotRight = new Point2D.Double(bounds.getX() + bounds.getWidth(), 
+                                                           bounds.getY() + bounds.getHeight());
+        Point2D.Double currentPoint = new Point2D.Double(bounds.getX(), bounds.getY()); // Départ haut-gauche
+        double tileWidth;
+        double tileHeight;
+        Area boundsArea = new Area(bounds);
+        Area surfaceArea = new Area(parent);
+        
+        if (isNinetyDegree == false)
+        {
+            tileWidth = tileType.getWidth();
+            tileHeight = tileType.getHeight();
+        }
+        else
+        {
+            tileWidth = tileType.getHeight();
+            tileHeight = tileType.getWidth();
+        }
+        
+        
+        while (currentPoint.getX() < boundsBotRight.getX() && currentPoint.getY() < boundsBotRight.getY())
+        {
+            Point2D.Double tileTopLeft = currentPoint;
+            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.getX() + tileWidth,
+                                                             currentPoint.getY() + tileHeight);
+            Rectangle2D tileRect = Utilities.cornersToRectangle(tileTopLeft, tileBotRight);
+            Area tileArea = new Area(tileRect);
+            tileArea.intersect(boundsArea);
+            tileArea.intersect(surfaceArea);
+
+            tiles.add(tileArea);
+            
+            // Si on dépasse en X, on descend et on repart a gauche. Si on depasse en Y, la boucle va se terminer
+            if (currentPoint.getX() + tileWidth + jointWidth < boundsBotRight.getX())
+            {
+                currentPoint.setLocation(currentPoint.getX() + tileWidth + jointWidth, currentPoint.getY());
+            }
+            else
+            {
+                currentPoint.setLocation(boundsTopLeft.getX(), currentPoint.getY() + tileHeight + jointWidth);
+            }
+        }
         
         /**
         * Plan du covering:
@@ -198,7 +242,7 @@ public class Covering implements Serializable
         this.tileType = tileType;
     }
 
-    public java.util.ArrayList<Shape> getTiles()
+    public java.util.ArrayList<Area> getTiles()
     {
         return tiles;
     }

@@ -3,7 +3,6 @@ package VirtuTuile.Domain;
 import java.awt.Shape;
 import java.awt.Color;
 import java.io.Serializable;
-import java.awt.geom.Rectangle2D;
 
 /**
  * Interface pour une surface.

@@ -147,12 +147,14 @@ public class Controller
                                                                 project.getSelectedSurface());
         if (combinedSurface == null)
         {
+            firstSurfaceToMerge = null;
             return false;
         }
         else
         {
             undoManager.addEdit(new UndoMergeSurfaces(project, firstSurfaceToMerge,
                     project.getSelectedSurface(), combinedSurface));
+            firstSurfaceToMerge = null;
             return true;
         }
     }
@@ -370,8 +372,7 @@ public class Controller
      */
     public void setJointColor(Color c)
     {
-        Surface surface = project.getSelectedSurface();
-        Covering covering = surface.getCovering();
+        Covering covering = project.getSelectedSurface().getCovering();
         Color oldColor =  covering.getJointColor();
         covering.setJointColor(c);
         undoManager.addEdit(new UndoSetJointColor(oldColor, c, covering));
@@ -384,8 +385,7 @@ public class Controller
      */
     public void setIsNinetyDegree(boolean isNinetyDegree)
     {
-        Surface surface = project.getSelectedSurface();
-        Covering covering = surface.getCovering();
+        Covering covering = project.getSelectedSurface().getCovering();
         covering.setIsNinetyDegree(isNinetyDegree);
         undoManager.addEdit(new UndoSetIsNinetyDegree(isNinetyDegree, covering));
         covering.setIsNinetyDegree(isNinetyDegree);
@@ -398,14 +398,12 @@ public class Controller
      */
     public void setPattern(Pattern pattern)
     {
-        Surface surface = project.getSelectedSurface();
-        Covering covering = surface.getCovering();
+        Covering covering = project.getSelectedSurface().getCovering();
         Pattern oldPattern = covering.getPattern();
         if (oldPattern != pattern)
         {
             covering.setPattern(pattern);
             undoManager.addEdit(new UndoSetPattern(oldPattern, pattern, covering));
-            project.coverSurface();
         }
     }
 
@@ -416,15 +414,13 @@ public class Controller
      */
     public void setTileTypeByIndex(int selectedIndex)
     {
-        Surface surface = project.getSelectedSurface();
-        Covering covering = surface.getCovering();
+        Covering covering = project.getSelectedSurface().getCovering();
         TileType oldTileType = covering.getTileType();
-        project.setTileTypeByIndex(surface, selectedIndex);
+        project.setTileTypeByIndex(selectedIndex);
         TileType newTileType = covering.getTileType();
         if (!oldTileType.getName().equals(newTileType.getName()))
         {
             undoManager.addEdit(new UndoSetTileType(oldTileType, newTileType, covering));
-            project.coverSurface();
         }
     }
 
@@ -435,14 +431,36 @@ public class Controller
      */
     public void setJointWidth(double width)
     {   
-        Surface surface = project.getSelectedSurface();
-        Covering covering = surface.getCovering();
+        Covering covering = project.getSelectedSurface().getCovering();
         double oldWidth = covering.getJointWidth();
-        surface.getCovering().setJointWidth(Math.max(0, width));
+        covering.setJointWidth(Math.max(0, width));
         undoManager.addEdit(new UndoSetJointWidth(oldWidth, width, covering));
-        project.coverSurface();
     }
 
+    /**
+     * Change le décalage horizontal de la surface sélectionnée.
+     * @param offset : le nouveau décalage horizontal.
+     */
+    public void setOffsetX(double offset)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        double oldOffsetX = covering.getOffsetX();
+        covering.setOffsetX(offset);
+        undoManager.addEdit(new UndoSetOffsetX(oldOffsetX, offset, covering));
+    }
+
+    /**
+     * Change le décalage vertical de la surface sélectionnée.
+     * @param offset : le nouveau décalage vertical.
+     */
+    public void setOffsetY(double offset)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        double oldOffsetY = covering.getOffsetY();
+        covering.setOffsetY(offset);
+        undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, offset, covering));   
+    }
+    
     /**
      * Sauvegarde le projet.
      * @param file : le fichier de sauvegarde.
@@ -532,14 +550,39 @@ public class Controller
     {
         return project.getTileType();
     }
+    
+    /**
+     * Retourne le décalage horizontal du recouvrement de la surface sélectionnée.
+     * @return le décalage horizontal du recouvrement de la surface sélectionnée.
+     */
+    public double getOffsetX()
+    {
+        return project.getOffsetX();
+    }
 
+    /**
+     * Retourne le décalage vertical du recouvrement de la surface sélectionnée.
+     * @return le décalage vertical du recouvrement de la surface sélectionnée.
+     */
+    public double getOffsetY()
+    {
+        return project.getOffsetY();
+    }
+    
     /**
      * Retourne true si une surface est sélectionnée.
      * @return true si une surface est sélectionnée.
      */
     public boolean surfaceIsSelected()
     {
-        return project.surfaceIsSelected();
+        if (project != null)
+        {
+            return project.surfaceIsSelected();
+        }
+        else
+        {
+            return false;
+        }
     }
     
     /**

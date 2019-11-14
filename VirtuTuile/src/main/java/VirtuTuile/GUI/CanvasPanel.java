@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import VirtuTuile.Domain.Drawing.CanvasDrawer;
+import VirtuTuile.Infrastructure.Utilities;
 
 /**
  * Le panneau dans lequel les surfaces sont dessinées.
@@ -23,7 +24,7 @@ public class CanvasPanel extends javax.swing.JPanel
     private int horizontalOffset = 0;
     
     // Largeur (en pixels) entre chaque ligne de la grille lorsque le zoom est à 100%.
-    private double gridDistance = 20;
+    private double gridDistance = 200 / Utilities.MM_PER_PIXEL;
     
     // Objet qui déssine sur le panneau.
     private final CanvasDrawer drawer = new CanvasDrawer(this);

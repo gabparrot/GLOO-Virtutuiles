@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -164,6 +163,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         absorbedSurfaces = (ArrayList<Surface>) in.readObject();
     }
     
+    @Override
     public void coverSurface()
     {
         covering.coverSurface(this.getBounds2D());

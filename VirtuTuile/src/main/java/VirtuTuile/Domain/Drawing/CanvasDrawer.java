@@ -2,6 +2,7 @@ package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
 import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Infrastructure.Utilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -78,7 +79,7 @@ public class CanvasDrawer
     {
         AffineTransform transform = new AffineTransform();
         transform.translate(-parent.getHorizontalOffset(), - parent.getVerticalOffset());
-        transform.scale(0.1, 0.1);
+        transform.scale(1. / Utilities.MM_PER_PIXEL, 1. / Utilities.MM_PER_PIXEL);
         transform.scale(parent.getZoom(), parent.getZoom());
         return transform;
     }
@@ -124,23 +125,43 @@ public class CanvasDrawer
             copy.transform(transform);
             
             // Dessine l'interieur de la surface.
-            g2d.setColor(surface.getColor());
+            if (surface.isHole())
+            {
+                g2d.setColor(surface.getColor());
+            }
+            else
+            {
+                g2d.setColor(surface.getCovering().getJointColor());
+            }
             g2d.fill(copy);
             
-            // Dessine une texture pour les surfaces troues.
+            // Dessine la texture d'une surface non-couverte.
             if (surface.isHole())
             {
                 g2d.setPaint(holeTexture);
                 g2d.fill(copy);
             }
+            
+            // Dessine l'intérieur d'une surface combinée (trous + tuiles)
             else if (surface instanceof CombinedSurface)
             {
+                g2d.setColor(surface.getCovering().getJointColor());
+                g2d.fill(copy);
+                drawTiles(g2d, surface, transform);
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
                 uncoveredArea.transform(transform);
+                g2d.setColor(surface.getColor());
+                g2d.fill(uncoveredArea);
                 g2d.setPaint(holeTexture);
                 g2d.fill(uncoveredArea);
                 g2d.setColor(Color.BLACK);
                 g2d.draw(uncoveredArea);
+            }
+            
+            // Dessine les tuiles d'une surface élémentaire couverte.
+            else
+            {
+                drawTiles(g2d, surface, transform);
             }
             
             // Dessine le contour de la surface.
@@ -159,9 +180,27 @@ public class CanvasDrawer
         {
             Area copy = new Area(selectedSurface);
             copy.transform(transform);
+            g2d.setColor(Color.BLACK);
             g2d.setStroke(new BasicStroke(5));
             g2d.draw(copy);
             g2d.setStroke(new BasicStroke(1));
+        }
+    }
+    
+    private void drawTiles(Graphics2D g2d, Surface surface, AffineTransform transform)
+    {
+        ArrayList<Area> tiles = surface.getCovering().getTiles();
+        Color tileColor = surface.getCovering().getTileType().getColor();
+        Color jointColor = surface.getCovering().getJointColor();
+
+        for (Area tile : tiles)
+        {
+            Area tileCopy = new Area(tile);
+            tileCopy.transform(transform);
+            g2d.setColor(tileColor);
+            g2d.fill(tileCopy);
+            g2d.setColor(jointColor);
+            g2d.draw(tileCopy);
         }
     }
     
