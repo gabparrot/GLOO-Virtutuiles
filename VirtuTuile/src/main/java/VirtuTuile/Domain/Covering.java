@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import java.awt.geom.Area;
+import java.awt.geom.AffineTransform;
 
 /**
  * @class definissant les tuiles et leur dispositions sur une surface
@@ -74,15 +75,27 @@ public class Covering implements Serializable
         Point2D.Double boundsTopLeft = new Point2D.Double(bounds.getX(), bounds.getY());
         Point2D.Double boundsBotRight = new Point2D.Double(bounds.getX() + bounds.getWidth(), 
                                                            bounds.getY() + bounds.getHeight());
-        Point2D.Double currentPoint = new Point2D.Double(bounds.getX(), bounds.getY()); // Départ haut-gauche
+        
+        
+        
+        // Départ haut-gauche, après bordure de coulis
         double tileWidth;
         double tileHeight;
         Area boundsArea = new Area(bounds);
         Area surfaceArea = new Area(parent);
         
+        Point2D.Double coveredRectTopLeft = new Point2D.Double(boundsTopLeft.getX() + jointWidth + 1, 
+                                                               boundsTopLeft.getY() + jointWidth + 1);
+        Point2D.Double coveredRectBotRight = new Point2D.Double(boundsBotRight.getX() - jointWidth - 1,
+                                                                boundsBotRight.getY() - jointWidth - 1);
+        Rectangle2D coveredRect = Utilities.cornersToRectangle(coveredRectTopLeft, coveredRectBotRight);        
+        Area coveredArea = new Area(coveredRect);
+        
+        Point2D.Double currentPoint = new Point2D.Double(coveredRect.getX(), coveredRect.getY());
+        
         if (parent instanceof CombinedSurface)
         {
-            surfaceArea.subtract(((CombinedSurface) parent).getUncoveredArea());
+            coveredArea.subtract(((CombinedSurface) parent).getUncoveredArea());
         }
         
         if (isNinetyDegree == false)
@@ -99,12 +112,12 @@ public class Covering implements Serializable
         double offsetXInverse = tileWidth - (offsetX % tileWidth);
         double offsetYInverse = tileHeight - (offsetY % tileHeight);
         
-        if (offsetX > 0.01 || offsetY > 0.01)
+        if (offsetX != 0 || offsetY != 0)
         {
             currentPoint.setLocation(currentPoint.getX() - offsetXInverse, currentPoint.getY() - offsetYInverse);
         }
         
-        while (currentPoint.getX() < boundsBotRight.getX() && currentPoint.getY() < boundsBotRight.getY())
+        while (currentPoint.getX() < coveredRectBotRight.getX() && currentPoint.getY() < coveredRectBotRight.getY())
         {
             Point2D.Double tileTopLeft = currentPoint;
             Point2D.Double tileBotRight = new Point2D.Double(currentPoint.getX() + tileWidth,
@@ -113,12 +126,13 @@ public class Covering implements Serializable
             Area tileArea = new Area(tileRect);
             tileArea.intersect(boundsArea);
             tileArea.intersect(surfaceArea);
+            tileArea.intersect(coveredArea);
             if (!tileArea.isEmpty())
             {
                 tiles.add(tileArea);
             }
             // Si on dépasse en X, on descend et on repart a gauche. Si on depasse en Y, la boucle va se terminer
-            if (currentPoint.getX() + tileWidth + jointWidth < boundsBotRight.getX())
+            if (currentPoint.getX() + tileWidth + jointWidth < coveredRectBotRight.getX())
             {
                 currentPoint.setLocation(currentPoint.getX() + tileWidth + jointWidth, currentPoint.getY());
             }
@@ -126,11 +140,11 @@ public class Covering implements Serializable
             {
                 if (offsetX <= 0.1)
                 {
-                currentPoint.setLocation(boundsTopLeft.getX(), currentPoint.getY() + tileHeight + jointWidth);
+                currentPoint.setLocation(coveredRectTopLeft.getX(), currentPoint.getY() + tileHeight + jointWidth);
                 }
                 else
                 {
-                    currentPoint.setLocation(boundsTopLeft.getX() - offsetXInverse, 
+                    currentPoint.setLocation(coveredRectTopLeft.getX() - offsetXInverse, 
                                              currentPoint.getY() + tileHeight + jointWidth);
                 }
             }
