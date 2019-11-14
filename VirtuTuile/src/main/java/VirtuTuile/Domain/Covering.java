@@ -80,6 +80,11 @@ public class Covering implements Serializable
         Area boundsArea = new Area(bounds);
         Area surfaceArea = new Area(parent);
         
+        if (parent instanceof CombinedSurface)
+        {
+            surfaceArea.subtract(((CombinedSurface) parent).getUncoveredArea());
+        }
+        
         if (isNinetyDegree == false)
         {
             tileWidth = tileType.getWidth();
@@ -91,6 +96,13 @@ public class Covering implements Serializable
             tileHeight = tileType.getWidth();
         }
         
+        double offsetXInverse = tileWidth - (offsetX % tileWidth);
+        double offsetYInverse = tileHeight - (offsetY % tileHeight);
+        
+        if (offsetX > 0.01 || offsetY > 0.01)
+        {
+            currentPoint.setLocation(currentPoint.getX() - offsetXInverse, currentPoint.getY() - offsetYInverse);
+        }
         
         while (currentPoint.getX() < boundsBotRight.getX() && currentPoint.getY() < boundsBotRight.getY())
         {
@@ -101,9 +113,10 @@ public class Covering implements Serializable
             Area tileArea = new Area(tileRect);
             tileArea.intersect(boundsArea);
             tileArea.intersect(surfaceArea);
-
-            tiles.add(tileArea);
-            
+            if (!tileArea.isEmpty())
+            {
+                tiles.add(tileArea);
+            }
             // Si on dépasse en X, on descend et on repart a gauche. Si on depasse en Y, la boucle va se terminer
             if (currentPoint.getX() + tileWidth + jointWidth < boundsBotRight.getX())
             {
@@ -111,9 +124,20 @@ public class Covering implements Serializable
             }
             else
             {
+                if (offsetX <= 0.1)
+                {
                 currentPoint.setLocation(boundsTopLeft.getX(), currentPoint.getY() + tileHeight + jointWidth);
+                }
+                else
+                {
+                    currentPoint.setLocation(boundsTopLeft.getX() - offsetXInverse, 
+                                             currentPoint.getY() + tileHeight + jointWidth);
+                }
             }
+
         }
+        //TEST
+            System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size());
         
         /**
         * Plan du covering:

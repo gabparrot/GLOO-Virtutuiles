@@ -145,11 +145,18 @@ public class CanvasDrawer
             // Dessine l'intérieur d'une surface combinée (trous + tuiles)
             else if (surface instanceof CombinedSurface)
             {
-                g2d.setColor(surface.getCovering().getJointColor());
-                g2d.fill(copy);
-                drawTiles(g2d, surface, transform);
+                // Séparer l'aire à couvrir des trous
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
+                Area coveredArea = new Area(copy);
+                coveredArea.subtract(uncoveredArea);
                 uncoveredArea.transform(transform);
+                
+                // Dessiner l'aire couverte
+                g2d.setColor(surface.getCovering().getJointColor());
+                g2d.fill(coveredArea);
+                drawTiles(g2d, surface, transform);
+                
+                // Dessiner l'aire non couverte
                 g2d.setColor(surface.getColor());
                 g2d.fill(uncoveredArea);
                 g2d.setPaint(holeTexture);

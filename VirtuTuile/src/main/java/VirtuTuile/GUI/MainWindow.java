@@ -77,6 +77,12 @@ public class MainWindow extends javax.swing.JFrame
      */
     private void unselect()
     {
+        if (controller.getSelectedSurface() != null)
+        {
+            updatePanelInformation();
+            canvasPanel.repaint();
+        }
+        
         contextMode = ContextMenuModes.NONE;
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         
@@ -2296,7 +2302,7 @@ public class MainWindow extends javax.swing.JFrame
 
     private void gridDistanceOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_gridDistanceOKButtonActionPerformed
     {//GEN-HEADEREND:event_gridDistanceOKButtonActionPerformed
-        canvasPanel.setGridDistance(gridDistanceSlider.getValue());
+        canvasPanel.setGridDistance(gridDistanceSlider.getValue() * 10 / Utilities.MM_PER_PIXEL);
         canvasPanel.repaint();
         gridDistanceDialog.dispose();
     }//GEN-LAST:event_gridDistanceOKButtonActionPerformed
@@ -2308,7 +2314,8 @@ public class MainWindow extends javax.swing.JFrame
 
     private void imperialGridDistanceOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_imperialGridDistanceOKButtonActionPerformed
     {//GEN-HEADEREND:event_imperialGridDistanceOKButtonActionPerformed
-        canvasPanel.setGridDistance(Utilities.inchesToCm(imperialGridDistanceSlider.getValue()));
+        double value = imperialGridDistanceSlider.getValue() * 10 / Utilities.MM_PER_PIXEL;
+        canvasPanel.setGridDistance(Utilities.inchesToCm(value));
         canvasPanel.repaint();
         imperialGridDistanceDialog.dispose();
     }//GEN-LAST:event_imperialGridDistanceOKButtonActionPerformed
@@ -2578,11 +2585,14 @@ public class MainWindow extends javax.swing.JFrame
     private void surfaceHeightFieldInchesActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceHeightFieldInchesActionPerformed
     {//GEN-HEADEREND:event_surfaceHeightFieldInchesActionPerformed
         surfaceHeightFieldActionPerformed(evt);
+        
     }//GEN-LAST:event_surfaceHeightFieldInchesActionPerformed
 
     private void zeroOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_zeroOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_zeroOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(false);
+        updatePanelInformation();
+        canvasPanel.repaint();
     }//GEN-LAST:event_zeroOrientationRadioButtonActionPerformed
 
     private void tileWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileWidthFieldActionPerformed
@@ -2599,6 +2609,8 @@ public class MainWindow extends javax.swing.JFrame
                 double offset = Utilities.parseDoubleLocale(offsetXField.getText()) * 10;
                 controller.setOffsetX(offset);
                 offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
@@ -2613,6 +2625,8 @@ public class MainWindow extends javax.swing.JFrame
                 controller.setOffsetX(offset);
                 offsetXField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getOffsetX())));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
@@ -3057,6 +3071,7 @@ public class MainWindow extends javax.swing.JFrame
         {
             controller.setTileTypeByIndex(tileTypeComboBox.getSelectedIndex());
             updatePanelInformation();
+            canvasPanel.repaint();
         }
         catch (Exception e) {}
     }//GEN-LAST:event_tileTypeComboBoxActionPerformed
@@ -3070,6 +3085,8 @@ public class MainWindow extends javax.swing.JFrame
                 double width = Utilities.parseDoubleLocale(jointWidthField.getText());
                 controller.setJointWidth(width);
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
@@ -3084,6 +3101,8 @@ public class MainWindow extends javax.swing.JFrame
                 controller.setJointWidth(width);
                 jointWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getJointWidth())));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
@@ -3101,6 +3120,7 @@ public class MainWindow extends javax.swing.JFrame
         {
             jointColorButton.setBackground(c);
             controller.setJointColor(c);
+            updatePanelInformation();
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_jointColorButtonActionPerformed
@@ -3110,12 +3130,16 @@ public class MainWindow extends javax.swing.JFrame
         if ((String) patternComboBox.getSelectedItem() != null)
         {
             controller.setPattern(Pattern.valueOf((String) patternComboBox.getSelectedItem()));
+            updatePanelInformation();
+            canvasPanel.repaint();
         }
     }//GEN-LAST:event_patternComboBoxActionPerformed
 
     private void ninetyOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ninetyOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_ninetyOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(true);
+        updatePanelInformation();
+        canvasPanel.repaint();
     }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
 
     private void createTileToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileToggleButtonActionPerformed
@@ -3222,6 +3246,8 @@ public class MainWindow extends javax.swing.JFrame
                 double offset = Utilities.parseDoubleLocale(offsetYField.getText()) * 10;
                 controller.setOffsetY(offset);
                 offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
@@ -3236,6 +3262,8 @@ public class MainWindow extends javax.swing.JFrame
                 controller.setOffsetY(offset);
                 offsetYField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getOffsetY())));
+                updatePanelInformation();
+                canvasPanel.repaint();
             }
             catch (java.text.ParseException e)
             {
