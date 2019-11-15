@@ -92,13 +92,14 @@ public class Covering implements Serializable, Cloneable
         double offsetXMod = this.offsetX % tileWidth;
         double offsetYMod = this.offsetY % tileHeight;
         double rowOffsetMod;
-        if (rowOffset == 0)
+        if (rowOffset == 0 || rowOffset == 100)
         {
             rowOffsetMod = 0;
         }
         else
         {
-            rowOffsetMod = tileWidth - (this.rowOffset * tileWidth); 
+            rowOffsetMod = rowOffset;
+            rowOffsetMod = tileWidth - ( rowOffsetMod/100 * tileWidth);
         }
         
 
@@ -112,9 +113,9 @@ public class Covering implements Serializable, Cloneable
         Area innerArea = getInnerArea(fullArea);
         
         Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth + offsetXMod,
-                                                         bounds.getY() - tileHeight + offsetYMod);       
-
-        int rowCount = 1;
+                                                         bounds.getY() - tileHeight + offsetYMod);
+        int tileCount = 0;
+        int rowCount = 0;
         while (currentPoint.getX() < bounds.getMaxX() && currentPoint.y < bounds.getMaxY())
         {
             Point2D.Double tileTopLeft = currentPoint;
@@ -129,23 +130,34 @@ public class Covering implements Serializable, Cloneable
                 tiles.add(tile);
             }
             
-            // Si on dépasse en X, on descend et on repart a gauche.
             if (currentPoint.x + tileWidth + jointWidth < bounds.getMaxX())
             {
                 currentPoint.x = currentPoint.getX() + tileWidth + jointWidth;
             }
-            else if (rowCount % 2 != 0)
+            else // Si on dépasse en X, on descend et on repart a gauche.
             {
+                if (tileCount < tiles.size())
+                {
+                    rowCount += 1;
+                    tileCount = tiles.size();
+                }
+                System.out.println("Rangée: " + rowCount + "mod rowCount % 2 = " + rowCount % 2);
+                if (rowCount % 2 == 0)
+                {
+                
                 currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod, 
                                          currentPoint.y + tileHeight + jointWidth);
+                }
+                // Décaler les rangées paires (celle du haut est #1)
+                else
+                {
+                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod,
+                                             currentPoint.y + tileHeight + jointWidth);                    
+                }
+                // Ne pas compter une rangée si aucune tuile ajoutée (en dehors du couvrable)
+                System.out.println("Rangée #" + rowCount + ", Nb tiles: " + tiles.size() + ", rowOffsetMod: " + rowOffsetMod + ", rowOffset " + rowOffset); //TEST
+
             }
-            else
-            {
-                currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod,
-                                         currentPoint.y + tileHeight + jointWidth);
-            }
-            
-            rowCount += 1;
         }
         System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size()); //TEST
     }
