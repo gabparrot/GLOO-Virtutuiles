@@ -461,6 +461,13 @@ public class Controller
         undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, offset, covering));   
     }
     
+    public void setRowOffset(int rowOffset)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        double oldRowOffset = covering.getRowOffset();
+        covering.setRowOffset(rowOffset);
+    }
+    
     /**
      * Sauvegarde le projet.
      * @param file : le fichier de sauvegarde.
@@ -567,6 +574,11 @@ public class Controller
     public double getOffsetY()
     {
         return project.getOffsetY();
+    }
+    
+    public int getRowOffset()
+    {
+        return project.getRowOffset();
     }
     
     /**

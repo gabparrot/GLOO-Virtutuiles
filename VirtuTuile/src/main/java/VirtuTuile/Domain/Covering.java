@@ -12,202 +12,189 @@ import java.awt.geom.AffineTransform;
  * @class definissant les tuiles et leur dispositions sur une surface
  * @author gabparrot
  */
-public class Covering implements Serializable
+public class Covering implements Serializable, Cloneable
 {
     private double offsetX = 0;
     private double offsetY = 0;
+    private int rowOffset = 0;
     private Color jointColor = Color.GRAY;
     private double jointWidth = 5;
     private boolean isNinetyDegree = false;
     private Pattern pattern = Pattern.A;
     private final java.util.ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = Utilities.DEFAULT_TILE_1;
-    private final Surface parent;
+    private Surface parent;
     
     public Covering(Surface parent)
     {
         this.parent = parent;
+        coverSurface();
     }
+    
+    public void setParent(Surface parent)
+    {
+        this.parent = parent;
+    }
+    
+    @Override
+    public Object clone() throws CloneNotSupportedException 
+    { 
+        return super.clone(); 
+    } 
     
     public void clearCovering()
     {
         tiles.clear();
     }
     
+    public void cover()
+    {
+        coverSurface();
+    }
+    
     /**
      * Cette fonction est appelée chaque fois que le Covering doit être modifié.
-     * @param bounds Rectangle2D représentant le getBounds entourant la surface à couvrir
      */
-    public void coverSurface(Rectangle2D bounds)
+    private void coverSurface()
     {
+        tiles.clear();
         if (parent.isHole())
         {
             return;
         }
-        tiles.clear();
         switch (pattern)
         {
             case A:
-                coverSurfaceA(bounds);
+                coverSurfaceA();
                 break;
                 
             case B:
-                coverSurfaceB(bounds);
+                coverSurfaceB();
                 break;
             
             case C:
-                coverSurfaceC(bounds);
+                coverSurfaceC();
                 break;
             
             case D:
-                coverSurfaceD(bounds);
-                break;
-                
-            case E:
-                coverSurfaceE(bounds);
-                break;
+                coverSurfaceD();
+                break;     
         }
     }
     
     
-    private void coverSurfaceA(Rectangle2D bounds)
+    private void coverSurfaceA()
     {
-        double tileWidth;
-        double tileHeight;
-
-        if (isNinetyDegree == false)
+        
+        double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
+        double tileHeight = isNinetyDegree ? tileType.getWidth() : tileType.getHeight();
+        
+        double offsetXMod = this.offsetX % tileWidth;
+        double offsetYMod = this.offsetY % tileHeight;
+        double rowOffsetMod;
+        if (rowOffset == 0)
         {
-            tileWidth = tileType.getWidth();
-            tileHeight = tileType.getHeight();
+            rowOffsetMod = 0;
         }
         else
         {
-            tileWidth = tileType.getHeight();
-            tileHeight = tileType.getWidth();
+            rowOffsetMod = tileWidth - (this.rowOffset * tileWidth); 
         }
-                
-        double offsetXInverse = (tileWidth - (offsetX % tileWidth)) % tileWidth;
-        double offsetYInverse = (tileHeight - (offsetY % tileHeight)) % tileHeight;
         
-        Area boundsArea = new Area(bounds);
-        Area surfaceArea = new Area(parent);
-        Area coveredArea = new Area(surfaceArea);
-        
+
+        Area fullArea = new Area(parent);
+        Rectangle2D bounds = fullArea.getBounds2D();
         if (parent instanceof CombinedSurface)
         {
-            coveredArea.subtract(((CombinedSurface) parent).getUncoveredArea());
+            fullArea.subtract(((CombinedSurface) parent).getUncoveredArea());
         }
         
-        // Créer une Area plus petite à l'intérieur de la surface à couvrir pour ne pas tuiler sur la bordure extérieure
-        Rectangle2D coveredUnscaledRect = coveredArea.getBounds2D();
+        Area innerArea = getInnerArea(fullArea);
         
-        double scaleRatioX = 1. - ((jointWidth * 2) / coveredUnscaledRect.getWidth());
-        double scaleRatioY = 1. - ((jointWidth * 2) / coveredUnscaledRect.getHeight());
-        
-        AffineTransform scalerAT = new AffineTransform();
-        AffineTransform translateAT = new AffineTransform();
-        scalerAT.scale(scaleRatioX, scaleRatioY);
-        translateAT.translate(jointWidth, jointWidth);
-        
-        coveredArea.transform(scalerAT);
-        coveredArea.transform(translateAT);
-        
-        Rectangle2D coveredRect = coveredArea.getBounds2D();
-        
-        Point2D.Double coveredTopLeft = new Point2D.Double(coveredRect.getX(), coveredRect.getY());
-        Point2D.Double coveredBotRight = new Point2D.Double(coveredRect.getX() + coveredRect.getWidth(), 
-                                                            coveredRect.getY() + coveredRect.getHeight());
-        
-        
-        Point2D.Double currentPoint = new Point2D.Double(coveredTopLeft.getX(), coveredTopLeft.getY());       
-        
-        // Placer les tuiles de gauche-droite/haut-bas sur coveredArea
-        currentPoint.setLocation(currentPoint.getX() - offsetXInverse, currentPoint.getY() - offsetYInverse);
+        Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth + offsetXMod,
+                                                         bounds.getY() - tileHeight + offsetYMod);       
 
-        //TODO peut probablement enlever le check X
-        while (currentPoint.getX() < coveredBotRight.getX() && 
-               currentPoint.getY() < coveredBotRight.getY())
+        int rowCount = 1;
+        while (currentPoint.getX() < bounds.getMaxX() && currentPoint.y < bounds.getMaxY())
         {
             Point2D.Double tileTopLeft = currentPoint;
-            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.getX() + tileWidth,
-                                                             currentPoint.getY() + tileHeight);
-            Rectangle2D tileRect = Utilities.cornersToRectangle(tileTopLeft, tileBotRight);
-            Area tileArea = new Area(tileRect);
-            tileArea.intersect(boundsArea);
-            tileArea.intersect(surfaceArea);
-            tileArea.intersect(coveredArea);
+            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.x + tileWidth,
+                                                             currentPoint.y + tileHeight);
             
-            if (!tileArea.isEmpty())
+            Area tile = new Area(Utilities.cornersToRectangle(tileTopLeft, tileBotRight));
+            tile.intersect(innerArea);
+            
+            if (!tile.isEmpty())
             {
-                tiles.add(tileArea);
+                tiles.add(tile);
             }
             
-            // Si on dépasse en X, on descend et on repart a gauche. Si on depasse en Y, la boucle va se terminer
-            if (currentPoint.getX() + tileWidth + jointWidth < coveredUnscaledRect.getX() + coveredUnscaledRect.getWidth())
+            // Si on dépasse en X, on descend et on repart a gauche.
+            if (currentPoint.x + tileWidth + jointWidth < bounds.getMaxX())
             {
-                currentPoint.setLocation(currentPoint.getX() + tileWidth + jointWidth, currentPoint.getY());
+                currentPoint.x = currentPoint.getX() + tileWidth + jointWidth;
+            }
+            else if (rowCount % 2 != 0)
+            {
+                currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod, 
+                                         currentPoint.y + tileHeight + jointWidth);
             }
             else
             {
-                currentPoint.setLocation(coveredTopLeft.getX() - offsetXInverse, 
-                                         currentPoint.getY() + tileHeight + jointWidth);
+                currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod,
+                                         currentPoint.y + tileHeight + jointWidth);
             }
-
+            
+            rowCount += 1;
         }
-        //TEST
-            System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size());
-            System.out.println("Scaleratio X: " + scaleRatioX + "\nScaleratio Y: " + scaleRatioY);
-            System.out.println("OffsetsX et Y: " + offsetXInverse + " ,  " + offsetYInverse );
-        
-        /**
-        * Plan du covering:
-        * Fait dès la création d'une surface, avec valeurs par défaut (si couvrir est coché)
-        * Aussi fait dès qu'on switch de ne pas couvrir à couvrir avec la radio box (garder valeurs?)
-        * Creer un array d'objets tuiles(shape)
-        * Getbounds se fait dans la surface, passé en param
-        * Dessiner à partir de (0,0) du GetBounds
-        * Créer tuiles 1 par 1
-        * 
-        * Le GUI inspetor mode s'occupera de montrer les tuiles trop petites, on les cree quand même
-        * Pour les autres tuiles, on trace la tuile selon la dimension du tileType donne
-        * On parcourt de gauche a droite de haut en bas
-        * Si 90 degrés coché, on switch width et height de chaque tuile
-        * apres chaque tuile, X avance de width + joint width
-        * On fait un intersect pour chaque tuile, si pas de superposition, détruite, sinon, crop à partir intersect
-        * On crée si le point de départ est intérieur même si on déborde, puis on crop par intersect
-        * Comme la couleur est pareille pour chaque tuile, pas besoin de donner l'attribut a chaque
-        * Il sera lu par le GUI directement comme attribut de covering
-        * Arreter de tracer la tuile quand on atteint la bordure et passer a la suivante
-        * Chaque fois qu'on atteint une bordure en X, se deplacer de hauteur de tuile + coulis vers le bas
-        * Si surface irreguliere, possiblement parcourir tout le canevas avec contains pour ne pas skip
-        * Le GUI doit recevoir l'array de tuiles au complet en retour
-        * Le GUI pourrait simplement imposer une couleur de background = jointColor prioritaire sur surface color
-        * La jointColor apparait par dessus la couleur de surface (trou) mais est une propriété différente
-        * if covering, draw jointCOlor, else surfaceColor
-        * Le GUI dessine ensuite toutes les tuiles (rect shape) et les fill avec la tileColor
-        * La balance est la couleur de coulis qui apparait entre les tuiles
-        * Le deplacement flush tout et refait toutes les tuiles en temps 
-        */
+        System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size()); //TEST
     }
     
-    private void coverSurfaceB(Rectangle2D bounds)
+    private void coverSurfaceB()
     {
         
     }
     
-    private void coverSurfaceC(Rectangle2D bounds)
+    private void coverSurfaceC()
     {
         
     }
     
-    private void coverSurfaceD(Rectangle2D bounds)
+    private void coverSurfaceD()
     {
         
     }
     
-    private void coverSurfaceE(Rectangle2D bounds)
+    private Area getInnerArea(Area fullArea)
     {
+        Area innerArea = new Area(fullArea);
         
+        Area topLeftCopy = new Area(fullArea);
+        AffineTransform translate = new AffineTransform();
+        translate.translate(-jointWidth, -jointWidth);
+        topLeftCopy.transform(translate);
+        
+        Area topRightCopy = new Area(fullArea);
+        translate = new AffineTransform();
+        translate.translate(jointWidth, -jointWidth);
+        topRightCopy.transform(translate);
+        
+        Area botLeftCopy = new Area(fullArea);
+        translate = new AffineTransform();
+        translate.translate(-jointWidth, jointWidth);
+        botLeftCopy.transform(translate);
+        
+        Area botRightCopy = new Area(fullArea);
+        translate = new AffineTransform();
+        translate.translate(jointWidth, jointWidth);
+        botRightCopy.transform(translate);
+        
+        innerArea.intersect(topLeftCopy);
+        innerArea.intersect(topRightCopy);
+        innerArea.intersect(botLeftCopy);
+        innerArea.intersect(botRightCopy);
+        
+        return innerArea;
     }
     
     // Getters et Setters
@@ -224,6 +211,7 @@ public class Covering implements Serializable
     public void setOffsetX(double offsetX)
     {
         this.offsetX = offsetX;
+        coverSurface();
     }
 
     public double getOffsetY()
@@ -234,6 +222,7 @@ public class Covering implements Serializable
     public void setOffsetY(double offsetY)
     {
         this.offsetY = offsetY;
+        coverSurface();
     }
 
     public Color getJointColor()
@@ -244,6 +233,7 @@ public class Covering implements Serializable
     public void setJointColor(Color jointColor)
     {
         this.jointColor = jointColor;
+        coverSurface();
     }
 
     public double getJointWidth()
@@ -254,6 +244,7 @@ public class Covering implements Serializable
     public void setJointWidth(double jointWidth)
     {
         this.jointWidth = jointWidth;
+        coverSurface();
     }
 
     public boolean isNinetyDegree()
@@ -264,6 +255,7 @@ public class Covering implements Serializable
     public void setIsNinetyDegree(boolean isNinetyDegree)
     {
         this.isNinetyDegree = isNinetyDegree;
+        coverSurface();
     } 
 
     public Pattern getPattern()
@@ -274,6 +266,7 @@ public class Covering implements Serializable
     public void setPattern(Pattern pattern)
     {
         this.pattern = pattern;
+        coverSurface();
     }
     
     public TileType getTileType()
@@ -284,10 +277,22 @@ public class Covering implements Serializable
     public void setTileType(TileType tileType)
     {
         this.tileType = tileType;
+        coverSurface();
     }
 
     public java.util.ArrayList<Area> getTiles()
     {
         return tiles;
+    }
+
+    public void setRowOffset(int rowOffset)
+    {
+        this.rowOffset = rowOffset;
+        coverSurface();
+    }
+    
+    public int getRowOffset()
+    {
+        return rowOffset;
     }
 }

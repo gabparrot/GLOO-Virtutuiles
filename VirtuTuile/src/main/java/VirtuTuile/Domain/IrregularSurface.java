@@ -53,6 +53,7 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
+        coverSurface();
     }
     /**
      * Getter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
@@ -149,6 +150,6 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
     @Override
     public void coverSurface()
     {
-        covering.coverSurface(this.getBounds2D());
+        covering.cover();
     }
 }

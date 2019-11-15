@@ -49,6 +49,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
+        coverSurface();
     }
 
     /**
@@ -94,6 +95,6 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     @Override
     public void coverSurface()
     {
-        covering.coverSurface(this.getBounds2D());
+        covering.cover();
     }
 }

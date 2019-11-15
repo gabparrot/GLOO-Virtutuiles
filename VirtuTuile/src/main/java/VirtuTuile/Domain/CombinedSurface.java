@@ -18,7 +18,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
 {
     private boolean isHole;
     private Color color;
-    private Covering covering = new Covering(this);
+    private Covering covering;
     private Area uncoveredArea = new Area();
     private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
 
@@ -28,8 +28,9 @@ public class CombinedSurface extends Area implements Surface, Serializable
      * @param s2: la deuxième surface fusionnée.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
+     * @param covering
      */
-    public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color)
+    public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color, Covering covering)
     {
         super(s1);
         this.add(new Area(s2));
@@ -56,6 +57,15 @@ public class CombinedSurface extends Area implements Surface, Serializable
         absorbedSurfaces.add(s2);
         this.isHole = isHole;
         this.color = color;
+        
+        // Copie du Covering:
+        try
+        {
+            this.covering = (Covering) covering.clone();
+            this.covering.setParent(this);
+            this.covering.cover();
+        }
+        catch (CloneNotSupportedException e) { e.printStackTrace(System.out); }
     }
    
     /**
@@ -105,10 +115,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
-        if (newStatus)
-        {
-            covering.clearCovering();
-        }
+        coverSurface();
     }
     
     /**
@@ -166,6 +173,6 @@ public class CombinedSurface extends Area implements Surface, Serializable
     @Override
     public void coverSurface()
     {
-        covering.coverSurface(this.getBounds2D());
+        covering.cover();
     }
 }

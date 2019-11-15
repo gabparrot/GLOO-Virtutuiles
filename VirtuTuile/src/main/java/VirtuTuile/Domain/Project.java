@@ -71,6 +71,7 @@ public class Project
     public void addSurface(Surface surface)
     {
         surfaces.add(surface);
+        surface.coverSurface();
     }
     
     /**
@@ -112,7 +113,8 @@ public class Project
         // Combine les surfaces:
         Surface biggestSurface = s1.getArea() > s2.getArea() ? s1 : s2;
         Color mergedColor = biggestSurface.getColor();
-        CombinedSurface newSurface = new CombinedSurface(s1, s2, false, mergedColor);
+        Covering mergedCovering = biggestSurface.getCovering();
+        CombinedSurface newSurface = new CombinedSurface(s1, s2, false, mergedColor, mergedCovering);
         surfaces.add(newSurface);
         surfaces.remove(s1);
         surfaces.remove(s2);
@@ -140,7 +142,8 @@ public class Project
         else if (surface instanceof CombinedSurface)
         {
             setSurfaceXY(newPos.getX(), newPos.getY(), (CombinedSurface) surface);
-        }   
+        }
+        if (surface != null) surface.coverSurface();
     }
 
     private void setSurfaceXY(double x, double y, RectangularSurface surface)
@@ -299,20 +302,25 @@ public class Project
      */
     public boolean setSurfaceX(double x, Surface surface)
     {
-        if (x < 0) return false;
-        
-        if (surface instanceof RectangularSurface)
+        boolean result;
+        if (x < 0)
         {
-            return setSurfaceX(x, (RectangularSurface) surface);
+            result = false;
+        }
+        else if (surface instanceof RectangularSurface)
+        {
+            result = setSurfaceX(x, (RectangularSurface) surface);
         }
         else if (surface instanceof CombinedSurface)
         {
-            return setSurfaceX(x, (CombinedSurface) surface);
+            result = setSurfaceX(x, (CombinedSurface) surface);
         }
         else
         {
-            return setSurfaceX(x, (IrregularSurface) surface);
+            result = setSurfaceX(x, (IrregularSurface) surface);
         }
+        if (surface != null) surface.coverSurface();
+        return result;
     }
     
     private boolean setSurfaceX(double x, RectangularSurface surface)
@@ -379,20 +387,25 @@ public class Project
      */
     public boolean setSurfaceY(double y, Surface surface)
      {
-        if (y < 0) return false;
-        
-        if (surface instanceof RectangularSurface)
+        boolean result;
+        if (y < 0)
         {
-            return setSurfaceY(y, (RectangularSurface) surface);
+            result = false;
+        }
+        else if (surface instanceof RectangularSurface)
+        {
+            result = setSurfaceY(y, (RectangularSurface) surface);
         }
         else if (surface instanceof CombinedSurface)
         {
-            return setSurfaceY(y, (CombinedSurface) surface);
+            result = setSurfaceY(y, (CombinedSurface) surface);
         }
         else
         {
-            return setSurfaceY(y, (IrregularSurface) surface);
+            result = setSurfaceY(y, (IrregularSurface) surface);
         }
+        if (surface != null) surface.coverSurface();
+        return result;
     }
     
     private boolean setSurfaceY(double y, RectangularSurface surface)
@@ -459,20 +472,25 @@ public class Project
      */
     public boolean setSurfaceWidth(double width, Surface surface)
     {
-        if (width < 100) return false;
-        
-        if (surface instanceof RectangularSurface)
+        boolean result;
+        if (width < 100)
         {
-            return setSurfaceWidth(width, (RectangularSurface) surface);
+            result = false;
+        }
+        else if (surface instanceof RectangularSurface)
+        {
+            result = setSurfaceWidth(width, (RectangularSurface) surface);
         }
         else if (surface instanceof CombinedSurface)
         {
-            return setSurfaceWidth(width, (CombinedSurface) surface);
+            result = setSurfaceWidth(width, (CombinedSurface) surface);
         }
         else
         {
-            return setSurfaceWidth(width, (IrregularSurface) surface);
+            result = setSurfaceWidth(width, (IrregularSurface) surface);
         }
+        if (surface != null) surface.coverSurface();
+        return result;
     }
     
     private boolean setSurfaceWidth(double width, RectangularSurface surface)
@@ -553,20 +571,25 @@ public class Project
      */
     public boolean setSurfaceHeight(double height, Surface surface)
     {
-        if (height < 100) return false;
-        
-        if (surface instanceof RectangularSurface)
+        boolean result;
+        if (height < 100)
         {
-            return setSurfaceHeight(height, (RectangularSurface) surface);
+            result = false;
+        }
+        else if (surface instanceof RectangularSurface)
+        {
+            result = setSurfaceHeight(height, (RectangularSurface) surface);
         }
         else if (surface instanceof CombinedSurface)
         {
-            return setSurfaceHeight(height, (CombinedSurface) surface);
+            result = setSurfaceHeight(height, (CombinedSurface) surface);
         }
         else
         {
-            return setSurfaceHeight(height, (IrregularSurface) surface);
+            result = setSurfaceHeight(height, (IrregularSurface) surface);
         }
+        if (surface != null) surface.coverSurface();
+        return result;
     }
     
     private boolean setSurfaceHeight(double height, RectangularSurface surface)
@@ -730,49 +753,41 @@ public class Project
     public void setIsNinetyDegree(boolean isNinetyDegree)
     {
         selectedSurface.getCovering().setIsNinetyDegree(isNinetyDegree);
-        selectedSurface.coverSurface();
     }
     
     public void setOffsetX(double offsetX)
     {
         selectedSurface.getCovering().setOffsetX(offsetX);
-        selectedSurface.coverSurface();
     }
         
     public void setOffsetY(double offsetY)
     {
         selectedSurface.getCovering().setOffsetY(offsetY);
-        selectedSurface.coverSurface();
     }
     
     public void setJointColor(Color jointColor)
     {
        selectedSurface.getCovering().setJointColor(jointColor);
-       selectedSurface.coverSurface();
     }
     
     public void setJointWidth(double width)
     {
         selectedSurface.getCovering().setJointWidth(width);
-        selectedSurface.coverSurface();
     }
     
     public void setPattern(Pattern pattern)
     {
         selectedSurface.getCovering().setPattern(pattern);
-        selectedSurface.coverSurface();
     }
     
     public void setTileType(TileType tileType)
     {
         selectedSurface.getCovering().setTileType(tileType);
-        selectedSurface.coverSurface();
     }
     
     public void setTileTypeByIndex(int selectedIndex)
     {
         selectedSurface.getCovering().setTileType(tileTypes.get(selectedIndex));
-        selectedSurface.coverSurface();
     }
     
     /**
@@ -871,5 +886,10 @@ public class Project
     public double getOffsetY()
     {
         return selectedSurface.getCovering().getOffsetY();
+    }
+
+    public int getRowOffset()
+    {
+        return selectedSurface.getCovering().getRowOffset();
     }
 }
