@@ -72,32 +72,9 @@ public class Covering implements Serializable
     
     private void coverSurfaceA(Rectangle2D bounds)
     {
-        Point2D.Double boundsTopLeft = new Point2D.Double(bounds.getX(), bounds.getY());
-        Point2D.Double boundsBotRight = new Point2D.Double(bounds.getX() + bounds.getWidth(), 
-                                                           bounds.getY() + bounds.getHeight());
-        
-        
-        
-        // Départ haut-gauche, après bordure de coulis
         double tileWidth;
         double tileHeight;
-        Area boundsArea = new Area(bounds);
-        Area surfaceArea = new Area(parent);
-        
-        Point2D.Double coveredRectTopLeft = new Point2D.Double(boundsTopLeft.getX() + jointWidth + 1, 
-                                                               boundsTopLeft.getY() + jointWidth + 1);
-        Point2D.Double coveredRectBotRight = new Point2D.Double(boundsBotRight.getX() - jointWidth - 1,
-                                                                boundsBotRight.getY() - jointWidth - 1);
-        Rectangle2D coveredRect = Utilities.cornersToRectangle(coveredRectTopLeft, coveredRectBotRight);        
-        Area coveredArea = new Area(coveredRect);
-        
-        Point2D.Double currentPoint = new Point2D.Double(coveredRect.getX(), coveredRect.getY());
-        
-        if (parent instanceof CombinedSurface)
-        {
-            coveredArea.subtract(((CombinedSurface) parent).getUncoveredArea());
-        }
-        
+
         if (isNinetyDegree == false)
         {
             tileWidth = tileType.getWidth();
@@ -108,16 +85,48 @@ public class Covering implements Serializable
             tileWidth = tileType.getHeight();
             tileHeight = tileType.getWidth();
         }
+                
+        double offsetXInverse = (tileWidth - (offsetX % tileWidth)) % tileWidth;
+        double offsetYInverse = (tileHeight - (offsetY % tileHeight)) % tileHeight;
         
-        double offsetXInverse = tileWidth - (offsetX % tileWidth);
-        double offsetYInverse = tileHeight - (offsetY % tileHeight);
+        Area boundsArea = new Area(bounds);
+        Area surfaceArea = new Area(parent);
+        Area coveredArea = new Area(surfaceArea);
         
-        if (offsetX != 0 || offsetY != 0)
+        if (parent instanceof CombinedSurface)
         {
-            currentPoint.setLocation(currentPoint.getX() - offsetXInverse, currentPoint.getY() - offsetYInverse);
+            coveredArea.subtract(((CombinedSurface) parent).getUncoveredArea());
         }
         
-        while (currentPoint.getX() < coveredRectBotRight.getX() && currentPoint.getY() < coveredRectBotRight.getY())
+        // Créer une Area plus petite à l'intérieur de la surface à couvrir pour ne pas tuiler sur la bordure extérieure
+        Rectangle2D coveredUnscaledRect = coveredArea.getBounds2D();
+        
+        double scaleRatioX = 1. - ((jointWidth * 2) / coveredUnscaledRect.getWidth());
+        double scaleRatioY = 1. - ((jointWidth * 2) / coveredUnscaledRect.getHeight());
+        
+        AffineTransform scalerAT = new AffineTransform();
+        AffineTransform translateAT = new AffineTransform();
+        scalerAT.scale(scaleRatioX, scaleRatioY);
+        translateAT.translate(jointWidth, jointWidth);
+        
+        coveredArea.transform(scalerAT);
+        coveredArea.transform(translateAT);
+        
+        Rectangle2D coveredRect = coveredArea.getBounds2D();
+        
+        Point2D.Double coveredTopLeft = new Point2D.Double(coveredRect.getX(), coveredRect.getY());
+        Point2D.Double coveredBotRight = new Point2D.Double(coveredRect.getX() + coveredRect.getWidth(), 
+                                                            coveredRect.getY() + coveredRect.getHeight());
+        
+        
+        Point2D.Double currentPoint = new Point2D.Double(coveredTopLeft.getX(), coveredTopLeft.getY());       
+        
+        // Placer les tuiles de gauche-droite/haut-bas sur coveredArea
+        currentPoint.setLocation(currentPoint.getX() - offsetXInverse, currentPoint.getY() - offsetYInverse);
+
+        //TODO peut probablement enlever le check X
+        while (currentPoint.getX() < coveredBotRight.getX() && 
+               currentPoint.getY() < coveredBotRight.getY())
         {
             Point2D.Double tileTopLeft = currentPoint;
             Point2D.Double tileBotRight = new Point2D.Double(currentPoint.getX() + tileWidth,
@@ -127,31 +136,28 @@ public class Covering implements Serializable
             tileArea.intersect(boundsArea);
             tileArea.intersect(surfaceArea);
             tileArea.intersect(coveredArea);
+            
             if (!tileArea.isEmpty())
             {
                 tiles.add(tileArea);
             }
+            
             // Si on dépasse en X, on descend et on repart a gauche. Si on depasse en Y, la boucle va se terminer
-            if (currentPoint.getX() + tileWidth + jointWidth < coveredRectBotRight.getX())
+            if (currentPoint.getX() + tileWidth + jointWidth < coveredUnscaledRect.getX() + coveredUnscaledRect.getWidth())
             {
                 currentPoint.setLocation(currentPoint.getX() + tileWidth + jointWidth, currentPoint.getY());
             }
             else
             {
-                if (offsetX <= 0.1)
-                {
-                currentPoint.setLocation(coveredRectTopLeft.getX(), currentPoint.getY() + tileHeight + jointWidth);
-                }
-                else
-                {
-                    currentPoint.setLocation(coveredRectTopLeft.getX() - offsetXInverse, 
-                                             currentPoint.getY() + tileHeight + jointWidth);
-                }
+                currentPoint.setLocation(coveredTopLeft.getX() - offsetXInverse, 
+                                         currentPoint.getY() + tileHeight + jointWidth);
             }
 
         }
         //TEST
             System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size());
+            System.out.println("Scaleratio X: " + scaleRatioX + "\nScaleratio Y: " + scaleRatioY);
+            System.out.println("OffsetsX et Y: " + offsetXInverse + " ,  " + offsetYInverse );
         
         /**
         * Plan du covering:
