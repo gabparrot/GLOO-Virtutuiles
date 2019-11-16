@@ -16,6 +16,7 @@ public final class Utilities
 {
     // Nombre de millimètres par pixel lorsque le zoom est à 100%.
     public static final int MM_PER_PIXEL = 5;
+    
     public static final TileType DEFAULT_TILE_1 = new TileType(200, 300, "Céramique 20x30cm",
                                                                40, new Color(240, 168, 96));
     public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm",

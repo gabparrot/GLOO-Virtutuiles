@@ -324,7 +324,6 @@ public class MainWindow extends javax.swing.JFrame
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
         orientationGroup = new javax.swing.ButtonGroup();
         measureGroup = new javax.swing.ButtonGroup();
-        tileGroup = new javax.swing.ButtonGroup();
         toolBar = new javax.swing.JToolBar();
         undoButton = new javax.swing.JButton();
         redoButton = new javax.swing.JButton();
@@ -433,8 +432,6 @@ public class MainWindow extends javax.swing.JFrame
         jLabel26 = new javax.swing.JLabel();
         tileNameLabel = new javax.swing.JLabel();
         tileNameField = new javax.swing.JTextField();
-        createTileToggleButton = new javax.swing.JToggleButton();
-        modifyTileTuggleButton = new javax.swing.JToggleButton();
         jLabel19 = new javax.swing.JLabel();
         tileNbPerBoxField = new javax.swing.JTextField();
         tileColorButton = new javax.swing.JButton();
@@ -733,9 +730,6 @@ public class MainWindow extends javax.swing.JFrame
         });
         surfacePopupMenu.add(deleteSurfaceMenuItem);
 
-        tileGroup.add(createTileToggleButton);
-        tileGroup.add(modifyTileTuggleButton);
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("VirtuTuile");
         setMinimumSize(new java.awt.Dimension(1000, 700));
@@ -1008,6 +1002,13 @@ public class MainWindow extends javax.swing.JFrame
         jLabel21.setText("Créer une nouvelle tuile");
 
         createWindowOKButton.setText("OK");
+        createWindowOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                createWindowOKButtonActionPerformed(evt);
+            }
+        });
 
         jLabel22.setText("Nom :");
 
@@ -1019,7 +1020,22 @@ public class MainWindow extends javax.swing.JFrame
 
         jLabel27.setText("Couleur :");
 
+        createWindowColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                createWindowColorButtonActionPerformed(evt);
+            }
+        });
+
         createWindowCancelButton.setText("Annuler");
+        createWindowCancelButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                createWindowCancelButtonActionPerformed(evt);
+            }
+        });
 
         createWindowWidthLabel.setText("cm");
 
@@ -1603,24 +1619,6 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        createTileToggleButton.setText("Créer");
-        createTileToggleButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                createTileToggleButtonActionPerformed(evt);
-            }
-        });
-
-        modifyTileTuggleButton.setText("Modifier");
-        modifyTileTuggleButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                modifyTileTuggleButtonActionPerformed(evt);
-            }
-        });
-
         jLabel19.setText("Nb/boîte :");
 
         tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
@@ -1779,19 +1777,13 @@ public class MainWindow extends javax.swing.JFrame
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel19)
-                                    .addComponent(jLabel26))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGap(23, 23, 23)
-                                .addComponent(createTileToggleButton)
-                                .addGap(18, 18, 18)
-                                .addComponent(modifyTileTuggleButton))))
+                            .addComponent(jLabel19)
+                            .addComponent(jLabel26))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(createTileButton)))
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1803,10 +1795,6 @@ public class MainWindow extends javax.swing.JFrame
                         .addGap(5, 5, 5)
                         .addComponent(rowOffsetLabel)))
                 .addContainerGap())
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGap(67, 67, 67)
-                .addComponent(createTileButton)
-                .addGap(0, 0, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1915,12 +1903,9 @@ public class MainWindow extends javax.swing.JFrame
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel19)
                     .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createTileToggleButton)
-                    .addComponent(modifyTileTuggleButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(createTileButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(createTileButton)
+                .addContainerGap(24, Short.MAX_VALUE))
         );
 
         jScrollPane1.setViewportView(rightPanel);
@@ -3533,66 +3518,63 @@ public class MainWindow extends javax.swing.JFrame
         unselect();
     }//GEN-LAST:event_tileMoveToggleActionPerformed
 
-    private void modifyTileTuggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_modifyTileTuggleButtonActionPerformed
-    {//GEN-HEADEREND:event_modifyTileTuggleButtonActionPerformed
-        toCreate = false;
-        toModify = true;
-
-        /* Prend la tuile sélectionnée dans le comboBox et met ses informations dans la section Tuile
-        tileNameField.setText(currentTile.controller.getTileName());
-        tileColorButton.setBackground(currentTile.controller.getTileColor());
-        tileNbBoxField.setText(String.format("%.0", currentTile.controller.getTileNbBox());
-
-            if(isMetric)
-            {
-                tileWidthField.setText(String.format("%.03f", currentTile.controller.getTileWidth() * 10);
-                    tileHeightField.setText(String.format("%.03f", currentTile.controller.getTileHeight() * 10);
-                    }
-                    else
-                    {
-                        double tileWidth = currentTile.controller.getTileWidth();
-                        double tileHeight = currentTile.controller.getTileHeight();
-                        tileWidthField.setText(String.valueOf(Utilities.mmToInches(tileWidth));
-                            tileHeightField.setText(String.valueOf(Utilities.mmToInches(tileHeight));
-                            }
-                            */
-    }//GEN-LAST:event_modifyTileTuggleButtonActionPerformed
-
-    private void createTileToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileToggleButtonActionPerformed
-    {//GEN-HEADEREND:event_createTileToggleButtonActionPerformed
-        toCreate = true;
-        toModify = false;
-
-        // Reset les champs d'information pour la tuile.
-        tileNameField.setText("Nom");
-        tileColorButton.setBackground(new Color(219, 86, 112));
-        tileNbPerBoxField.setText("0");
-        tileWidthField.setText("0");
-        tileHeightField.setText("0");
-    }//GEN-LAST:event_createTileToggleButtonActionPerformed
-
     private void createTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileButtonActionPerformed
     {//GEN-HEADEREND:event_createTileButtonActionPerformed
-        createTileWindow.setVisible(true);
-        
+        createTileWindow.setVisible(true);     
+    }//GEN-LAST:event_createTileButtonActionPerformed
+
+    private void createWindowColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowColorButtonActionPerformed
+    {//GEN-HEADEREND:event_createWindowColorButtonActionPerformed
+        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
+                createWindowColorButton.getBackground());
+        if (c != null)
+        {
+            createWindowColorButton.setBackground(c);
+        }
+    }//GEN-LAST:event_createWindowColorButtonActionPerformed
+
+    private void createWindowOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowOKButtonActionPerformed
+    {//GEN-HEADEREND:event_createWindowOKButtonActionPerformed
         String newTileName = createWindowNameField.getText();
-        //Color newTileColor = createWindowColorButton.getColor();
+        Color newTileColor = createWindowColorButton.getBackground();
         int newTileNbPerBox = Integer.parseInt(createWindowNbPerBoxField.getText());
+        double width;
+        double height;
         
         if(isMetric)
         {
-            createWindowWidthLabel.setText("cm");
-            double width = Double.parseDouble(createWindowWidthField.getText()) * 10;
-            double height = Double.parseDouble(createWindowHeightField.getText()) * 10;
+            width = Double.parseDouble(createWindowWidthField.getText()) * 10;
+            height = Double.parseDouble(createWindowHeightField.getText()) * 10;
         }
         else
         {            
             double widthImp = Double.parseDouble(createWindowWidthField.getText());
             double heightImp = Double.parseDouble(createWindowHeightField.getText());
-            double width = Utilities.mmToInches(widthImp);
-            double height = Utilities.mmToInches(heightImp);
+            width = Utilities.mmToInches(widthImp);
+            height = Utilities.mmToInches(heightImp);
         }
-    }//GEN-LAST:event_createTileButtonActionPerformed
+        
+        controller.createTileType(width, height, newTileName, newTileNbPerBox, newTileColor);
+                
+        createWindowNameField.setText("");
+        createWindowWidthField.setText("");
+        createWindowHeightField.setText("");
+        createWindowColorButton.setBackground(new Color(255, 255, 255));
+        createWindowNbPerBoxField.setText("");
+        createTileWindow.setVisible(false);
+        
+        updatePanelInformation();
+    }//GEN-LAST:event_createWindowOKButtonActionPerformed
+
+    private void createWindowCancelButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowCancelButtonActionPerformed
+    {//GEN-HEADEREND:event_createWindowCancelButtonActionPerformed
+        createWindowNameField.setText("");
+        createWindowWidthField.setText("");
+        createWindowHeightField.setText("");
+        createWindowColorButton.setBackground(new Color(255, 255, 255));
+        createWindowNbPerBoxField.setText("");
+        createTileWindow.setVisible(false);
+    }//GEN-LAST:event_createWindowCancelButtonActionPerformed
     
     
     
@@ -3650,7 +3632,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.ButtonGroup coverButtonGroup;
     private javax.swing.JRadioButton coverRadioButton;
     private javax.swing.JButton createTileButton;
-    private javax.swing.JToggleButton createTileToggleButton;
     private javax.swing.JPanel createTileWindow;
     private javax.swing.JButton createWindowCancelButton;
     private javax.swing.JButton createWindowColorButton;
@@ -3739,7 +3720,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem menuGridDistance;
     private javax.swing.JToggleButton mergeToggle;
     private javax.swing.JToggleButton metricButton;
-    private javax.swing.JToggleButton modifyTileTuggleButton;
     private javax.swing.JRadioButton ninetyOrientationRadioButton;
     private javax.swing.JTextField offsetXField;
     private javax.swing.JLabel offsetXText;
@@ -3776,7 +3756,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JTextField surfaceYField;
     private javax.swing.JTextField surfaceYFieldInches;
     private javax.swing.JButton tileColorButton;
-    private javax.swing.ButtonGroup tileGroup;
     private javax.swing.JTextField tileHeightField;
     private javax.swing.JToggleButton tileMoveToggle;
     private javax.swing.JTextField tileNameField;

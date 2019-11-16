@@ -728,13 +728,20 @@ public class Project
     }
     
     /**
-     * Ajoute un type de tuile dans la liste des tuiles disponibles.
-     * @param tileType : le type de tuile à ajouter.
+     * Crée un nouveau type de tuile.
+     * @param width : la largeur.
+     * @param height : la hauteur.
+     * @param name : le nom.
+     * @param nbPerBox : le nombre de tuiles par boite.
+     * @param color : la couleur.
      */
-    public void addTileType(TileType tileType)
+    public void createTileType(double width, double height, String name,
+            int nbPerBox, Color color)
     {
-        tileTypes.add(tileType);
+        TileType newTile = new TileType(width, height, name, nbPerBox, color);
+        tileTypes.add(newTile);
     }
+    
     
     /**
      * Retourne un tableau avec les noms des types de tuiles.
