@@ -345,17 +345,7 @@ public class Controller
     {
         return project.getTileTypeStrings();
     }
-    
-    /**
-     * Bouge le revetement (motif) de la surface dans l'interface.
-     * @param delta : le point sélectionné par la souris.
-     */
-    public void moveSelectedCovering(Point2D.Double delta)
-    {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
+
     /**
      * Trouve le point le plus à droite et en-bas de toutes les surfaces.
      * @return le point le plus à droite et en-bas de toutes les surfaces. 
@@ -439,6 +429,7 @@ public class Controller
 
     /**
      * Change le décalage horizontal de la surface sélectionnée.
+     * [UNDOABLE}
      * @param offset : le nouveau décalage horizontal.
      */
     public void setOffsetX(double offset)
@@ -451,6 +442,7 @@ public class Controller
 
     /**
      * Change le décalage vertical de la surface sélectionnée.
+     * [UNDOABLE]
      * @param offset : le nouveau décalage vertical.
      */
     public void setOffsetY(double offset)
@@ -461,11 +453,34 @@ public class Controller
         undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, offset, covering));   
     }
     
+    /**
+     * Change le décalage horizontal et vertical de la surface sélectionnée.
+     * [UNDOABLE]
+     * @param offsetX : le nouveau décalage horizontal.
+     * @param offsetY : le nouveau décalage vertical.
+     */
+    public void setOffsetXY(double offsetX, double offsetY)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        double oldOffsetX = covering.getOffsetX();
+        double oldOffsetY = covering.getOffsetY();
+        covering.setOffsetX(offsetX);
+        covering.setOffsetY(offsetY);
+        undoManager.addEdit(new UndoSetOffsetXY(oldOffsetX, offsetX,
+                oldOffsetY, offsetY, covering));
+    }
+    
+    /**
+     * Change le décalage entre les rangées de la surface sélectionnée.
+     * [UNDOABLE]
+     * @param rowOffset : le nouveau décalage entre les rangées.
+     */
     public void setRowOffset(int rowOffset)
     {
         Covering covering = project.getSelectedSurface().getCovering();
-        double oldRowOffset = covering.getRowOffset();
+        int oldRowOffset = covering.getRowOffset();
         covering.setRowOffset(rowOffset);
+        undoManager.addEdit(new UndoSetRowOffset(oldRowOffset, rowOffset, covering));
     }
     
     /**
@@ -576,6 +591,10 @@ public class Controller
         return project.getOffsetY();
     }
     
+    /**
+     * Retourne le décalage entre les rangées du recouvrement de la surface sélectionnée.
+     * @return le décalage entre les rangées du recouvrement de la surface sélectionnée.
+     */
     public int getRowOffset()
     {
         return project.getRowOffset();

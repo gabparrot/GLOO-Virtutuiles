@@ -7,6 +7,9 @@ import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
 
 /**
  * @class definissant les tuiles et leur dispositions sur une surface
@@ -21,7 +24,7 @@ public class Covering implements Serializable, Cloneable
     private double jointWidth = 5;
     private boolean isNinetyDegree = false;
     private Pattern pattern = Pattern.A;
-    private final java.util.ArrayList<Area> tiles = new java.util.ArrayList<>();
+    private transient ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = Utilities.DEFAULT_TILE_1;
     private Surface parent;
     
@@ -89,18 +92,12 @@ public class Covering implements Serializable, Cloneable
         double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
         double tileHeight = isNinetyDegree ? tileType.getWidth() : tileType.getHeight();
         
-        double offsetXMod = this.offsetX % tileWidth;
-        double offsetYMod = this.offsetY % tileHeight;
+        double offsetXMod = this.offsetX % (tileWidth + jointWidth);
+        double offsetYMod = this.offsetY % (tileHeight + jointWidth);
         double rowOffsetMod;
-        if (rowOffset == 0 || rowOffset == 100)
-        {
-            rowOffsetMod = 0;
-        }
-        else
-        {
-            rowOffsetMod = rowOffset;
-            rowOffsetMod = tileWidth - ( rowOffsetMod/100 * tileWidth);
-        }
+        
+        rowOffsetMod = tileWidth - (rowOffset / 100. * tileWidth);
+        rowOffsetMod -= jointWidth * rowOffset / 100;
         
 
         Area fullArea = new Area(parent);
@@ -141,7 +138,6 @@ public class Covering implements Serializable, Cloneable
                     rowCount += 1;
                     tileCount = tiles.size();
                 }
-                System.out.println("Rangée: " + rowCount + "mod rowCount % 2 = " + rowCount % 2);
                 if (rowCount % 2 == 0)
                 {
                 
@@ -151,12 +147,9 @@ public class Covering implements Serializable, Cloneable
                 // Décaler les rangées paires (celle du haut est #1)
                 else
                 {
-                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod,
+                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod - jointWidth,
                                              currentPoint.y + tileHeight + jointWidth);                    
                 }
-                // Ne pas compter une rangée si aucune tuile ajoutée (en dehors du couvrable)
-                System.out.println("Rangée #" + rowCount + ", Nb tiles: " + tiles.size() + ", rowOffsetMod: " + rowOffsetMod + ", rowOffset " + rowOffset); //TEST
-
             }
         }
         System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size()); //TEST
@@ -306,5 +299,12 @@ public class Covering implements Serializable, Cloneable
     public int getRowOffset()
     {
         return rowOffset;
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+        tiles = new java.util.ArrayList<>();
+        in.defaultReadObject();
+        cover();
     }
 }

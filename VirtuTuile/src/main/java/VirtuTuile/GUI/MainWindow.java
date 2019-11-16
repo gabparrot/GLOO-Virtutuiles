@@ -72,6 +72,7 @@ public class MainWindow extends javax.swing.JFrame
         surfaceHeightFieldInches.setVisible(false);
         heightInLabel.setVisible(false);
         toolBar.setVisible(false);
+        createTileWindow.setVisible(false);
     }
 
     /**
@@ -287,7 +288,8 @@ public class MainWindow extends javax.swing.JFrame
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         menuBar = new javax.swing.JMenu();
         toggleGroup = new javax.swing.ButtonGroup();
@@ -329,10 +331,10 @@ public class MainWindow extends javax.swing.JFrame
         jSeparator4 = new javax.swing.JToolBar.Separator();
         selectionToggle = new javax.swing.JToggleButton();
         surfaceMoveToggle = new javax.swing.JToggleButton();
+        tileMoveToggle = new javax.swing.JToggleButton();
         rectangleToggle = new javax.swing.JToggleButton();
         polygonToggle = new javax.swing.JToggleButton();
         mergeToggle = new javax.swing.JToggleButton();
-        tileMoveToggle = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         quantitiesButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
@@ -345,6 +347,22 @@ public class MainWindow extends javax.swing.JFrame
         zoomOutButton = new javax.swing.JButton();
         zoomInButton = new javax.swing.JButton();
         canvasPanel = new VirtuTuile.GUI.CanvasPanel();
+        createTileWindow = new javax.swing.JPanel();
+        jLabel21 = new javax.swing.JLabel();
+        createWindowNameField = new javax.swing.JTextField();
+        createWindowOKButton = new javax.swing.JButton();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        jLabel27 = new javax.swing.JLabel();
+        createWindowWidthField = new javax.swing.JTextField();
+        createWindowHeightField = new javax.swing.JTextField();
+        createWindowNbPerBoxField = new javax.swing.JTextField();
+        createWindowColorButton = new javax.swing.JButton();
+        createWindowCancelButton = new javax.swing.JButton();
+        createWindowWidthLabel = new javax.swing.JLabel();
+        createWindowHeightLabel = new javax.swing.JLabel();
         xPixelCoordsLabel = new javax.swing.JLabel();
         xMeasureCoordsLabel = new javax.swing.JLabel();
         zoomLabel = new javax.swing.JLabel();
@@ -417,13 +435,13 @@ public class MainWindow extends javax.swing.JFrame
         tileNameField = new javax.swing.JTextField();
         createTileToggleButton = new javax.swing.JToggleButton();
         modifyTileTuggleButton = new javax.swing.JToggleButton();
-        confirmTileButton = new javax.swing.JButton();
         jLabel19 = new javax.swing.JLabel();
         tileNbPerBoxField = new javax.swing.JTextField();
         tileColorButton = new javax.swing.JButton();
         jLabel20 = new javax.swing.JLabel();
         rowOffsetField = new javax.swing.JTextField();
         rowOffsetLabel = new javax.swing.JLabel();
+        createTileButton = new javax.swing.JButton();
         topMenuBar = new javax.swing.JMenuBar();
         menuFichier = new javax.swing.JMenu();
         menuFichierNouveauProjet = new javax.swing.JMenuItem();
@@ -453,8 +471,10 @@ public class MainWindow extends javax.swing.JFrame
         gridDistanceSlider.setMinimum(5);
         gridDistanceSlider.setMinorTickSpacing(5);
         gridDistanceSlider.setValue(20);
-        gridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        gridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
                 gridDistanceSliderStateChanged(evt);
             }
         });
@@ -462,8 +482,10 @@ public class MainWindow extends javax.swing.JFrame
         gridDistanceLabel.setText("20 cm");
 
         gridDistanceOKButton.setText("OK");
-        gridDistanceOKButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        gridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 gridDistanceOKButtonActionPerformed(evt);
             }
         });
@@ -510,8 +532,10 @@ public class MainWindow extends javax.swing.JFrame
         imperialGridDistanceSlider.setMinimum(1);
         imperialGridDistanceSlider.setMinorTickSpacing(5);
         imperialGridDistanceSlider.setValue(12);
-        imperialGridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        imperialGridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
                 imperialGridDistanceSliderStateChanged(evt);
             }
         });
@@ -519,8 +543,10 @@ public class MainWindow extends javax.swing.JFrame
         imperialGridDistanceLabel.setText("12 pouces");
 
         imperialGridDistanceOKButton.setText("OK");
-        imperialGridDistanceOKButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        imperialGridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 imperialGridDistanceOKButtonActionPerformed(evt);
             }
         });
@@ -559,32 +585,40 @@ public class MainWindow extends javax.swing.JFrame
         pushSubMenu.setText("Pousser");
 
         pushTopMenuItem.setText("Pousser la surface en-haut");
-        pushTopMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushTopMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushTopMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushTopMenuItem);
 
         pushBottomMenuItem.setText("Pousser la surface en-bas");
-        pushBottomMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushBottomMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushBottomMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushBottomMenuItem);
 
         pushLeftJMenuItem.setText("Pousser la surface à gauche");
-        pushLeftJMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushLeftJMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushLeftJMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushLeftJMenuItem);
 
         pushRightMenuItem.setText("Pousser la surface à droite");
-        pushRightMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushRightMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushRightMenuItemActionPerformed(evt);
             }
         });
@@ -595,16 +629,20 @@ public class MainWindow extends javax.swing.JFrame
         stickSubMenu.setText("Coller");
 
         stickHMenuItem.setText("Coller horizontalement avec...");
-        stickHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stickHMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 stickHMenuItemActionPerformed(evt);
             }
         });
         stickSubMenu.add(stickHMenuItem);
 
         stickVMenuItem.setText("Coller verticalement avec...");
-        stickVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stickVMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 stickVMenuItemActionPerformed(evt);
             }
         });
@@ -617,8 +655,10 @@ public class MainWindow extends javax.swing.JFrame
 
         alignTopMenuItem.setActionCommand("Aligner en-haut avec...");
         alignTopMenuItem.setLabel("Aligner en-haut avec...");
-        alignTopMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignTopMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignTopMenuItemActionPerformed(evt);
             }
         });
@@ -626,16 +666,20 @@ public class MainWindow extends javax.swing.JFrame
         alignTopMenuItem.getAccessibleContext().setAccessibleDescription("");
 
         alignBottomMenuItem.setText("Aligner en-bas avec...");
-        alignBottomMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignBottomMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignBottomMenuItemActionPerformed(evt);
             }
         });
         alignSubMenu.add(alignBottomMenuItem);
 
         alignLeftMenuItem.setText("Aligner à gauche avec...");
-        alignLeftMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignLeftMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignLeftMenuItemActionPerformed(evt);
             }
         });
@@ -643,8 +687,10 @@ public class MainWindow extends javax.swing.JFrame
         alignLeftMenuItem.getAccessibleContext().setAccessibleDescription("");
 
         alignRightMenuItem.setText("Aligner à droite avec...");
-        alignRightMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignRightMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignRightMenuItemActionPerformed(evt);
             }
         });
@@ -656,16 +702,20 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu.setText("Centrer");
 
         centerHMenuItem.setText("Centrer horizontalement avec...");
-        centerHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerHMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerHMenuItemActionPerformed(evt);
             }
         });
         centerSubMenu.add(centerHMenuItem);
 
         centerVMenuItem.setText("Centrer verticalement avec...");
-        centerVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerVMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerVMenuItemActionPerformed(evt);
             }
         });
@@ -674,8 +724,10 @@ public class MainWindow extends javax.swing.JFrame
         surfacePopupMenu.add(centerSubMenu);
 
         deleteSurfaceMenuItem.setText("Effacer la surface");
-        deleteSurfaceMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        deleteSurfaceMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 deleteSurfaceMenuItemActionPerformed(evt);
             }
         });
@@ -687,8 +739,10 @@ public class MainWindow extends javax.swing.JFrame
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("VirtuTuile");
         setMinimumSize(new java.awt.Dimension(1000, 700));
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
+        addComponentListener(new java.awt.event.ComponentAdapter()
+        {
+            public void componentResized(java.awt.event.ComponentEvent evt)
+            {
                 formComponentResized(evt);
             }
         });
@@ -701,13 +755,17 @@ public class MainWindow extends javax.swing.JFrame
         undoButton.setFocusable(false);
         undoButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         undoButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        undoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        undoButton.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
                 undoButtonMouseEntered(evt);
             }
         });
-        undoButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        undoButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 undoButtonActionPerformed(evt);
             }
         });
@@ -717,13 +775,17 @@ public class MainWindow extends javax.swing.JFrame
         redoButton.setFocusable(false);
         redoButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         redoButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        redoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        redoButton.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
                 redoButtonMouseEntered(evt);
             }
         });
-        redoButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        redoButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 redoButtonActionPerformed(evt);
             }
         });
@@ -739,8 +801,10 @@ public class MainWindow extends javax.swing.JFrame
         selectionToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         selectionToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         selectionToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        selectionToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectionToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 selectionToggleActionPerformed(evt);
             }
         });
@@ -755,12 +819,29 @@ public class MainWindow extends javax.swing.JFrame
         surfaceMoveToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         surfaceMoveToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         surfaceMoveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        surfaceMoveToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceMoveToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceMoveToggleActionPerformed(evt);
             }
         });
         toolBar.add(surfaceMoveToggle);
+
+        toggleGroup.add(tileMoveToggle);
+        tileMoveToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/tileMoveIcon.png"))); // NOI18N
+        tileMoveToggle.setToolTipText("Déplacer un motif");
+        tileMoveToggle.setFocusable(false);
+        tileMoveToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        tileMoveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        tileMoveToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                tileMoveToggleActionPerformed(evt);
+            }
+        });
+        toolBar.add(tileMoveToggle);
 
         toggleGroup.add(rectangleToggle);
         rectangleToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/rectangle.png"))); // NOI18N
@@ -771,8 +852,10 @@ public class MainWindow extends javax.swing.JFrame
         rectangleToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         rectangleToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         rectangleToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        rectangleToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        rectangleToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 rectangleToggleActionPerformed(evt);
             }
         });
@@ -787,8 +870,10 @@ public class MainWindow extends javax.swing.JFrame
         polygonToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         polygonToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         polygonToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        polygonToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        polygonToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 polygonToggleActionPerformed(evt);
             }
         });
@@ -800,25 +885,14 @@ public class MainWindow extends javax.swing.JFrame
         mergeToggle.setFocusable(false);
         mergeToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         mergeToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        mergeToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        mergeToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 mergeToggleActionPerformed(evt);
             }
         });
         toolBar.add(mergeToggle);
-
-        toggleGroup.add(tileMoveToggle);
-        tileMoveToggle.setText("TILEMOVE");
-        tileMoveToggle.setToolTipText("Combiner deux surfaces");
-        tileMoveToggle.setFocusable(false);
-        tileMoveToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        tileMoveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        tileMoveToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tileMoveToggleActionPerformed(evt);
-            }
-        });
-        toolBar.add(tileMoveToggle);
         toolBar.add(jSeparator1);
 
         quantitiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/quantities.png"))); // NOI18N
@@ -842,8 +916,10 @@ public class MainWindow extends javax.swing.JFrame
         magnetButton.setMaximumSize(new java.awt.Dimension(30, 30));
         magnetButton.setMinimumSize(new java.awt.Dimension(30, 30));
         magnetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        magnetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        magnetButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 magnetButtonActionPerformed(evt);
             }
         });
@@ -865,8 +941,10 @@ public class MainWindow extends javax.swing.JFrame
         debugToggleButton.setFocusable(false);
         debugToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         debugToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        debugToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        debugToggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 debugToggleButtonActionPerformed(evt);
             }
         });
@@ -876,50 +954,174 @@ public class MainWindow extends javax.swing.JFrame
         leftPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         zoomOutButton.setText("-");
-        zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomOutButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zoomOutButtonActionPerformed(evt);
             }
         });
 
         zoomInButton.setText("+");
-        zoomInButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomInButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zoomInButtonActionPerformed(evt);
             }
         });
 
-        canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
+        canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
+        {
+            public void mouseDragged(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseDragged(evt);
             }
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
+            public void mouseMoved(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseMoved(evt);
             }
         });
-        canvasPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+        canvasPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+        {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+            {
                 canvasPanelMouseWheelMoved(evt);
             }
         });
-        canvasPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+        canvasPanel.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMousePressed(evt);
             }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
+            public void mouseReleased(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseReleased(evt);
             }
         });
+
+        createTileWindow.setBackground(new java.awt.Color(0, 153, 153));
+        createTileWindow.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        createTileWindow.setAutoscrolls(true);
+
+        jLabel21.setText("Créer une nouvelle tuile");
+
+        createWindowOKButton.setText("OK");
+
+        jLabel22.setText("Nom :");
+
+        jLabel23.setText("Largeur :");
+
+        jLabel24.setText("Hauteur :");
+
+        jLabel25.setText("Nb/boîte :");
+
+        jLabel27.setText("Couleur :");
+
+        createWindowCancelButton.setText("Annuler");
+
+        createWindowWidthLabel.setText("cm");
+
+        createWindowHeightLabel.setText("cm");
+
+        javax.swing.GroupLayout createTileWindowLayout = new javax.swing.GroupLayout(createTileWindow);
+        createTileWindow.setLayout(createTileWindowLayout);
+        createTileWindowLayout.setHorizontalGroup(
+            createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(createTileWindowLayout.createSequentialGroup()
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(createTileWindowLayout.createSequentialGroup()
+                        .addGap(48, 48, 48)
+                        .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jLabel25, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel27)
+                                .addGroup(createTileWindowLayout.createSequentialGroup()
+                                    .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(jLabel23)
+                                            .addComponent(jLabel22))
+                                        .addComponent(jLabel24))
+                                    .addGap(23, 23, 23)
+                                    .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(createWindowNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGroup(createTileWindowLayout.createSequentialGroup()
+                                            .addComponent(createWindowWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(createWindowWidthLabel))
+                                        .addGroup(createTileWindowLayout.createSequentialGroup()
+                                            .addComponent(createWindowHeightField)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                            .addComponent(createWindowHeightLabel))
+                                        .addComponent(createWindowColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                                        .addComponent(createWindowNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                    .addGroup(createTileWindowLayout.createSequentialGroup()
+                        .addGap(87, 87, 87)
+                        .addComponent(createWindowOKButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(createWindowCancelButton)))
+                .addContainerGap(52, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, createTileWindowLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jLabel21)
+                .addGap(89, 89, 89))
+        );
+
+        createTileWindowLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {createWindowColorButton, createWindowHeightField, createWindowNbPerBoxField, createWindowWidthField});
+
+        createTileWindowLayout.setVerticalGroup(
+            createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(createTileWindowLayout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(26, 26, 26)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(createWindowNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel22))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(createWindowWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel23)
+                    .addComponent(createWindowWidthLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(createWindowHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel24)
+                    .addComponent(createWindowHeightLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(createTileWindowLayout.createSequentialGroup()
+                        .addComponent(createWindowColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(createWindowNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel25))
+                        .addGap(18, 18, 18)
+                        .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(createWindowOKButton)
+                            .addComponent(createWindowCancelButton)))
+                    .addComponent(jLabel27))
+                .addGap(14, 14, 14))
+        );
+
+        createTileWindowLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {createWindowColorButton, createWindowHeightField, createWindowNameField, createWindowNbPerBoxField, createWindowWidthField});
 
         javax.swing.GroupLayout canvasPanelLayout = new javax.swing.GroupLayout(canvasPanel);
         canvasPanel.setLayout(canvasPanelLayout);
         canvasPanelLayout.setHorizontalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, canvasPanelLayout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(157, 157, 157))
         );
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(canvasPanelLayout.createSequentialGroup()
+                .addGap(198, 198, 198)
+                .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         xPixelCoordsLabel.setText("X: 0 pixels");
@@ -931,16 +1133,20 @@ public class MainWindow extends javax.swing.JFrame
         percentLabel.setText("%");
 
         verticalScrollBar.setVisibleAmount(40);
-        verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
-            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
+        verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
                 verticalScrollBarAdjustmentValueChanged(evt);
             }
         });
 
         horizontalScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         horizontalScrollBar.setVisibleAmount(40);
-        horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
-            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
+        horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
                 horizontalScrollBarAdjustmentValueChanged(evt);
             }
         });
@@ -952,16 +1158,20 @@ public class MainWindow extends javax.swing.JFrame
         measureGroup.add(metricButton);
         metricButton.setSelected(true);
         metricButton.setText("Métrique");
-        metricButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        metricButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 metricButtonActionPerformed(evt);
             }
         });
 
         measureGroup.add(imperialButton);
         imperialButton.setText("Impérial");
-        imperialButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        imperialButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 imperialButtonActionPerformed(evt);
             }
         });
@@ -1050,8 +1260,10 @@ public class MainWindow extends javax.swing.JFrame
         surfaceColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         surfaceColorButton.setBorderPainted(false);
         surfaceColorButton.setEnabled(false);
-        surfaceColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceColorButtonActionPerformed(evt);
             }
         });
@@ -1060,8 +1272,10 @@ public class MainWindow extends javax.swing.JFrame
         coverButtonGroup.add(coverRadioButton);
         coverRadioButton.setText("Oui");
         coverRadioButton.setEnabled(false);
-        coverRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        coverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 coverRadioButtonActionPerformed(evt);
             }
         });
@@ -1070,40 +1284,50 @@ public class MainWindow extends javax.swing.JFrame
         coverButtonGroup.add(doNotCoverRadioButton);
         doNotCoverRadioButton.setText("Non");
         doNotCoverRadioButton.setEnabled(false);
-        doNotCoverRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        doNotCoverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 doNotCoverRadioButtonActionPerformed(evt);
             }
         });
 
         surfaceXField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceXField.setEnabled(false);
-        surfaceXField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceXFieldActionPerformed(evt);
             }
         });
 
         surfaceYField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceYField.setEnabled(false);
-        surfaceYField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceYFieldActionPerformed(evt);
             }
         });
 
         surfaceWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceWidthField.setEnabled(false);
-        surfaceWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceWidthFieldActionPerformed(evt);
             }
         });
 
         surfaceHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceHeightField.setEnabled(false);
-        surfaceHeightField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceHeightFieldActionPerformed(evt);
             }
         });
@@ -1118,24 +1342,30 @@ public class MainWindow extends javax.swing.JFrame
 
         surfaceHeightFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceHeightFieldInches.setEnabled(false);
-        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceHeightFieldInchesActionPerformed(evt);
             }
         });
 
         surfaceWidthFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceWidthFieldInches.setEnabled(false);
-        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceWidthFieldInchesActionPerformed(evt);
             }
         });
 
         surfaceYFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceYFieldInches.setEnabled(false);
-        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceYFieldInchesActionPerformed(evt);
             }
         });
@@ -1143,8 +1373,10 @@ public class MainWindow extends javax.swing.JFrame
         surfaceXFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceXFieldInches.setToolTipText("");
         surfaceXFieldInches.setEnabled(false);
-        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceXFieldInchesActionPerformed(evt);
             }
         });
@@ -1245,30 +1477,35 @@ public class MainWindow extends javax.swing.JFrame
         jointColorButton.setMaximumSize(new java.awt.Dimension(100, 30));
         jointColorButton.setMinimumSize(new java.awt.Dimension(100, 30));
         jointColorButton.setPreferredSize(new java.awt.Dimension(100, 30));
-        jointColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jointColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 jointColorButtonActionPerformed(evt);
             }
         });
 
         jointWidthField.setEnabled(false);
         jointWidthField.setPreferredSize(new java.awt.Dimension(50, 30));
-        jointWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jointWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 jointWidthFieldActionPerformed(evt);
             }
         });
 
         largeurJointText.setText("mm");
 
-        patternComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D", "E" }));
-        patternComboBox.setSelectedIndex(-1);
+        patternComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
         patternComboBox.setSelectedItem(null);
         patternComboBox.setEnabled(false);
         patternComboBox.setFocusable(false);
         patternComboBox.setPreferredSize(new java.awt.Dimension(50, 30));
-        patternComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        patternComboBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 patternComboBoxActionPerformed(evt);
             }
         });
@@ -1277,8 +1514,10 @@ public class MainWindow extends javax.swing.JFrame
         orientationGroup.add(zeroOrientationRadioButton);
         zeroOrientationRadioButton.setText("0°");
         zeroOrientationRadioButton.setEnabled(false);
-        zeroOrientationRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zeroOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zeroOrientationRadioButtonActionPerformed(evt);
             }
         });
@@ -1287,15 +1526,19 @@ public class MainWindow extends javax.swing.JFrame
         orientationGroup.add(ninetyOrientationRadioButton);
         ninetyOrientationRadioButton.setText("90°");
         ninetyOrientationRadioButton.setEnabled(false);
-        ninetyOrientationRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        ninetyOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 ninetyOrientationRadioButtonActionPerformed(evt);
             }
         });
 
         offsetXField.setEnabled(false);
-        offsetXField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        offsetXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 offsetXFieldActionPerformed(evt);
             }
         });
@@ -1305,8 +1548,10 @@ public class MainWindow extends javax.swing.JFrame
         offsetYText.setText("cm");
 
         offsetYField.setEnabled(false);
-        offsetYField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        offsetYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 offsetYFieldActionPerformed(evt);
             }
         });
@@ -1314,20 +1559,26 @@ public class MainWindow extends javax.swing.JFrame
         tileTypeComboBox.setEnabled(false);
         tileTypeComboBox.setMinimumSize(new java.awt.Dimension(200, 22));
         tileTypeComboBox.setPreferredSize(new java.awt.Dimension(200, 30));
-        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileTypeComboBoxActionPerformed(evt);
             }
         });
 
-        tileWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileWidthFieldActionPerformed(evt);
             }
         });
 
-        tileHeightField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileHeightFieldActionPerformed(evt);
             }
         });
@@ -1344,43 +1595,46 @@ public class MainWindow extends javax.swing.JFrame
 
         tileNameLabel.setText("Nom :");
 
-        tileNameField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileNameField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileNameFieldActionPerformed(evt);
             }
         });
 
         createTileToggleButton.setText("Créer");
-        createTileToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createTileToggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 createTileToggleButtonActionPerformed(evt);
             }
         });
 
         modifyTileTuggleButton.setText("Modifier");
-        modifyTileTuggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        modifyTileTuggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 modifyTileTuggleButtonActionPerformed(evt);
-            }
-        });
-
-        confirmTileButton.setText("Confirmer");
-        confirmTileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmTileButtonActionPerformed(evt);
             }
         });
 
         jLabel19.setText("Nb/boîte :");
 
-        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileNbPerBoxFieldActionPerformed(evt);
             }
         });
 
-        tileColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileColorButtonActionPerformed(evt);
             }
         });
@@ -1388,13 +1642,24 @@ public class MainWindow extends javax.swing.JFrame
         jLabel20.setText("Décalage rangées :");
 
         rowOffsetField.setEnabled(false);
-        rowOffsetField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        rowOffsetField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 rowOffsetFieldActionPerformed(evt);
             }
         });
 
         rowOffsetLabel.setText("%");
+
+        createTileButton.setText("Créer");
+        createTileButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                createTileButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
@@ -1526,10 +1791,7 @@ public class MainWindow extends javax.swing.JFrame
                                 .addGap(23, 23, 23)
                                 .addComponent(createTileToggleButton)
                                 .addGap(18, 18, 18)
-                                .addComponent(modifyTileTuggleButton))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGap(54, 54, 54)
-                                .addComponent(confirmTileButton))))
+                                .addComponent(modifyTileTuggleButton))))
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -1541,6 +1803,10 @@ public class MainWindow extends javax.swing.JFrame
                         .addGap(5, 5, 5)
                         .addComponent(rowOffsetLabel)))
                 .addContainerGap())
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addComponent(createTileButton)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1653,9 +1919,8 @@ public class MainWindow extends javax.swing.JFrame
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createTileToggleButton)
                     .addComponent(modifyTileTuggleButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(confirmTileButton)
-                .addGap(0, 0, 0))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(createTileButton))
         );
 
         jScrollPane1.setViewportView(rightPanel);
@@ -1680,8 +1945,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierNouveauProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierNouveauProjet.setText("Nouveau Projet");
-        menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierNouveauProjetActionPerformed(evt);
             }
         });
@@ -1689,8 +1956,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierOuvrirProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierOuvrirProjet.setText("Ouvrir Projet");
-        menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierOuvrirProjetActionPerformed(evt);
             }
         });
@@ -1698,8 +1967,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierFermerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierFermerProjet.setText("Fermer Projet");
-        menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierFermerProjetActionPerformed(evt);
             }
         });
@@ -1707,8 +1978,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierEnregistrerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierEnregistrerProjet.setText("Enregistrer Projet");
-        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierEnregistrerProjetActionPerformed(evt);
             }
         });
@@ -1716,8 +1989,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierQuitter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierQuitter.setText("Quitter");
-        menuFichierQuitter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierQuitter.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierQuitterActionPerformed(evt);
             }
         });
@@ -1730,8 +2005,10 @@ public class MainWindow extends javax.swing.JFrame
         menuEditionAnnuler.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
         menuEditionAnnuler.setText("Annuler");
         menuEditionAnnuler.setEnabled(false);
-        menuEditionAnnuler.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuEditionAnnuler.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuEditionAnnulerActionPerformed(evt);
             }
         });
@@ -1740,8 +2017,10 @@ public class MainWindow extends javax.swing.JFrame
         menuEditionRepeter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
         menuEditionRepeter.setText("Répéter");
         menuEditionRepeter.setEnabled(false);
-        menuEditionRepeter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuEditionRepeter.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuEditionRepeterActionPerformed(evt);
             }
         });
@@ -1752,8 +2031,10 @@ public class MainWindow extends javax.swing.JFrame
         menuAffichage.setText("Affichage");
 
         menuGridDistance.setText("Distance grille");
-        menuGridDistance.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuGridDistance.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuGridDistanceActionPerformed(evt);
             }
         });
@@ -1764,8 +2045,10 @@ public class MainWindow extends javax.swing.JFrame
         menuAide.setText("Aide");
 
         menuAidePropos.setText("À propos de");
-        menuAidePropos.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuAidePropos.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuAideProposActionPerformed(evt);
             }
         });
@@ -1829,7 +2112,9 @@ public class MainWindow extends javax.swing.JFrame
                     + " mètres");
             yMeasureCoordsLabel.setText("Y: " + String.format("%.03f", posYMetric / 1000.)
                     + " mètres");
-        } // Update les coordonnées impériales
+        }
+        
+        // Update les coordonnées impériales
         else
         {
             int posXFeet = Utilities.mmToFeet(posXMetric);
@@ -1974,16 +2259,14 @@ public class MainWindow extends javax.swing.JFrame
                             point.y - bounds.getY());
                 }
                 break;
+
             // Début le déplacement du covering à l'intérieur d'une surface pointée
             case TILEMOVE:
-                Point2D.Double pointTileMove = pointToMetric(evt.getPoint());
-                selectSurface(pointTileMove);
+                originPoint = pointToMetric(evt.getPoint());
+                selectSurface((Point2D.Double) originPoint);
                 if (controller.surfaceIsSelected())
                 {
-                    Rectangle2D bounds = controller.getBounds2D();
                     this.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                    originPoint = new Point2D.Double(pointTileMove.x - bounds.getX(),
-                            pointTileMove.y - bounds.getY());
                 }
                 break;
         }
@@ -2203,7 +2486,6 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanelMouseMoved(evt);
         if (selectedMode == ApplicationModes.SURFACEMOVE && controller.surfaceIsSelected() && originPoint != null)
         {
-            // Déplace la surface
             Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
             double x = currentCursorPosition.x - originPoint.getX();
             double y = currentCursorPosition.y - originPoint.getY();
@@ -2216,7 +2498,7 @@ public class MainWindow extends javax.swing.JFrame
             updatePanelInformation();
             canvasPanel.repaint();
 
-        } // Dessine un rectangle temporaire lors de la création d'un rectangle.
+        }
         else if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
             Point2D.Double point = pointToMetric(evt.getPoint());
@@ -2228,52 +2510,23 @@ public class MainWindow extends javax.swing.JFrame
                     point));
             canvasPanel.repaint();
         }
-        else if (selectedMode == ApplicationModes.TILEMOVE && controller.surfaceIsSelected())
+        else if (selectedMode == ApplicationModes.TILEMOVE && controller.surfaceIsSelected() && originPoint != null)
         {
             Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
             double deltaX = currentCursorPosition.x - originPoint.getX();
             double deltaY = currentCursorPosition.y - originPoint.getY();
-            double offsetX;
-            double offsetY;
             double tileTypeWidth = controller.getTileType().getWidth();
             double tileTypeHeight = controller.getTileType().getHeight();
             double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
             double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
-
-            if (isMetric)
-            {
-                offsetX = (controller.getOffsetX() + deltaX) % tileWidth;
-                offsetY = (controller.getOffsetY() + deltaY) % tileHeight;
-                controller.setOffsetX(offsetX);
-                controller.setOffsetY(offsetY);
-                originPoint = new Point2D.Double(currentCursorPosition.x, currentCursorPosition.y);
-                offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
-                offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
-                updatePanelInformation();
-                canvasPanel.repaint();
-            }
-            else
-            {
-                try
-                {
-                    offsetX = (Utilities.inchesToMM(Utilities.parseDoubleLocale(offsetXField.getText())) + deltaX) % 
-                            controller.getSelectedSurface().getCovering().getTileType().getHeight();
-                    offsetY = (Utilities.inchesToMM(Utilities.parseDoubleLocale(offsetYField.getText())) + deltaY) % 
-                            controller.getSelectedSurface().getCovering().getTileType().getHeight();
-                    controller.setOffsetX(offsetX);
-                    controller.setOffsetY(offsetY);
-                    originPoint = new Point2D.Double(currentCursorPosition.x, currentCursorPosition.y);
-                    offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
-                    offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
-                    updatePanelInformation();
-                    canvasPanel.repaint();
-                }
-                catch (java.text.ParseException e)
-                {
-                    offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
-                    offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
-                }
-            }
+            double jointWidth = controller.getJointWidth();
+            
+            double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
+            double offsetY = (controller.getOffsetY() + deltaY) % (tileHeight + jointWidth);
+            controller.setOffsetXY(offsetX, offsetY);
+            originPoint = currentCursorPosition;
+            updatePanelInformation();
+            canvasPanel.repaint();
         }
     }//GEN-LAST:event_canvasPanelMouseDragged
 
@@ -2703,6 +2956,8 @@ public class MainWindow extends javax.swing.JFrame
         largeurJointText.setText("mm");
         largeurTuileText.setText("cm");
         hauteurTuileText.setText("cm");
+        createWindowWidthLabel.setText("cm");
+        createWindowHeightLabel.setText("cm");
         surfaceXFieldInches.setVisible(false);
         xInLabel.setVisible(false);
         surfaceYFieldInches.setVisible(false);
@@ -2735,6 +2990,8 @@ public class MainWindow extends javax.swing.JFrame
         largeurJointText.setText("in");
         largeurTuileText.setText("in");
         hauteurTuileText.setText("in");
+        createWindowWidthLabel.setText("in");
+        createWindowHeightLabel.setText("in");
         surfaceXFieldInches.setVisible(true);
         xInLabel.setVisible(true);
         surfaceYFieldInches.setVisible(true);
@@ -3171,44 +3428,6 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
 
-    private void createTileToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileToggleButtonActionPerformed
-    {//GEN-HEADEREND:event_createTileToggleButtonActionPerformed
-        toCreate = true;
-        toModify = false;
-
-        // Reset les champs d'information pour la tuile.
-        tileNameField.setText("Nom");
-        tileColorButton.setBackground(new Color(219, 86, 112));
-        tileNbPerBoxField.setText("0");
-        tileWidthField.setText("0");
-        tileHeightField.setText("0");
-    }//GEN-LAST:event_createTileToggleButtonActionPerformed
-
-    private void modifyTileTuggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_modifyTileTuggleButtonActionPerformed
-    {//GEN-HEADEREND:event_modifyTileTuggleButtonActionPerformed
-        toCreate = false;
-        toModify = true;
-
-        /* Prend la tuile sélectionnée dans le comboBox et met ses informations dans la section Tuile
-        tileNameField.setText(currentTile.controller.getTileName());
-        tileColorButton.setBackground(currentTile.controller.getTileColor());
-        tileNbBoxField.setText(String.format("%.0", currentTile.controller.getTileNbBox());
-        
-        if(isMetric)
-        {            
-            tileWidthField.setText(String.format("%.03f", currentTile.controller.getTileWidth() * 10);
-            tileHeightField.setText(String.format("%.03f", currentTile.controller.getTileHeight() * 10);          
-        }
-        else
-        {
-            double tileWidth = currentTile.controller.getTileWidth();
-            double tileHeight = currentTile.controller.getTileHeight();
-            tileWidthField.setText(String.valueOf(Utilities.mmToInches(tileWidth));
-            tileHeightField.setText(String.valueOf(Utilities.mmToInches(tileHeight));
-        }        
-         */
-    }//GEN-LAST:event_modifyTileTuggleButtonActionPerformed
-
     private void tileColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileColorButtonActionPerformed
     {//GEN-HEADEREND:event_tileColorButtonActionPerformed
         java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
@@ -3220,42 +3439,6 @@ public class MainWindow extends javax.swing.JFrame
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_tileColorButtonActionPerformed
-
-    private void confirmTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_confirmTileButtonActionPerformed
-    {//GEN-HEADEREND:event_confirmTileButtonActionPerformed
-         String name = tileNameField.getText();
-        Color color = tileColorButton.getBackground();
-        int nbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
-        if(isMetric)
-        {
-            double width = Double.parseDouble(tileWidthField.getText()) * 10;
-            double height = Double.parseDouble(tileHeightField.getText()) * 10;
-        }
-        else
-        {
-            double widthImp = Double.parseDouble(tileWidthField.getText());
-            double heightImp = Double.parseDouble(tileHeightField.getText());
-            double width = Utilities.mmToInches(widthImp);
-            double height = Utilities.mmToInches(heightImp);
-        }
-        if(toCreate)
-        {
-            //Si on est en mode Création, on crée la tuile et on l'ajoute à la liste
-            //newTile = controller.addTileType(width, height, name, nbPerBox, color);
-            //ajoute newTile à la liste et le comboBox
-        }
-        else if(toModify)
-        {
-            //Si on est en mode Modification, on affiche un message qui demande de confirmer
-            //si on veut écraser la tuile courante avec les nouvelles informations.
-            int option = javax.swing.JOptionPane.showConfirmDialog(null, "Êtes-vous sûr de vouloir modifier la tuile?", "Modifier la tuile",
-                JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if(option == JOptionPane.OK_OPTION)
-            {
-                // On enregistre les informations par dessus celles de la tuile courante.
-            }
-        }
-    }//GEN-LAST:event_confirmTileButtonActionPerformed
     private void tileHeightFieldActionPerformed(java.awt.event.ActionEvent evt)
    {
        if (isMetric)
@@ -3347,7 +3530,69 @@ public class MainWindow extends javax.swing.JFrame
 
     private void tileMoveToggleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tileMoveToggleActionPerformed
         selectedMode = ApplicationModes.TILEMOVE;
+        unselect();
     }//GEN-LAST:event_tileMoveToggleActionPerformed
+
+    private void modifyTileTuggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_modifyTileTuggleButtonActionPerformed
+    {//GEN-HEADEREND:event_modifyTileTuggleButtonActionPerformed
+        toCreate = false;
+        toModify = true;
+
+        /* Prend la tuile sélectionnée dans le comboBox et met ses informations dans la section Tuile
+        tileNameField.setText(currentTile.controller.getTileName());
+        tileColorButton.setBackground(currentTile.controller.getTileColor());
+        tileNbBoxField.setText(String.format("%.0", currentTile.controller.getTileNbBox());
+
+            if(isMetric)
+            {
+                tileWidthField.setText(String.format("%.03f", currentTile.controller.getTileWidth() * 10);
+                    tileHeightField.setText(String.format("%.03f", currentTile.controller.getTileHeight() * 10);
+                    }
+                    else
+                    {
+                        double tileWidth = currentTile.controller.getTileWidth();
+                        double tileHeight = currentTile.controller.getTileHeight();
+                        tileWidthField.setText(String.valueOf(Utilities.mmToInches(tileWidth));
+                            tileHeightField.setText(String.valueOf(Utilities.mmToInches(tileHeight));
+                            }
+                            */
+    }//GEN-LAST:event_modifyTileTuggleButtonActionPerformed
+
+    private void createTileToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileToggleButtonActionPerformed
+    {//GEN-HEADEREND:event_createTileToggleButtonActionPerformed
+        toCreate = true;
+        toModify = false;
+
+        // Reset les champs d'information pour la tuile.
+        tileNameField.setText("Nom");
+        tileColorButton.setBackground(new Color(219, 86, 112));
+        tileNbPerBoxField.setText("0");
+        tileWidthField.setText("0");
+        tileHeightField.setText("0");
+    }//GEN-LAST:event_createTileToggleButtonActionPerformed
+
+    private void createTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileButtonActionPerformed
+    {//GEN-HEADEREND:event_createTileButtonActionPerformed
+        createTileWindow.setVisible(true);
+        
+        String newTileName = createWindowNameField.getText();
+        //Color newTileColor = createWindowColorButton.getColor();
+        int newTileNbPerBox = Integer.parseInt(createWindowNbPerBoxField.getText());
+        
+        if(isMetric)
+        {
+            createWindowWidthLabel.setText("cm");
+            double width = Double.parseDouble(createWindowWidthField.getText()) * 10;
+            double height = Double.parseDouble(createWindowHeightField.getText()) * 10;
+        }
+        else
+        {            
+            double widthImp = Double.parseDouble(createWindowWidthField.getText());
+            double heightImp = Double.parseDouble(createWindowHeightField.getText());
+            double width = Utilities.mmToInches(widthImp);
+            double height = Utilities.mmToInches(heightImp);
+        }
+    }//GEN-LAST:event_createTileButtonActionPerformed
     
     
     
@@ -3402,10 +3647,20 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem centerHMenuItem;
     private javax.swing.JMenu centerSubMenu;
     private javax.swing.JMenuItem centerVMenuItem;
-    private javax.swing.JButton confirmTileButton;
     private javax.swing.ButtonGroup coverButtonGroup;
     private javax.swing.JRadioButton coverRadioButton;
+    private javax.swing.JButton createTileButton;
     private javax.swing.JToggleButton createTileToggleButton;
+    private javax.swing.JPanel createTileWindow;
+    private javax.swing.JButton createWindowCancelButton;
+    private javax.swing.JButton createWindowColorButton;
+    private javax.swing.JTextField createWindowHeightField;
+    private javax.swing.JLabel createWindowHeightLabel;
+    private javax.swing.JTextField createWindowNameField;
+    private javax.swing.JTextField createWindowNbPerBoxField;
+    private javax.swing.JButton createWindowOKButton;
+    private javax.swing.JTextField createWindowWidthField;
+    private javax.swing.JLabel createWindowWidthLabel;
     private javax.swing.JToggleButton debugToggleButton;
     private javax.swing.JMenuItem deleteSurfaceMenuItem;
     private javax.swing.JRadioButton doNotCoverRadioButton;
@@ -3438,7 +3693,13 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
+    private javax.swing.JLabel jLabel27;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
