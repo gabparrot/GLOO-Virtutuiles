@@ -175,4 +175,17 @@ public class CombinedSurface extends Area implements Surface, Serializable
     {
         covering.cover();
     }
+    
+    /**
+     * Enlève des petits trous dans la surface.
+     */
+    public void approximateSurface()
+    {
+        AffineTransform translation = new AffineTransform();
+        translation.translate(10000, 10000);
+        transform(translation);
+        translation = new AffineTransform();
+        translation.translate(-10000, -10000);
+        transform(translation);
+    }
 }

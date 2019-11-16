@@ -2266,8 +2266,9 @@ public class MainWindow extends javax.swing.JFrame
         }
         selectSurface(pointToMetric(evt.getPoint()));
         // Display le context menu
-        if (controller.surfaceIsSelected())
+        if (controller.surfaceIsSelected() && controller.surfaceIsRectangular())
         {
+            pushSubMenu.setEnabled(true);
             double surroundingBounds[] = controller.getSurroundingBounds();
             if (surroundingBounds[2] == Integer.MAX_VALUE)
             {
@@ -2283,8 +2284,12 @@ public class MainWindow extends javax.swing.JFrame
             {
                 pushBottomMenuItem.setEnabled(true);
             }
-            surfacePopupMenu.show(canvasPanel, evt.getX(), evt.getY());
         }
+        else if (controller.surfaceIsSelected())
+        {
+            pushSubMenu.setEnabled(false);
+        }
+        surfacePopupMenu.show(canvasPanel, evt.getX(), evt.getY());
     }
 
     private void contextMenuActionHandler(java.awt.event.MouseEvent evt)

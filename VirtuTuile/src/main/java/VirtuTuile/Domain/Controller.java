@@ -106,7 +106,15 @@ public class Controller
      */
     public double[] getSurroundingBounds()
     {
-        return project.getSurroundingBounds(project.getSelectedSurface());
+        Surface selectedSurface = project.getSelectedSurface();
+        if (selectedSurface instanceof RectangularSurface)
+        {
+            return project.getSurroundingBounds((RectangularSurface) selectedSurface);
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
     }
     
     /**
@@ -620,6 +628,15 @@ public class Controller
         {
             return false;
         }
+    }
+    
+    /**
+     * Retourne true si la surface sélectionnée est Rectangulaire.
+     * @return true si la surface sélectionnée est Rectangulaire.
+     */
+    public boolean surfaceIsRectangular()
+    {
+        return project.getSelectedSurface() instanceof RectangularSurface;
     }
     
     /**

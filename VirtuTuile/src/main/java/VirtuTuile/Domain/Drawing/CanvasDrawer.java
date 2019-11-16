@@ -2,6 +2,7 @@ package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
 import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Domain.RectangularSurface;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -224,7 +225,7 @@ public class CanvasDrawer
     */
     private void drawDebug(Graphics2D g2d, Surface selectedSurface, AffineTransform transform)
     {
-        if (parent.isDebug() && selectedSurface != null)
+        if (parent.isDebug() && selectedSurface != null && selectedSurface instanceof RectangularSurface)
         {
             double surroundingBounds[] = controller.getSurroundingBounds();
             Rectangle2D.Double devRec = new Rectangle2D.Double(surroundingBounds[0],

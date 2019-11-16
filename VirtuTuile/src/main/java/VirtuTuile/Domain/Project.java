@@ -24,6 +24,7 @@ public class Project
     private ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
     private final ArrayList<TileType> tileTypes = new ArrayList<>();
+    double[][] direction = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
     
     public Project()
     {
@@ -105,22 +106,49 @@ public class Project
      */
     public CombinedSurface mergeSurfaces(Surface s1, Surface s2)
     {
-        // Vérifie si la surface combinée est connexe:
-        Area totalArea = new Area(s1);
-        totalArea.add(new Area(s2));
-        if (!totalArea.isSingular()) return null;
+        if (!surfacesAreConnected(s1, s2)) return null;
         
         // Combine les surfaces:
         Surface biggestSurface = s1.getArea() > s2.getArea() ? s1 : s2;
         Color mergedColor = biggestSurface.getColor();
         Covering mergedCovering = biggestSurface.getCovering();
         CombinedSurface newSurface = new CombinedSurface(s1, s2, false, mergedColor, mergedCovering);
+        if (!newSurface.isSingular())
+        {
+            newSurface.approximateSurface();
+        }
         surfaces.add(newSurface);
         surfaces.remove(s1);
         surfaces.remove(s2);
         return newSurface;
     }
-   
+    
+    private boolean surfacesAreConnected(Surface s1, Surface s2)
+    {
+        // Cas de base, aucune translation:
+        Area sumArea = new Area(s1);
+        sumArea.add(new Area (s2));
+        if (sumArea.isSingular())
+        {
+            return true;
+        }
+        
+        AffineTransform translation;
+        for (int i = 0; i < 4; i++)
+        {
+            sumArea = new Area(s1);
+            translation = new AffineTransform();
+            translation.translate(direction[i][0], direction[i][1]);
+            sumArea.transform(translation);
+            sumArea.add(new Area(s2));
+            if (sumArea.isSingular())
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Déplace une surface à une nouvelle position.
      * @param newPos : nouvelle position.
@@ -242,13 +270,12 @@ public class Project
      * @param inputSurface : la surface en question.
      * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
      */
-    public double[] getSurroundingBounds(Surface inputSurface)
+    public double[] getSurroundingBounds(RectangularSurface inputSurface)
     {
-        Rectangle2D b = inputSurface.getBounds2D();
-        double x = b.getX();
-        double y = b.getY();
-        double w = b.getWidth();
-        double h = b.getHeight();
+        double x = inputSurface.x;
+        double y = inputSurface.y;
+        double w = inputSurface.width;
+        double h = inputSurface.height;
         double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
         Area totalArea = new Area();
         for (Surface surface : surfaces)

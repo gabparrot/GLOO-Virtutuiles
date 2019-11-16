@@ -152,7 +152,7 @@ public class Covering implements Serializable, Cloneable
                 }
             }
         }
-        System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size()); //TEST
+        //System.out.println("Quantité de tuiles posées sur cette surface: " + tiles.size()); //TEST
     }
     
     private void coverSurfaceB()
