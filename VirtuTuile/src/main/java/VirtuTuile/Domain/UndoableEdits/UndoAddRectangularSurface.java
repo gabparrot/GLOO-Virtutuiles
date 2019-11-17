@@ -20,6 +20,7 @@ public class UndoAddRectangularSurface implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
+        project.unselect();
         project.removeSurface(surface);
     }
 

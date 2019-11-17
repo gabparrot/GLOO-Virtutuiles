@@ -19,7 +19,6 @@ import javax.swing.ImageIcon;
 
 /**
  * Objet qui permet de dessiner sur le canevas.
- * @author Petros Fytilis
  */
 public class CanvasDrawer
 {
@@ -210,8 +209,6 @@ public class CanvasDrawer
         {
             Area copy = new Area(temp);
             copy.transform(transform);
-            
-            // Dessine le rectangle temporaire.
             g2d.setColor(new Color(113, 148, 191));
             g2d.fill(copy);
             g2d.setColor(Color.BLACK);

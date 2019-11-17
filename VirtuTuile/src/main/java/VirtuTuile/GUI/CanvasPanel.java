@@ -8,12 +8,12 @@ import VirtuTuile.Infrastructure.Utilities;
 
 /**
  * Le panneau dans lequel les surfaces sont dessinées.
- * @author Petros Fytilis
  */
 public class CanvasPanel extends javax.swing.JPanel
 {   
     // Tableau avec les incréments de zoom.
-    private static final double[] ZOOM_LEVELS = {.1, .3, .5, .65, .8, .9, 1, 1.1, 1.2, 1.35, 1.5,
+    private static final double[] ZOOM_LEVELS = {.005, .01, .03, .05, .1, .3, .5,
+                                                 .65, .8, .9, 1, 1.1, 1.2, 1.35, 1.5,
                                                  1.7, 2, 2.4, 3, 4, 5, 7.5, 10};
     
     // Niveau de zoom actuel.
@@ -30,17 +30,10 @@ public class CanvasPanel extends javax.swing.JPanel
     private final CanvasDrawer drawer = new CanvasDrawer(this);
     
     // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
-    Rectangle2D.Double temporaryRectangle = null;
+    private Rectangle2D.Double temporaryRectangle = null;
     
     // Si la fenêtre est en mode debug.
     private boolean isDebug = false;
-    
-    /**
-     * Constructeur.
-     */
-    public CanvasPanel()
-    {
-    }
 
     /**
      * Retourne si la fenêtre est en mode debug ou pas.
@@ -97,7 +90,7 @@ public class CanvasPanel extends javax.swing.JPanel
     
     /**
      * Getter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
-     * @return 
+     * @return le rectangle temporaire.
      */
     public Rectangle2D.Double getTemporaryRectangle()
     {
@@ -121,7 +114,7 @@ public class CanvasPanel extends javax.swing.JPanel
     {
         if (zoom < 10)
         {
-            double newZoom = .3;
+            double newZoom = .01;
             for (int i = ZOOM_LEVELS.length - 1; i > 0; i--)
             {
                 if (ZOOM_LEVELS[i] <= zoom)
@@ -132,6 +125,10 @@ public class CanvasPanel extends javax.swing.JPanel
             }
             zoom = newZoom;
         }
+        else
+        {
+            zoom += 1;
+        }
         return zoom;
     }
     
@@ -141,7 +138,7 @@ public class CanvasPanel extends javax.swing.JPanel
      */
     public double zoomOutIncrement()
     {
-        if (zoom > .1)
+        if (zoom > .005)
         {
             double newZoom = 7.5;
             for (int i = 0; i < ZOOM_LEVELS.length; i++)
@@ -176,6 +173,13 @@ public class CanvasPanel extends javax.swing.JPanel
         if (newZoom >= 0.1)
         {
             zoom = newZoom;
+        }
+        else
+        {
+            if (increment > 0)
+                zoom = Math.max(0.005, .9 * zoom);
+            else
+                zoom = Math.max(0.005, 1.5 * zoom);
         }
         
         double zoomFactor = zoom / oldZoom;

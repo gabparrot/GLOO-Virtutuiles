@@ -9,20 +9,28 @@ import java.text.ParseException;
 import java.util.Locale;
 
 /**
- * Rassemblement de constantes et de fonctions utilitaires. Tout est statique.
- * @author Petros Fytilis
+ * Rassemblement de constantes et de fonctions utilitaires.
+ * Tout est statique.
  */
 public final class Utilities
 {
     // Nombre de millimètres par pixel lorsque le zoom est à 100%.
     public static final int MM_PER_PIXEL = 5;
     
+    // TO-DO: delete default tiles.
     public static final TileType DEFAULT_TILE_1 = new TileType(200, 300, "Céramique 20x30cm",
                                                                40, new Color(240, 168, 96));
     public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm",
                                                                25, new Color(168, 204, 215));
     
     private final static NumberFormat FORMAT = NumberFormat.getInstance(Locale.getDefault());
+    
+    /**
+     * Extrait un nombre décimal d'un chaîne de caractères selon le locale de l'utilisateur.
+     * @param s : la chaîne de caractères.
+     * @return le nombre en décimal.
+     * @throws ParseException si chaîne invalide.
+     */
     public static double parseDoubleLocale(String s) throws ParseException
     {
         try
@@ -32,7 +40,6 @@ public final class Utilities
         }
         catch (ParseException e)
         {
-            System.out.println(e.getMessage());
             throw e;
         }
     }
@@ -43,7 +50,7 @@ public final class Utilities
      * @param zoom : le facteur avec lequel les pixels doivent être convertis.
      * @return la conversion en millimètres.
      */
-    public static double pixelsToMm(int pixels, double zoom)
+    public static double pixelsToMm(double pixels, double zoom)
     {
         return pixels * MM_PER_PIXEL / zoom;
     }
@@ -55,7 +62,7 @@ public final class Utilities
      */
     public static int mmToFeet(double mm)
     {
-        return (int) (mm / 1000. * 3.28084);
+        return (int) (mm / 0.00328084);
     }
     
     /**
@@ -66,7 +73,7 @@ public final class Utilities
     public static double mmToRemainingInches(double mm)
     {
         int feet = mmToFeet(mm);
-        double inches = mm / 1000 * 39.3701;
+        double inches = mm / 0.0393701;
         return inches - feet * 12;
     }
     
@@ -77,7 +84,7 @@ public final class Utilities
      */
     public static double mmToInches(double mm)
     {
-        return mm / 1000 * 39.3701;
+        return mm / 0.0393701;
     }
     
     /**
@@ -92,21 +99,21 @@ public final class Utilities
     
     
     /**
-     * Converti un nombre de pieds en mm
-     * @param feet: le nombre de pouces
+     * Converti un nombre de pieds en mm.
+     * @param feet: le nombre de pieds.
      * @return la conversion en millimètres
      */
-    public static double feetToMM(double feet)
+    public static double feetToMm(double feet)
     {
         return feet * 304.8;
     }
     
     /**
-     * Converti un nombre de pouces en mm
-     * @param inches: le nombre de pouces
+     * Converti un nombre de pouces en mm.
+     * @param inches: le nombre de pouces.
      * @return la conversion en millimètres
      */
-    public static double inchesToMM(double inches)
+    public static double inchesToMm(double inches)
     {
         return inches * 25.4;
     }
@@ -117,29 +124,29 @@ public final class Utilities
      * @param corner2 le deuxième coin.
      * @return le rectangle défini par les deux coins
      */
-    public static Rectangle2D.Double cornersToRectangle(Point2D corner1, Point2D corner2)
+    public static Rectangle2D.Double cornersToRectangle(Point2D.Double corner1, Point2D.Double corner2)
     {
         // Ordonne les coordonnées.
         double leftMostX, rightMostX, topMostY, downMostY;
-        if (corner1.getX() < corner2.getX())
+        if (corner1.x < corner2.x)
         {
-            leftMostX = corner1.getX();
-            rightMostX = corner2.getX();
+            leftMostX = corner1.x;
+            rightMostX = corner2.x;
         }
         else
         {
-            leftMostX = corner2.getX();
-            rightMostX = corner1.getX();
+            leftMostX = corner2.x;
+            rightMostX = corner1.x;
         }
-        if (corner1.getY() < corner2.getY())
+        if (corner1.y < corner2.y)
         {
-            topMostY = corner1.getY();
-            downMostY = corner2.getY();
+            topMostY = corner1.y;
+            downMostY = corner2.y;
         }
         else
         {
-            topMostY = corner2.getY();
-            downMostY = corner1.getY();
+            topMostY = corner2.y;
+            downMostY = corner1.y;
         }
         double width = rightMostX - leftMostX;
         double height = downMostY - topMostY;
@@ -151,30 +158,30 @@ public final class Utilities
      * @param point : le point en métrique qui doit être déplacé
      * @param gridDistance : la distance de la grille, en pixels
      */
-    public static void movePointToGrid(Point2D point, double gridDistance)
+    public static void movePointToGrid(Point2D.Double point, double gridDistance)
     {
         gridDistance *= MM_PER_PIXEL;
         
-        double deltaX = point.getX() % gridDistance;
-        double deltaY = point.getY() % gridDistance;
+        double deltaX = point.x % gridDistance;
+        double deltaY = point.y % gridDistance;
         double newX, newY;
         
         if (deltaX < gridDistance / 2)
         {
-            newX = point.getX() - deltaX;
+            newX = point.x - deltaX;
         }
         else
         {
-            newX = point.getX() + gridDistance - deltaX;
+            newX = point.x + gridDistance - deltaX;
         }
         
         if (deltaY < gridDistance / 2)
         {
-            newY = point.getY() - deltaY;
+            newY = point.y - deltaY;
         }
         else
         {
-            newY = point.getY() + gridDistance - deltaY;
+            newY = point.y + gridDistance - deltaY;
         }
         point.setLocation(newX, newY);
     }

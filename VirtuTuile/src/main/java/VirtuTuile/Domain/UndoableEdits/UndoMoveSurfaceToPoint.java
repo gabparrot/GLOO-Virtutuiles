@@ -36,7 +36,7 @@ public class UndoMoveSurfaceToPoint implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
-        project.moveSurfaceToPoint(oldPoint, surface);
+        surface.setXY(oldPoint.x, oldPoint.y, project);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class UndoMoveSurfaceToPoint implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.moveSurfaceToPoint(newPoint, surface);
+        surface.setXY(newPoint.x, newPoint.y, project);
     }
     
     @Override

@@ -25,7 +25,7 @@ public class UndoSetSurfaceWidth implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
-        project.setSurfaceWidth(oldWidth, surface);
+        surface.setWidth(oldWidth, project);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class UndoSetSurfaceWidth implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.setSurfaceWidth(newWidth, surface);
+        surface.setWidth(newWidth, project);
     }
     
     @Override

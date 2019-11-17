@@ -1,18 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package VirtuTuile.Domain;
 
 import java.awt.geom.Path2D;
 import java.awt.Color;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 /**
- *
+ * @class Définissant une surface irrégulière définie par une série de points.
  * @author gabparrot
  */
 public class IrregularSurface extends Path2D.Double implements ElementarySurface
@@ -20,13 +16,11 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
     private boolean isHole;
     private Color color;
     private final Covering covering = new Covering(this);
-    
-    // TODO vérifier si attributs de coordonnées doivent être ajoutés
 
     /**
      * Constructeur de IrregularSurface
-     * @param isHole Booleen representant si oui on non la surface est un trou (non couvrable)
-     * @param color objet Color representant la couleur de la surface, visible lorsqu'elle n'
+     * @param isHole représentant si oui on non la surface est un trou (non-couvrable).
+     * @param color représentant la couleur de la surface.
      */
     public IrregularSurface(boolean isHole, Color color)
     {
@@ -108,14 +102,10 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
             allX.add(currentCoords[0]);
             allY.add(currentCoords[1]);
         }
-        
-        double base;
-        double height;
-        
+
         switch (nbPoints) 
         {
-            
-        // Cas d'erreurs retournent 0
+            // Cas d'erreurs retournent 0
             case 0:
                 break;
                 
@@ -125,14 +115,14 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
             case 2:
                 break;
                 
-        //triangle
+            //triangle
             case 3:
-                base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + Math.pow(allY.get(0) - allY.get(1), 2));
-                height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + Math.pow(allY.get(0) - allY.get(2), 2));
+                double base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + Math.pow(allY.get(0) - allY.get(1), 2));
+                double height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + Math.pow(allY.get(0) - allY.get(2), 2));
                 area = (base * height) / 2;
                 break;
                 
-        // Calcule l'aire de tout polygone de 5+ sommets
+            // Calcule l'aire de tout polygone de 5+ sommets
             default:
                 int j = nbPoints - 1;
                 
@@ -151,5 +141,141 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
     public void coverSurface()
     {
         covering.cover();
+    }
+
+    @Override
+    public boolean setX(double x, Project project)
+    {
+        if (x < 0)
+        {
+            return false;
+        }
+        Rectangle2D bounds = this.getBounds2D();
+        double deltaX = x - bounds.getX();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(deltaX, 0);
+        this.transform(translationTransform);
+        if (project.conflictCheck(this))
+        {
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(-deltaX, 0);
+            this.transform(translationTransform);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setY(double y, Project project)
+    {
+        if (y < 0)
+        {
+            return false;
+        }
+        Rectangle2D bounds = this.getBounds2D();
+        double deltaY = y - bounds.getY();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(0, deltaY);
+        this.transform(translationTransform);
+        if (project.conflictCheck(this))
+        {
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(0, -deltaY);
+            this.transform(translationTransform);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setWidth(double width, Project project)
+    {
+        if (width < 100)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double oldWidth = bounds.getWidth();
+        double oldX = bounds.getX();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(width / oldWidth, 1);
+        transform(scaleTransform);
+        setX(oldX, project);
+        
+        if (project.conflictCheck(this))
+        {
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(oldWidth / width, 1);
+            transform(scaleTransform);
+            setX(oldX, project);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setHeight(double height, Project project)
+    {
+        if (height < 100)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double oldHeight = bounds.getHeight();
+        double oldY = bounds.getY();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(1, height / oldHeight);
+        transform(scaleTransform);
+        setY(oldY, project);
+        
+        if (project.conflictCheck(this))
+        {
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(1, oldHeight / height);
+            transform(scaleTransform);
+            setY(oldY, project);
+            return false;
+        }
+    }
+
+    @Override
+    public void setXY(double x, double y, Project project)
+    {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        double deltaX = x - getBounds2D().getX();
+        double deltaY = y - getBounds2D().getY();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(deltaX, deltaY);
+        transform(translationTransform);
+        if (!project.conflictCheck(this))
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(-deltaX, -deltaY);
+            transform(translationTransform);
+        }
+        else
+        {
+            coverSurface();
+        }
     }
 }

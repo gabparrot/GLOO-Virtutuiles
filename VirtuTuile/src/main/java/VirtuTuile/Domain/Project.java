@@ -24,8 +24,9 @@ public class Project
     private ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
     private final ArrayList<TileType> tileTypes = new ArrayList<>();
-    double[][] direction = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
+    private final double[][] TRANSLATION_DIRECTIONS = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
     
+    // TO-DO: delete constructor
     public Project()
     {
         tileTypes.add(Utilities.DEFAULT_TILE_1);
@@ -80,7 +81,7 @@ public class Project
      * @param shape : la forme de la surface à vérifier.
      * @return true s'il n'y a pas de conflit, false s'il y a conflit.
      */
-    private boolean conflictCheck(Shape shape)
+    public boolean conflictCheck(Shape shape)
     {
         for (Surface surface : surfaces)
         {
@@ -113,598 +114,104 @@ public class Project
         Color mergedColor = biggestSurface.getColor();
         Covering mergedCovering = biggestSurface.getCovering();
         CombinedSurface newSurface = new CombinedSurface(s1, s2, false, mergedColor, mergedCovering);
-        if (!newSurface.isSingular())
-        {
-            newSurface.approximateSurface();
-        }
+        newSurface.approximateSurface();
         surfaces.add(newSurface);
         surfaces.remove(s1);
         surfaces.remove(s2);
         return newSurface;
     }
     
+    /**
+     * Retourne true si deux surfaces sont connexes, false sinon.
+     * @param s1 : la première surface.
+     * @param s2 : la deuxième surface.
+     * @return  true si les deux surfaces sont connexes, false sinon.
+     */
     private boolean surfacesAreConnected(Surface s1, Surface s2)
     {
-        // Cas de base, aucune translation:
-        Area sumArea = new Area(s1);
-        sumArea.add(new Area (s2));
-        if (sumArea.isSingular())
-        {
-            return true;
-        }
-        
         AffineTransform translation;
+        Area intersectionArea;
         for (int i = 0; i < 4; i++)
         {
-            sumArea = new Area(s1);
             translation = new AffineTransform();
-            translation.translate(direction[i][0], direction[i][1]);
-            sumArea.transform(translation);
-            sumArea.add(new Area(s2));
-            if (sumArea.isSingular())
+            translation.translate(TRANSLATION_DIRECTIONS[i][0], TRANSLATION_DIRECTIONS[i][1]);
+            intersectionArea = new Area(s1);
+            intersectionArea.transform(translation);
+            intersectionArea.intersect(new Area(s2));
+            if (!intersectionArea.isEmpty())
             {
-                return true;
+                Rectangle2D bounds = intersectionArea.getBounds2D();
+                if (bounds.getWidth() >= 1 || bounds.getHeight() >= 1)
+                {
+                    return true;
+                }
             }
         }
         return false;
     }
-    
-    /**
-     * Déplace une surface à une nouvelle position.
-     * @param newPos : nouvelle position.
-     * @param surface : la surface qui doit être déplacée.
-     */
-    public void moveSurfaceToPoint(Point2D.Double newPos, Surface surface)
-    {
-        if (newPos.x < 0) newPos.x = 0;
-        if (newPos.y < 0) newPos.y = 0;
-        
-        if (surface instanceof RectangularSurface)
-        {
-            setSurfaceXY(newPos.getX(), newPos.getY(), (RectangularSurface) surface);
-        }
-        else if (surface instanceof IrregularSurface)
-        {
-            setSurfaceXY(newPos.getX(), newPos.getY(), (IrregularSurface) surface);
-        }
-        else if (surface instanceof CombinedSurface)
-        {
-            setSurfaceXY(newPos.getX(), newPos.getY(), (CombinedSurface) surface);
-        }
-        if (surface != null) surface.coverSurface();
-    }
 
-    private void setSurfaceXY(double x, double y, RectangularSurface surface)
-    {   
-        double oldX = surface.x;
-        double oldY = surface.y;
-        
-        surface.x = x;
-        surface.y = y;
-        
-        // Cas: aucun conflit.
-        if (conflictCheck(surface))
-        {
-            return;
-        }
-        else
-        {
-            surface.x = oldX;
-            surface.y = oldY;
-        }
-        
-        double surroundingBounds[] = getSurroundingBounds(surface);
-        surface.x = x;
-        
-        // Cas: conflit horizontal.
-        if (!conflictCheck(surface))
-        {
-            // Déplacement à droite
-            if (x > oldX)
-            {
-                surface.x = Math.min(x, surroundingBounds[2] - surface.width);
-            }
-            // Déplacement à gauche
-            else
-            {
-                surface.x = Math.max(x, surroundingBounds[0]);
-            }
-        }
-        
-        surroundingBounds = getSurroundingBounds(surface);
-        surface.y = y;
-        
-        // Cas: conflit vertical.
-        if (!conflictCheck(surface))
-        {
-            // Déplacement vers le bas
-            if (y > oldY)
-            {
-                surface.y = Math.min(y, surroundingBounds[3] - surface.height);
-            }
-            // Déplacement vers le haut
-            else
-            {
-                surface.y = Math.max(y, surroundingBounds[1]);
-            }
-        }
-    }
-
-    private void setSurfaceXY(double x, double y, IrregularSurface surface)
-    {
-        double deltaX = x - surface.getBounds2D().getX();
-        double deltaY = y - surface.getBounds2D().getY();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(deltaX, deltaY);
-        surface.transform(translationTransform);
-        if (!conflictCheck(surface))
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(-deltaX, -deltaY);
-            surface.transform(translationTransform);
-        }
-    }
-
-    private void setSurfaceXY(double x, double y, CombinedSurface surface)
-    {
-        double deltaX = x - surface.getBounds2D().getX();
-        double deltaY = y - surface.getBounds2D().getY();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(deltaX, deltaY);
-        surface.transform(translationTransform);
-        if (!conflictCheck(surface))
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(-deltaX, -deltaY);
-            surface.transform(translationTransform);
-        }
-        else
-        {
-            surface.getUncoveredArea().transform(translationTransform);
-        }
-    }
-
-    /**
-     * Retourne les bornes entourantes d'une surface, qui décrivent jusqu'à quel point une surface
-     * peut être déplacée dans les quatre directions.
-     * @param inputSurface : la surface en question.
-     * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
-     */
-    public double[] getSurroundingBounds(RectangularSurface inputSurface)
-    {
-        double x = inputSurface.x;
-        double y = inputSurface.y;
-        double w = inputSurface.width;
-        double h = inputSurface.height;
-        double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
-        Area totalArea = new Area();
-        for (Surface surface : surfaces)
-        {
-            if (surface != inputSurface) totalArea.add(new Area(surface));
-        }
-        // LEFT
-        Area leftArea = new Area(totalArea);
-        leftArea.intersect(new Area(new Rectangle2D.Double(0, y, x, h)));
-        Rectangle2D leftRect = leftArea.getBounds2D();
-        if (leftRect.getX() + leftRect.getWidth() > 0)
-        {
-            surroundingBounds[0] = leftRect.getX() + leftRect.getWidth();
-        }
-        
-        // UP
-        Area upArea = new Area(totalArea);
-        upArea.intersect(new Area(new Rectangle2D.Double(x, 0, w, y)));
-        Rectangle2D upRect = upArea.getBounds2D();
-        if (upRect.getY() + upRect.getHeight() > 0)
-        {
-            surroundingBounds[1] = upRect.getY() + upRect.getHeight();
-        }
-        
-        // RIGHT
-        Area rightArea = new Area(totalArea);
-        rightArea.intersect(new Area(new Rectangle2D.Double(x + w, y, Integer.MAX_VALUE, h)));
-        Rectangle2D rightRect = rightArea.getBounds2D();
-        if (!rightArea.isEmpty())
-        {
-            surroundingBounds[2] = rightRect.getX();
-        }
-        
-        // DOWN
-        Area downArea = new Area(totalArea);
-        downArea.intersect(new Area(new Rectangle2D.Double(x, y + h, w, Integer.MAX_VALUE)));
-        Rectangle2D downRect = downArea.getBounds2D();
-        if (!downArea.isEmpty())
-        {
-            surroundingBounds[3] = downRect.getY();
-        }
-        
-        return surroundingBounds;
-    }
-    
-    /**
-     * Set le paramètre x d'une surface.
-     * @param x : le nouveau paramètre x.
-     * @param surface : la surface qui doit être modifiée.
-     * @return : true si réussi, false sinon.
-     */
-    public boolean setSurfaceX(double x, Surface surface)
-    {
-        boolean result;
-        if (x < 0)
-        {
-            result = false;
-        }
-        else if (surface instanceof RectangularSurface)
-        {
-            result = setSurfaceX(x, (RectangularSurface) surface);
-        }
-        else if (surface instanceof CombinedSurface)
-        {
-            result = setSurfaceX(x, (CombinedSurface) surface);
-        }
-        else
-        {
-            result = setSurfaceX(x, (IrregularSurface) surface);
-        }
-        if (surface != null) surface.coverSurface();
-        return result;
-    }
-    
-    private boolean setSurfaceX(double x, RectangularSurface surface)
-    {
-        double oldX = surface.x;
-        surface.x = x;
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            surface.x = oldX;
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceX(double x, CombinedSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double deltaX = x - bounds.getX();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(deltaX, 0);
-        surface.transform(translationTransform);
-        if (conflictCheck(surface))
-        {
-            surface.getUncoveredArea().transform(translationTransform);
-            return true;
-        }
-        else
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(-deltaX, 0);
-            surface.transform(translationTransform);
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceX(double x, IrregularSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double deltaX = x - bounds.getX();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(deltaX, 0);
-        surface.transform(translationTransform);
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(-deltaX, 0);
-            surface.transform(translationTransform);
-            return false;
-        }
-    }
-    
-    /**
-     * Set le paramètre y d'une surface.
-     * @param y : le nouveau paramètre y.
-     * @param surface : la surface qui doit être modifiée.
-     * @return : true si réussi, false sinon.
-     */
-    public boolean setSurfaceY(double y, Surface surface)
-     {
-        boolean result;
-        if (y < 0)
-        {
-            result = false;
-        }
-        else if (surface instanceof RectangularSurface)
-        {
-            result = setSurfaceY(y, (RectangularSurface) surface);
-        }
-        else if (surface instanceof CombinedSurface)
-        {
-            result = setSurfaceY(y, (CombinedSurface) surface);
-        }
-        else
-        {
-            result = setSurfaceY(y, (IrregularSurface) surface);
-        }
-        if (surface != null) surface.coverSurface();
-        return result;
-    }
-    
-    private boolean setSurfaceY(double y, RectangularSurface surface)
-    {
-        double oldY = surface.y;
-        surface.y = y;
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            surface.y = oldY;
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceY(double y, CombinedSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double deltaY = y - bounds.getY();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(0, deltaY);
-        surface.transform(translationTransform);
-        if (conflictCheck(surface))
-        {
-            surface.getUncoveredArea().transform(translationTransform);
-            return true;
-        }
-        else
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(0, -deltaY);
-            surface.transform(translationTransform);
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceY(double y, IrregularSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double deltaY = y - bounds.getY();
-        AffineTransform translationTransform = new AffineTransform();
-        translationTransform.translate(0, deltaY);
-        surface.transform(translationTransform);
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            translationTransform = new AffineTransform();
-            translationTransform.translate(0, -deltaY);
-            surface.transform(translationTransform);
-            return false;
-        }
-    }
-    
-    /**
-     * Set le paramètre width d'une surface.
-     * @param width : le nouveau paramètre width.
-     * @param surface : la surface qui doit être modifiée.
-     * @return : true si réussi, false sinon.
-     */
-    public boolean setSurfaceWidth(double width, Surface surface)
-    {
-        boolean result;
-        if (width < 100)
-        {
-            result = false;
-        }
-        else if (surface instanceof RectangularSurface)
-        {
-            result = setSurfaceWidth(width, (RectangularSurface) surface);
-        }
-        else if (surface instanceof CombinedSurface)
-        {
-            result = setSurfaceWidth(width, (CombinedSurface) surface);
-        }
-        else
-        {
-            result = setSurfaceWidth(width, (IrregularSurface) surface);
-        }
-        if (surface != null) surface.coverSurface();
-        return result;
-    }
-    
-    private boolean setSurfaceWidth(double width, RectangularSurface surface)
-    {
-        double oldWidth = surface.width;
-        
-        surface.width = width;
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            surface.width = oldWidth;
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceWidth(double width, IrregularSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double oldWidth = bounds.getWidth();
-        double oldX = bounds.getX();
-        
-        AffineTransform scaleTransform = new AffineTransform();
-        scaleTransform.scale(width / oldWidth, 1);
-        surface.transform(scaleTransform);
-        setSurfaceX(oldX, surface);
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            scaleTransform = new AffineTransform();
-            scaleTransform.scale(oldWidth / width, 1);
-            surface.transform(scaleTransform);
-            setSurfaceX(oldX, surface);
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceWidth(double width, CombinedSurface surface)
-    {
-        Area uncoveredArea = surface.getUncoveredArea();
-        Rectangle2D bounds = surface.getBounds2D();
-        double oldWidth = bounds.getWidth();
-        double oldX = bounds.getX();
-        
-        AffineTransform scaleTransform = new AffineTransform();
-        scaleTransform.scale(width / oldWidth, 1);
-        surface.transform(scaleTransform);
-        uncoveredArea.transform(scaleTransform);
-        setSurfaceX(oldX, surface);
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            scaleTransform = new AffineTransform();
-            scaleTransform.scale(oldWidth / width, 1);
-            surface.transform(scaleTransform);
-            uncoveredArea.transform(scaleTransform);
-            setSurfaceX(oldX, surface);
-            return false;
-        }
-    }
-    
-    /**
-     * Set le paramètre height d'une surface.
-     * @param height : le nouveau paramètre height.
-     * @param surface : la surface qui doit être modifiée.
-     * @return : true si réussi, false sinon.
-     */
-    public boolean setSurfaceHeight(double height, Surface surface)
-    {
-        boolean result;
-        if (height < 100)
-        {
-            result = false;
-        }
-        else if (surface instanceof RectangularSurface)
-        {
-            result = setSurfaceHeight(height, (RectangularSurface) surface);
-        }
-        else if (surface instanceof CombinedSurface)
-        {
-            result = setSurfaceHeight(height, (CombinedSurface) surface);
-        }
-        else
-        {
-            result = setSurfaceHeight(height, (IrregularSurface) surface);
-        }
-        if (surface != null) surface.coverSurface();
-        return result;
-    }
-    
-    private boolean setSurfaceHeight(double height, RectangularSurface surface)
-    {
-        double oldHeight = surface.height;
-        
-        surface.height = height;
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            surface.height = oldHeight;
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceHeight(double height, IrregularSurface surface)
-    {
-        Rectangle2D bounds = surface.getBounds2D();
-        double oldHeight = bounds.getHeight();
-        double oldY = bounds.getY();
-        
-        AffineTransform scaleTransform = new AffineTransform();
-        scaleTransform.scale(1, height / oldHeight);
-        surface.transform(scaleTransform);
-        setSurfaceY(oldY, surface);
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            scaleTransform = new AffineTransform();
-            scaleTransform.scale(1, oldHeight / height);
-            surface.transform(scaleTransform);
-            setSurfaceY(oldY, surface);
-            return false;
-        }
-    }
-    
-    private boolean setSurfaceHeight(double height, CombinedSurface surface)
-    {
-        Area uncoveredArea = surface.getUncoveredArea();
-        Rectangle2D bounds = surface.getBounds2D();
-        double oldHeight = bounds.getHeight();
-        double oldY = bounds.getY();
-        
-        AffineTransform scaleTransform = new AffineTransform();
-        scaleTransform.scale(1, height / oldHeight);
-        surface.transform(scaleTransform);
-        uncoveredArea.transform(scaleTransform);
-        setSurfaceY(oldY, surface);
-        
-        if (conflictCheck(surface))
-        {
-            return true;
-        }
-        else
-        {
-            scaleTransform = new AffineTransform();
-            scaleTransform.scale(1, oldHeight / height);
-            surface.transform(scaleTransform);
-            uncoveredArea.transform(scaleTransform);
-            setSurfaceY(oldY, surface);
-            return false;
-        }
-    }
-    
     /**
      * Sélectionne une surface.
      * @param point : le point qui doit être à l'intérieur de la surface.
      */
     public void selectSurface(Point2D.Double point)
     {
+        selectedSurface = getSurfaceAtPoint(point);
+    }
+    
+    public Surface getSurfaceAtPoint(Point2D.Double point)
+    {
         for (Surface surface : surfaces)
-        {
-            if (surface.contains(point))
             {
-                selectedSurface = surface;
-                return;
+                if (surface.contains(point))
+                {
+                    return surface;
+                }
+            }
+        return null;
+    }
+    
+    public String[] getTileAtPoint(Point2D.Double point)
+    {
+        String tileName = "";
+        Double tileWidth = 0.0;
+        Double tileHeight = 0.0;
+        Double tileXPos = 0.0;
+        Double tileYPos = 0.0;
+        
+        String[] tileInfos = new String[5];
+        
+        Surface surface = getSurfaceAtPoint(point);
+        
+        if (surface != null && !surface.isHole())
+        {
+            Covering covering = surface.getCovering();
+            for (Area tile : covering.getTiles())
+            {
+                if (tile.contains(point))
+                {
+                    Rectangle2D tileBounds = tile.getBounds2D();
+                    TileType tileType = covering.getTileType();
+                    
+                    tileName = tileType.getName();
+                    tileWidth = tileBounds.getWidth();
+                    tileHeight = tileBounds.getHeight();
+                    tileXPos = tileBounds.getX();
+                    tileYPos = tileBounds.getY();
+                    break;
+                }
             }
         }
-        selectedSurface = null;
+        
+        tileInfos[0] = tileName;
+        tileInfos[1] = tileWidth.toString();
+        tileInfos[2] = tileHeight.toString();
+        tileInfos[3] = tileXPos.toString();
+        tileInfos[4] = tileYPos.toString();
+        
+        return tileInfos;
     }
+            
     
     /**
      * Trouve la surface qui contient le point (sans la sélectionner).
@@ -749,6 +256,10 @@ public class Project
         return selectedSurface;
     }
     
+    /**
+     * Retourne true si une surface est sélectionnée, false sinon.
+     * @return true si une surface est sélectionnée, false sinon.
+     */
     public boolean surfaceIsSelected()
     {
         return selectedSurface != null;
@@ -765,8 +276,7 @@ public class Project
     public void createTileType(double width, double height, String name,
             int nbPerBox, Color color)
     {
-        TileType newTile = new TileType(width, height, name, nbPerBox, color);
-        tileTypes.add(newTile);
+        tileTypes.add(new TileType(width, height, name, nbPerBox, color));
     }
     
     
@@ -784,41 +294,10 @@ public class Project
         return tileTypeStrings;
     }
     
-    public void setIsNinetyDegree(boolean isNinetyDegree)
-    {
-        selectedSurface.getCovering().setIsNinetyDegree(isNinetyDegree);
-    }
-    
-    public void setOffsetX(double offsetX)
-    {
-        selectedSurface.getCovering().setOffsetX(offsetX);
-    }
-        
-    public void setOffsetY(double offsetY)
-    {
-        selectedSurface.getCovering().setOffsetY(offsetY);
-    }
-    
-    public void setJointColor(Color jointColor)
-    {
-       selectedSurface.getCovering().setJointColor(jointColor);
-    }
-    
-    public void setJointWidth(double width)
-    {
-        selectedSurface.getCovering().setJointWidth(width);
-    }
-    
-    public void setPattern(Pattern pattern)
-    {
-        selectedSurface.getCovering().setPattern(pattern);
-    }
-    
-    public void setTileType(TileType tileType)
-    {
-        selectedSurface.getCovering().setTileType(tileType);
-    }
-    
+    /**
+     * Change le type de tuile de la surface sélectionnée.
+     * @param selectedIndex : l'index du type de tuile dans la liste des types de tuiles.
+     */
     public void setTileTypeByIndex(int selectedIndex)
     {
         selectedSurface.getCovering().setTileType(tileTypes.get(selectedIndex));
@@ -870,60 +349,5 @@ public class Project
             }
         }
         catch (IOException | ClassNotFoundException i) { i.printStackTrace(System.out); }
-    }
-
-    public Rectangle2D getSelectedBounds2D()
-    {
-        return selectedSurface.getBounds2D();
-    }
-
-    public double getJointWidth()
-    {
-        return selectedSurface.getCovering().getJointWidth();
-    }
-
-    public Color getColor()
-    {
-        return selectedSurface.getColor();
-    }
-
-    public boolean isHole()
-    {
-        return selectedSurface.isHole();
-    }
-
-    public boolean isNinetyDegree()
-    {
-        return selectedSurface.getCovering().isNinetyDegree();
-    }
-
-    public Pattern getPattern()
-    {
-        return selectedSurface.getCovering().getPattern();
-    }
-
-    public Color getJointColor()
-    {
-        return selectedSurface.getCovering().getJointColor();
-    }
-
-    public TileType getTileType()
-    {
-        return selectedSurface.getCovering().getTileType();
-    }
-
-    public double getOffsetX()
-    {
-        return selectedSurface.getCovering().getOffsetX();
-    }
-    
-    public double getOffsetY()
-    {
-        return selectedSurface.getCovering().getOffsetY();
-    }
-
-    public int getRowOffset()
-    {
-        return selectedSurface.getCovering().getRowOffset();
     }
 }

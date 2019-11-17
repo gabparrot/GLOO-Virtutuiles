@@ -25,7 +25,7 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
-        project.setSurfaceHeight(oldHeight, surface);
+        surface.setHeight(oldHeight, project);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class UndoSetSurfaceHeight implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.setSurfaceHeight(newHeight, surface);
+        surface.setHeight(newHeight, project);
     }
     
     @Override

@@ -32,6 +32,7 @@ public class UndoRemoveSurface implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
+        project.unselect();
         project.removeSurface(surface);
     }
     

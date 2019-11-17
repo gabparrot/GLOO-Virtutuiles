@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -43,7 +44,6 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             uncoveredArea.add(((CombinedSurface) s1).getUncoveredArea());
         }
-        
         if (s2.isHole())
         {
             uncoveredArea.add(new Area(s2));
@@ -55,6 +55,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         
         absorbedSurfaces.add(s1);
         absorbedSurfaces.add(s2);
+        
         this.isHole = isHole;
         this.color = color;
         
@@ -144,7 +145,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             for (int i = 0; i < absorbedSurfaces.size(); i++) 
             {
-                area = area + absorbedSurfaces.get(i).getArea();
+                area += absorbedSurfaces.get(i).getArea();
             }
         }
         return area;
@@ -170,6 +171,9 @@ public class CombinedSurface extends Area implements Surface, Serializable
         absorbedSurfaces = (ArrayList<Surface>) in.readObject();
     }
     
+    /**
+     * Couvre la surface de tuiles.
+     */
     @Override
     public void coverSurface()
     {
@@ -177,7 +181,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
     }
     
     /**
-     * Enlève des petits trous dans la surface.
+     * Enlève les petits trous de la surface.
      */
     public void approximateSurface()
     {
@@ -187,5 +191,146 @@ public class CombinedSurface extends Area implements Surface, Serializable
         translation = new AffineTransform();
         translation.translate(-10000, -10000);
         transform(translation);
+    }
+
+    @Override
+    public boolean setX(double x, Project project)
+    {
+        if (x < 0)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double deltaX = x - bounds.getX();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(deltaX, 0);
+        transform(translationTransform);
+        if (project.conflictCheck(this))
+        {
+            uncoveredArea.transform(translationTransform);
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(-deltaX, 0);
+            transform(translationTransform);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setY(double y, Project project)
+    {
+        if (y < 0)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double deltaY = y - bounds.getY();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(0, deltaY);
+        transform(translationTransform);
+        if (project.conflictCheck(this))
+        {
+            uncoveredArea.transform(translationTransform);
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(0, -deltaY);
+            transform(translationTransform);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setWidth(double width, Project project)
+    {
+        if (width < 100)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double oldWidth = bounds.getWidth();
+        double oldX = bounds.getX();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(width / oldWidth, 1);
+        transform(scaleTransform);
+        setX(oldX, project);
+        
+        if (project.conflictCheck(this))
+        {
+            uncoveredArea.transform(scaleTransform);
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(oldWidth / width, 1);
+            transform(scaleTransform);
+            setX(oldX, project);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean setHeight(double height, Project project)
+    {
+        if (height < 100)
+        {
+            return false;
+        }
+        Rectangle2D bounds = getBounds2D();
+        double oldHeight = bounds.getHeight();
+        double oldY = bounds.getY();
+        
+        AffineTransform scaleTransform = new AffineTransform();
+        scaleTransform.scale(1, height / oldHeight);
+        transform(scaleTransform);
+        setY(oldY, project);
+        
+        if (project.conflictCheck(this))
+        {
+            uncoveredArea.transform(scaleTransform);
+            coverSurface();
+            return true;
+        }
+        else
+        {
+            scaleTransform = new AffineTransform();
+            scaleTransform.scale(1, oldHeight / height);
+            transform(scaleTransform);
+            setY(oldY, project);
+            return false;
+        }
+    }
+
+    @Override
+    public void setXY(double x, double y, Project project)
+    {
+        if (x < 0) x = 0;
+        if (y < 0) y = 0;
+        double deltaX = x - getBounds2D().getX();
+        double deltaY = y - getBounds2D().getY();
+        AffineTransform translationTransform = new AffineTransform();
+        translationTransform.translate(deltaX, deltaY);
+        transform(translationTransform);
+        if (!project.conflictCheck(this))
+        {
+            translationTransform = new AffineTransform();
+            translationTransform.translate(-deltaX, -deltaY);
+            transform(translationTransform);
+        }
+        else
+        {
+            uncoveredArea.transform(translationTransform);
+            coverSurface();
+        }
     }
 }

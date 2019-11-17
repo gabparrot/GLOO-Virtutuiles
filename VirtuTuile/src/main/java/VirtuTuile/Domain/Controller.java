@@ -21,7 +21,7 @@ public class Controller
     /**
      * Crée un nouveau projet.
      */
-    public void newProject()
+    public void createNewProject()
     {
         project = new Project();
         undoManager = new UndoManager();
@@ -35,23 +35,42 @@ public class Controller
         project = null;
         undoManager = null;
     }
-
+    
+    /**
+     * Désélectionne la surface sélectionnée.
+     */
+    public void unselectSurface()
+    {
+        project.unselect();
+        firstSurfaceToMerge = null;
+    }
+    
+    /**
+     * Sélectionne la surface qui contient le point.
+     * @param point : le point qui doit être à l'intérieur de la surface.
+     */
+    public void selectSurface(Point2D.Double point)
+    {
+        project.selectSurface(point);
+    }
+    
+    /**
+     * Recouvre à nouveau toutes les surfaces du projet.
+     */
+    public void refreshSurfaces()
+    {
+        for (Surface surface : project.getSurfaces())
+        {
+            surface.coverSurface();
+        }
+    }
+    
     /**
      * Annule la dernière opération.
      */
     public void undo()
     {
         if (undoManager.canUndo()) undoManager.undo();
-    }
-    
-    /**
-     * Retourne un texte explicatif décrivant la dernière opération.
-     * @return un texte explicatif décrivant la dernière opération.
-     */
-    public String getUndoPresentationName()
-    {
-        if (undoManager.canUndo()) return undoManager.getUndoPresentationName();
-        else return "Rien";
     }
     
     /**
@@ -63,58 +82,38 @@ public class Controller
     }
     
     /**
-     * Retourne un texte explicatif décrivant la dernière opération annulée.
-     * @return un texte explicatif décrivant la dernière opération annulée.
+     * Sauvegarde le projet.
+     * @param file : le fichier de sauvegarde.
      */
-    public String getRedoPresentationName()
+    public void saveProject(File file)
     {
-        if (undoManager.canRedo()) return undoManager.getRedoPresentationName();
-        else return "Rien";
+        project.saveSurfacesToFile(file);
     }
     
     /**
-     * Retourne true si un projet est ouvert en ce moment.
-     * @return true si un projet est ouvert en ce moment.
+     * Charge un projet.
+     * @param file : le fichier de sauvegarde.
      */
-    public boolean projectExists()
+    public void loadProject(File file)
     {
-        return (project != null);
+        project.loadSurfacesFromFile(file);
     }
 
+//************************************************************************************************\\
+//                                      UNDOABLE EDITS                                            \\
+//************************************************************************************************\\
     /**
-     * Retourne la liste des surfaces du projet.
-     * @return la liste des surfaces du projet.
+     * Crée un nouveau type de tuile.
+     * @param width : la largeur.
+     * @param height : la hauteur.
+     * @param name : le nom.
+     * @param nbPerBox : le nombre de tuiles par boite.
+     * @param color : la couleur.
      */
-    public ArrayList<Surface> getSurfaces()
+    public void addTileType(double width, double height, String name,
+            int nbPerBox, Color color)
     {
-        return project.getSurfaces();
-    }
-    
-    /**
-     * Désélectionne la surface sélectionnée.
-     */
-    public void unselect()
-    {
-        project.unselect();
-        firstSurfaceToMerge = null;
-    }
-    
-    /**
-     * Retourne les bornes entourantes d'une surface, qui décrivent jusqu'à quel point une surface
-     * peut être déplacée dans les quatre directions.
-     * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
-     */
-    public double[] getSurroundingBounds()
-    {
-        Surface selectedSurface = project.getSelectedSurface();
-        if (selectedSurface instanceof RectangularSurface)
-        {
-            return project.getSurroundingBounds((RectangularSurface) selectedSurface);
-        }
-        else
-        {
-            throw new IllegalArgumentException();
-        }
+        project.createTileType(width, height, name, nbPerBox, color);
     }
     
     /**
@@ -143,7 +142,17 @@ public class Controller
         // TODO
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
+    
+    /**
+     * Supprime la surface sélectionnée.
+     * [UNDOABLE]
+     */
+    public void removeSelectedSurface()
+    {
+        undoManager.addEdit(new UndoRemoveSurface(project, project.getSelectedSurface()));
+        project.removeSelectedSurface();
+    }
+    
     /**
      * Fusionne deux surfaces.
      * [UNDOABLE]
@@ -151,8 +160,14 @@ public class Controller
      */
     public boolean mergeSurfaces()
     {
+        Surface secondSurfaceToMerge = project.getSelectedSurface();
+        if (firstSurfaceToMerge == secondSurfaceToMerge)
+        {
+            firstSurfaceToMerge = null;
+            return false;
+        }
         CombinedSurface combinedSurface = project.mergeSurfaces(firstSurfaceToMerge,
-                                                                project.getSelectedSurface());
+                                                                secondSurfaceToMerge);
         if (combinedSurface == null)
         {
             firstSurfaceToMerge = null;
@@ -161,12 +176,12 @@ public class Controller
         else
         {
             undoManager.addEdit(new UndoMergeSurfaces(project, firstSurfaceToMerge,
-                    project.getSelectedSurface(), combinedSurface));
+                    secondSurfaceToMerge, combinedSurface));
             firstSurfaceToMerge = null;
             return true;
         }
     }
-    
+
     /**
      * Déplace la surface sélectionnée à une nouvelle position.
      * [UNDOABLE]
@@ -177,7 +192,7 @@ public class Controller
         Surface surface = project.getSelectedSurface();
         Rectangle2D bounds = surface.getBounds2D();
         Point2D.Double oldPoint = new Point2D.Double(bounds.getX(), bounds.getY());
-        project.moveSurfaceToPoint(newPos, surface);
+        surface.setXY(newPos.x, newPos.y, project);
         
         // Sauvegarde
         bounds = surface.getBounds2D();
@@ -187,7 +202,7 @@ public class Controller
             undoManager.addEdit(new UndoMoveSurfaceToPoint(project, oldPoint, newPoint, surface));
         }
     }
-    
+
     /**
      * Change la couleur de la surface sélectionnée.
      * [UNDOABLE]
@@ -200,7 +215,7 @@ public class Controller
         surface.setColor(color);
         undoManager.addEdit(new UndoSetSurfaceColor(project, oldColor, color, surface));
     }
-    
+
     /**
      * Change le paramètre trou de la surface sélectionnée.
      * [UNDOABLE]
@@ -213,7 +228,7 @@ public class Controller
         surface.setIsHole(isHole);
         undoManager.addEdit(new UndoSetSurfaceIsHole(project, oldIsHole, isHole, surface));
     }
-    
+
     /**
      * Set le paramètre x de la surface sélectionnée.
      * [UNDOABLE]
@@ -224,7 +239,7 @@ public class Controller
     {
         Surface surface = project.getSelectedSurface();
         double oldX = surface.getBounds2D().getX();
-        boolean status = project.setSurfaceX(x, surface);
+        boolean status = surface.setX(x, project);
         if (status)
         {
             double newX = surface.getBounds2D().getX();
@@ -243,7 +258,7 @@ public class Controller
     {
         Surface surface = project.getSelectedSurface();
         double oldY = surface.getBounds2D().getY();
-        boolean status = project.setSurfaceY(y, surface);
+        boolean status = surface.setY(y, project);
         if (status)
         {
             double newY = surface.getBounds2D().getY();
@@ -262,7 +277,7 @@ public class Controller
     {
         Surface surface = project.getSelectedSurface();
         double oldWidth = surface.getBounds2D().getWidth();
-        boolean status = project.setSurfaceWidth(width, surface);
+        boolean status = surface.setWidth(width, project);
         if (status)
         {
             double newWidth = surface.getBounds2D().getWidth();
@@ -281,92 +296,13 @@ public class Controller
     {
         Surface surface = project.getSelectedSurface();
         double oldHeight = surface.getBounds2D().getHeight();
-        boolean status = project.setSurfaceHeight(height, surface);
+        boolean status = surface.setHeight(height, project);
         if (status)
         {
             double newHeight = surface.getBounds2D().getHeight();
             undoManager.addEdit(new UndoSetSurfaceHeight(project, oldHeight, newHeight, surface));
         }
         return status;
-    }
-    
-    /**
-     * Sélectionne la surface qui contient le point.
-     * @param point : le point qui doit être à l'intérieur de la surface.
-     */
-    public void selectSurface(Point2D.Double point)
-    {
-        project.selectSurface(point);
-    }
-
-    /**
-     * Trouve les bornes de la surface qui contient le point (sans la sélectionner).
-     * @param point : le point qui doit être à l'intérieur de la surface.
-     * @return la surface trouvée, peut être null.
-     */
-    public Rectangle2D findSurfaceBounds(Point2D.Double point)
-    {
-        Surface surface = project.findSurface(point);
-        if (surface != null)
-        {
-            return surface.getBounds2D();
-        }
-        else
-        {
-            return null;
-        }
-    }
-    
-    /**
-     * Retourne la surface sélectionnée. Peut être null.
-     * @return la surface sélectionnée, si une surface est sélectionnée, null sinon.
-     */
-    public Surface getSelectedSurface()
-    {
-        return project.getSelectedSurface();
-    }
-    
-     /**
-     * Supprime la surface sélectionnée.
-     * [UNDOABLE]
-     */
-    public void removeSelectedSurface()
-    {
-        undoManager.addEdit(new UndoRemoveSurface(project, project.getSelectedSurface()));
-        project.removeSelectedSurface();
-    }
-    
-    /**
-     * Crée un nouveau type de tuile.
-     * @param width : la largeur.
-     * @param height : la hauteur.
-     * @param name : le nom.
-     * @param nbPerBox : le nombre de tuiles par boite.
-     * @param color : la couleur.
-     */
-    public void createTileType(double width, double height, String name,
-            int nbPerBox, Color color)
-    {
-        project.createTileType(width, height, name, nbPerBox, color);
-    }
-
-
-    /**
-     * Retourne un tableau avec les noms des types de tuiles du projet.
-     * @return les noms des types de tuiles du projet.
-     */
-    public String[] getTileTypeStrings()
-    {
-        return project.getTileTypeStrings();
-    }
-
-    /**
-     * Trouve le point le plus à droite et en-bas de toutes les surfaces.
-     * @return le point le plus à droite et en-bas de toutes les surfaces. 
-     */
-    public Point2D.Double getFarthestPoint()
-    {
-        return project.getFarthestPoint();
     }
 
     /**
@@ -466,7 +402,7 @@ public class Controller
         covering.setOffsetY(offset);
         undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, offset, covering));   
     }
-    
+
     /**
      * Change le décalage horizontal et vertical de la surface sélectionnée.
      * [UNDOABLE]
@@ -483,7 +419,7 @@ public class Controller
         undoManager.addEdit(new UndoSetOffsetXY(oldOffsetX, offsetX,
                 oldOffsetY, offsetY, covering));
     }
-    
+
     /**
      * Change le décalage entre les rangées de la surface sélectionnée.
      * [UNDOABLE]
@@ -496,41 +432,130 @@ public class Controller
         covering.setRowOffset(rowOffset);
         undoManager.addEdit(new UndoSetRowOffset(oldRowOffset, rowOffset, covering));
     }
-    
+
     /**
-     * Sauvegarde le projet.
-     * @param file : le fichier de sauvegarde.
+     * Change le nom de la tuile du recouvrement de la surface sélectionnée.
+     * @param name : le nouveau nom.
      */
-    public void saveProject(File file)
+    public void setTileName(String name)
     {
-        project.saveSurfacesToFile(file);
-    }
-    
-    /**
-     * Charge un projet.
-     * @param file : le fichier de sauvegarde.
-     */
-    public void loadProject(File file)
-    {
-        project.loadSurfacesFromFile(file);
+        TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        tileType.setName(name);
     }
 
+    /**
+     * Change la quantité par boîte de la tuile du recouvrement de la surface sélectionnée.
+     * @param nbPerBox : la nouvelle quantité.
+     */
+    public void setTileNbPerBox(int nbPerBox)
+    {
+        TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        tileType.setNbPerBox(nbPerBox);
+    }
+
+    /**
+     * Change la couleur de la tuile du recouvrement de la surface sélectionnée.
+     * @param color : la nouvelle couleur.
+     */
+    public void setTileColor(Color color)
+    {
+        TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        tileType.setColor(color);
+    }
+
+    /**
+     * Change la largeur de la tuile du recouvrement de la surface sélectionnée.
+     * @param width : la nouvelle largeur.
+     */
+    public void setTileWidth(double width)
+    {
+       TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+       tileType.setWidth(width);
+    }
+
+    /**
+     * Change la hauteur de la tuile du recouvrement de la surface sélectionnée.
+     * @param height : la nouvelle hauteur.
+     */
+    public void setTileHeight(double height)
+    {
+        TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        tileType.setHeight(height);
+    }
+
+//************************************************************************************************\\
+//                                      GETTERS                                                   \\
+//************************************************************************************************\\
     /**
      * Retourne les bornes de la surface sélectionnée.
      * @return les bornes de la surface sélectionnée.
      */
     public Rectangle2D getBounds2D()
     {
-        return project.getSelectedBounds2D();
+        return project.getSelectedSurface().getBounds2D();
     }
-
+    
     /**
-     * Retourne la largeur des joints de la surface sélectionnée.
-     * @return la largeur des joints de la surface sélectionnée.
+     * Retourne les bornes de la surface qui contient le point (sans la sélectionner).
+     * @param point : le point qui doit être à l'intérieur de la surface.
+     * @return les bornes de la surface trouvée, peut être null.
      */
-    public double getJointWidth()
+    public Rectangle2D getBounds2DByPoint(Point2D.Double point)
     {
-        return project.getJointWidth();
+        Surface surface = project.findSurface(point);
+        if (surface != null)
+        {
+            return surface.getBounds2D();
+        }
+        else
+        {
+            return null;
+        }
+    }
+    
+    /**
+     * Retourne la surface sélectionnée. Peut être null.
+     * @return la surface sélectionnée, si une surface est sélectionnée, null sinon.
+     */
+    public Surface getSelectedSurface()
+    {
+        return project.getSelectedSurface();
+    }
+    
+    /**
+     * Retourne les bornes entourantes d'une surface rectangulaire, qui décrivent
+     * jusqu'à quel point elle peut être déplacée dans les quatre directions.
+     * @return les bornes dans un tableau [gauche, en-haut, droite, en-bas]
+     */
+    public double[] getSurroundingBounds()
+    {
+        Surface selectedSurface = project.getSelectedSurface();
+        if (selectedSurface instanceof RectangularSurface)
+        {
+            return ((RectangularSurface) selectedSurface).getSurroundingBounds(project);
+        }
+        else
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    /**
+     * Retourne true si un projet est ouvert en ce moment.
+     * @return true si un projet est ouvert en ce moment.
+     */
+    public boolean projectExists()
+    {
+        return (project != null);
+    }
+    
+    /**
+     * Retourne la liste des surfaces du projet.
+     * @return la liste des surfaces du projet.
+     */
+    public ArrayList<Surface> getSurfaces()
+    {
+        return project.getSurfaces();
     }
     
     /**
@@ -539,7 +564,7 @@ public class Controller
      */
     public Color getColor()
     {
-        return project.getColor();
+        return project.getSelectedSurface().getColor();
     }
 
     /**
@@ -548,16 +573,25 @@ public class Controller
      */
     public boolean isHole()
     {
-        return project.isHole();
+        return project.getSelectedSurface().isHole();
     }
 
+    /**
+     * Retourne la largeur des joints de la surface sélectionnée.
+     * @return la largeur des joints de la surface sélectionnée.
+     */
+    public double getJointWidth()
+    {
+        return project.getSelectedSurface().getCovering().getJointWidth();
+    }
+    
     /**
      * Retourne l'orientation du recouvrement de la surface sélectionnée.
      * @return l'orientation du recouvrement de la surface sélectionnée.
      */
     public boolean isNinetyDegree()
     {
-        return project.isNinetyDegree();
+        return project.getSelectedSurface().getCovering().isNinetyDegree();
     }
 
     /**
@@ -566,7 +600,7 @@ public class Controller
      */
     public Pattern getPattern()
     {
-        return project.getPattern();
+        return project.getSelectedSurface().getCovering().getPattern();
     }
 
     /**
@@ -575,16 +609,7 @@ public class Controller
      */
     public Color getJointColor()
     {
-        return project.getJointColor();
-    }
-
-    /**
-     * Retourne le type de tuile du recouvrement de la surface sélectionnée.
-     * @return le type de tuile du recouvrement de la surface sélectionnée.
-     */
-    public TileType getTileType()
-    {
-        return project.getTileType();
+        return project.getSelectedSurface().getCovering().getJointColor();
     }
     
     /**
@@ -593,7 +618,7 @@ public class Controller
      */
     public double getOffsetX()
     {
-        return project.getOffsetX();
+        return project.getSelectedSurface().getCovering().getOffsetX();
     }
 
     /**
@@ -602,7 +627,7 @@ public class Controller
      */
     public double getOffsetY()
     {
-        return project.getOffsetY();
+        return project.getSelectedSurface().getCovering().getOffsetY();
     }
     
     /**
@@ -611,7 +636,70 @@ public class Controller
      */
     public int getRowOffset()
     {
-        return project.getRowOffset();
+        return project.getSelectedSurface().getCovering().getRowOffset();
+    }
+    
+    /**
+     * Retourne le nom de la tuile du recouvrement de la surface sélectionnée.
+     * @return le nom de la tuile du recouvrement de la surface sélectionnée.
+     */
+    public String getTileName()
+    {
+        return project.getSelectedSurface().getCovering().getTileType().getName();
+    }
+    
+    /**
+     * Retourne un tableau avec les noms des types de tuiles du projet.
+     * @return les noms des types de tuiles du projet.
+     */
+    public String[] getTileTypeStrings()
+    {
+        return project.getTileTypeStrings();
+    }
+    
+    /**
+     * Retourne true si le Covering de la selectedSurface possède un type de tuile.
+     * @return true si le Covering de la selectedSurface possède un type de tuile.
+     */
+    public boolean hasTileType()
+    {
+        return project.getSelectedSurface().getCovering().getTileType() != null;
+    }
+    
+    /**
+     * Retourne la largeur de la tuile du recouvrement de la surface sélectionnée.
+     * @return la largeur de la tuile du recouvrement de la surface sélectionnée.
+     */
+    public double getTileWidth()
+    {
+        return project.getSelectedSurface().getCovering().getTileType().getWidth();
+    }
+    
+    /**
+     * Retourne la hauteur de la tuile du recouvrement de la surface sélectionnée.
+     * @return la hauteur de la tuile du recouvrement de la surface sélectionnée.
+     */
+    public double getTileHeight()
+    {
+        return project.getSelectedSurface().getCovering().getTileType().getHeight();
+    }
+    
+    /**
+     * Retourne le nombre de tuiles par boîte de la tuile du recouvrement de la surface sélectionnée.
+     * @return le nombre de tuiles par boîte de la tuile du recouvrement de la surface sélectionnée.
+     */
+    public int getTileNbPerBox()
+    {
+        return project.getSelectedSurface().getCovering().getTileType().getNbPerBox();
+    }
+    
+    /**
+     * Retourne la couleur de la tuile du recouvrement de la surface sélectionnée. 
+     * @return la couleur de la tuile du recouvrement de la surface sélectionnée.
+     */
+    public Color getTileColor()
+    {
+        return project.getSelectedSurface().getCovering().getTileType().getColor();
     }
     
     /**
@@ -631,8 +719,8 @@ public class Controller
     }
     
     /**
-     * Retourne true si la surface sélectionnée est Rectangulaire.
-     * @return true si la surface sélectionnée est Rectangulaire.
+     * Retourne true si la surface sélectionnée est rectangulaire.
+     * @return true si la surface sélectionnée est rectangulaire.
      */
     public boolean surfaceIsRectangular()
     {
@@ -643,10 +731,43 @@ public class Controller
      * Retourne true si une première surface a été sélectionnée pour une combinaison.
      * @return true si une première surface a été sélectionnée pour une combinaison.
      */
-    public boolean mergeInProgress()
+    public boolean mergeIsInProgress()
     {
         return firstSurfaceToMerge != null;
     }
+    
+    /**
+     * Trouve le point le plus à droite et en-bas de toutes les surfaces.
+     * @return le point le plus à droite et en-bas de toutes les surfaces. 
+     */
+    public Point2D.Double getFarthestPoint()
+    {
+        return project.getFarthestPoint();
+    }
+    
+    /**
+     * Retourne un texte explicatif décrivant la dernière opération.
+     * @return un texte explicatif décrivant la dernière opération.
+     */
+    public String getUndoPresentationName()
+    {
+        if (undoManager.canUndo()) return undoManager.getUndoPresentationName();
+        else return "Rien";
+    }
+    
+    /**
+     * Retourne un texte explicatif décrivant la dernière opération annulée.
+     * @return un texte explicatif décrivant la dernière opération annulée.
+     */
+    public String getRedoPresentationName()
+    {
+        if (undoManager.canRedo()) return undoManager.getRedoPresentationName();
+        else return "Rien";
+    }
+
+//************************************************************************************************\\
+//                                      OTHER                                                     \\
+//************************************************************************************************\\
     
     /**
      * Indique que la surface sélectionnée devra être combinée.
@@ -654,5 +775,69 @@ public class Controller
     public void setFirstSurfaceToMerge()
     {
         firstSurfaceToMerge = project.getSelectedSurface();
+    }
+
+    /**
+     * Centre le motif horizontalement de la surface sélectionnée.
+     */
+    public void centerPatternHorizontal()
+    {
+        Surface selectedSurface = project.getSelectedSurface();
+        double surfaceWidth = selectedSurface.getBounds2D().getWidth();
+        Covering covering = selectedSurface.getCovering();
+        double tileWidth;
+        if (covering.isNinetyDegree())
+        {
+            tileWidth = covering.getTileType().getHeight();
+        }
+        else
+        {
+            tileWidth = covering.getTileType().getWidth();
+        }
+        double jointWidth = covering.getJointWidth();
+        
+        double newOffsetX = -tileWidth +
+                (((surfaceWidth - jointWidth) % (tileWidth + jointWidth)) - 2 * jointWidth) / 2;
+        setOffsetX(newOffsetX);
+    }
+
+    /**
+     * Centre le motif verticalement de la surface sélectionnée.
+     */
+    public void centerPatternVertical()
+    {
+        Surface selectedSurface = project.getSelectedSurface();
+        double surfaceHeight = selectedSurface.getBounds2D().getHeight();
+        Covering covering = selectedSurface.getCovering();
+        double tileHeight;
+        if (covering.isNinetyDegree())
+        {
+            tileHeight = covering.getTileType().getWidth();
+        }
+        else
+        {
+            tileHeight = covering.getTileType().getHeight();
+        }
+        double jointWidth = covering.getJointWidth();
+        
+        double newOffsetY = -tileHeight +
+                (((surfaceHeight - jointWidth) % (tileHeight + jointWidth)) - 2 * jointWidth) / 2;
+        setOffsetY(newOffsetY);
+    }
+    
+    public void startPatternOnFullTile()
+    {
+        setOffsetX(0.0);
+        setOffsetY(0.0);
+    }
+    
+    public void startPatternOnFullColumn()
+    {
+        setOffsetX(0.0);
+    }
+    
+    public void startPatternOnFullRow()
+    {
+        setOffsetY(0.0);
     }
 }

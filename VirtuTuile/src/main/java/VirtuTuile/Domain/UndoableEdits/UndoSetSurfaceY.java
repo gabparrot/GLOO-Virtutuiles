@@ -24,7 +24,7 @@ public class UndoSetSurfaceY implements javax.swing.undo.UndoableEdit
     @Override
     public void undo() throws CannotUndoException
     {
-        project.setSurfaceY(oldY, surface);
+        surface.setY(oldY, project);
     }
 
     @Override
@@ -36,7 +36,7 @@ public class UndoSetSurfaceY implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.setSurfaceY(newY, surface);
+        surface.setY(newY, project);
     }
     
     @Override
