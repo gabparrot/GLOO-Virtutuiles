@@ -330,7 +330,6 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu = new javax.swing.JMenu();
         centerHMenuItem = new javax.swing.JMenuItem();
         centerVMenuItem = new javax.swing.JMenuItem();
-        relativePositionMenuItem = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
         startPatternSubMenu = new javax.swing.JMenu();
         startPatternFullTileMenuItem = new javax.swing.JMenuItem();
@@ -341,6 +340,7 @@ public class MainWindow extends javax.swing.JFrame
         centerPatternVMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         orientationGroup = new javax.swing.ButtonGroup();
         measureGroup = new javax.swing.ButtonGroup();
         toolBar = new javax.swing.JToolBar();
@@ -707,15 +707,6 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu.add(centerVMenuItem);
 
         surfacePopupMenu.add(centerSubMenu);
-
-        relativePositionMenuItem.setText("Envoyer à une position relative à...");
-        relativePositionMenuItem.setToolTipText("Permet déterminer une nouvelle position pour cette surface, relative à l'autre surface choisir. Ces positions sont en fonction de leur coin haut-gauche respectif");
-        relativePositionMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                relativePositionMenuItemActionPerformed(evt);
-            }
-        });
-        surfacePopupMenu.add(relativePositionMenuItem);
         surfacePopupMenu.add(jSeparator6);
 
         startPatternSubMenu.setText("Débuter le motif avec...");
@@ -778,6 +769,9 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
         surfacePopupMenu.add(deleteSurfaceMenuItem);
+
+        jMenuItem1.setText("jMenuItem1");
+        surfacePopupMenu.add(jMenuItem1);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("VirtuTuile");
@@ -2667,8 +2661,15 @@ public class MainWindow extends javax.swing.JFrame
             try
             {
                 double feet = Utilities.parseDoubleLocale(surfaceWidthField.getText());
-                double inches = Utilities.parseDoubleLocale(surfaceWidthFieldInches.getText());
-                double totalInches = 12 * feet + inches;
+                
+                double dblInchesField = getInchesFromField(surfaceWidthFieldInches.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceWidth(mm);
                 double newWidth = controller.getBounds2D().getWidth();
@@ -2703,17 +2704,26 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
                 }
-            } catch (java.text.ParseException e)
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceXField.setText(String.format("%.03f", controller.getBounds2D().getX() / 1000.));
             }
-        } else
+        } 
+        else
         {
             try
             {
                 double feet = Utilities.parseDoubleLocale(surfaceXField.getText());
-                double inches = Utilities.parseDoubleLocale(surfaceXFieldInches.getText());
-                double totalInches = 12 * feet + inches;
+                
+                double dblInchesField = getInchesFromField(surfaceXFieldInches.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceX(mm);
                 double newX = controller.getBounds2D().getX();
@@ -2725,7 +2735,8 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
                 }
-            } catch (java.text.ParseException e)
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
                 surfaceXFieldInches.setText(String.format("%.02f",
@@ -2748,29 +2759,46 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
                 }
-            } catch (java.text.ParseException e)
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceYField.setText(String.format("%.03f", controller.getBounds2D().getY() / 1000.));
             }
-        } else
+        } 
+        else
         {
             try
             {
                 double feet = Utilities.parseDoubleLocale(surfaceYField.getText());
-                double inches = Utilities.parseDoubleLocale(surfaceYFieldInches.getText());
-                double totalInches = 12 * feet + inches;
+                
+                double dblInchesField = getInchesFromField(surfaceYFieldInches.getText());
+                
+                //TEST
+                System.out.println("Nombre de pouces reçu par surfaceYField: " + dblInchesField);
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double totalInches = feet * 12 + dblInchesField;
+                System.out.println("totalInches dans surfaceY: " + totalInches); //TEST
                 double mm = Utilities.inchesToMm(totalInches);
+                System.out.println("total mm dans surfaceY: " + mm); //TEST
                 boolean status = controller.setSurfaceY(mm);
                 double newY = controller.getBounds2D().getY();
+                System.out.println("newY metrique: " + newY + ", newY feet: " + String.valueOf(Utilities.mmToFeet(newY)) + ", newY inches: " + String.valueOf(Utilities.mmToFeet(mm))); //TESt
                 surfaceYField.setText(String.valueOf(Utilities.mmToFeet(newY)));
                 surfaceYFieldInches.setText(String.format("%.02f",
                         Utilities.mmToRemainingInches(newY)));
                 canvasPanel.repaint();
+                
                 if (!status)
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                }
-            } catch (java.text.ParseException e)
+                } 
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceYField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getY())));
                 surfaceYFieldInches.setText(String.format("%.02f",
@@ -2779,6 +2807,51 @@ public class MainWindow extends javax.swing.JFrame
         }
     }//GEN-LAST:event_surfaceYFieldActionPerformed
 
+    private double getInchesFromField(String inchesFieldText)
+    {
+        double dblFullInches = 0;
+        double numerator = 0;
+        double denominator = 1;
+        String strFractionInches = "";
+        
+        try
+        {
+            if (Utilities.stringHasSpaceSplit(inchesFieldText))
+            {
+                inchesFieldText = inchesFieldText.trim();
+                String[] spaceSplit = inchesFieldText.split(" ");
+                String strFullInches = spaceSplit[0];
+                strFractionInches = spaceSplit[1];
+
+                dblFullInches = Utilities.parseDoubleLocale(strFullInches);
+            }
+            else if(Utilities.stringHasSlashSplit(inchesFieldText))
+            {
+                strFractionInches = inchesFieldText.trim();
+            }
+            else
+            {
+                dblFullInches = Utilities.parseDoubleLocale(inchesFieldText);
+            }
+
+            if (!"".equals(strFractionInches))
+            {
+                strFractionInches = strFractionInches.trim();
+                String[] slashSplit = strFractionInches.split("/");
+                numerator = Utilities.parseDoubleLocale(slashSplit[0]);
+                denominator = Utilities.parseDoubleLocale(slashSplit[1]);
+            }
+        }
+        catch(java.text.ParseException e)
+        {
+            return -1;
+        }
+        
+        //TEST
+        System.out.println("dblFullInches: " + dblFullInches + ", numerator: " + numerator + ", denominator : " + denominator);
+        return dblFullInches + (numerator / denominator);
+    }
+    
     private void surfaceHeightFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceHeightFieldActionPerformed
     {//GEN-HEADEREND:event_surfaceHeightFieldActionPerformed
         if (isMetric)
@@ -2794,18 +2867,27 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
                 }
-            } catch (java.text.ParseException e)
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceHeightField.setText(String.format("%.03f",
                         controller.getBounds2D().getHeight() / 1000.));
             }
-        } else
+        } 
+        else
         {
             try
             {
                 double feet = Utilities.parseDoubleLocale(surfaceHeightField.getText());
-                double inches = Utilities.parseDoubleLocale(surfaceHeightFieldInches.getText());
-                double totalInches = 12 * feet + inches;
+                
+                double dblInchesField = getInchesFromField(surfaceHeightFieldInches.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceHeight(mm);
                 double newHeight = controller.getBounds2D().getHeight();
@@ -2817,7 +2899,8 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
                 }
-            } catch (java.text.ParseException e)
+            } 
+            catch (java.text.ParseException e)
             {
                 surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
                 surfaceHeightFieldInches.setText(String.format("%.02f",
@@ -3689,13 +3772,6 @@ public class MainWindow extends javax.swing.JFrame
         updatePanelInformation();
         repaint();
     }//GEN-LAST:event_startRowFullTileMenuItemActionPerformed
-
-    private void relativePositionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relativePositionMenuItemActionPerformed
-    
-        contextMode = ContextMenuModes.RELATIVE_MOVE;
-        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
-    }//GEN-LAST:event_relativePositionMenuItemActionPerformed
     
     private void moveRelatively(Point2D.Double point) 
     {
@@ -3909,6 +3985,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -3960,7 +4037,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JButton quantitiesButton;
     private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JButton redoButton;
-    private javax.swing.JMenuItem relativePositionMenuItem;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;

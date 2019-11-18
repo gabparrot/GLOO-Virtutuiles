@@ -45,6 +45,42 @@ public final class Utilities
     }
     
     /**
+     * Verifie si la string contient un espace à l'intérieur, excluant le début ou la fin
+     * @param s String à vérifier
+     * @return hasSpaceSplit true si contient un espace intérieur, false sinon
+     */
+    public static boolean stringHasSpaceSplit(String s)
+    {
+        boolean hasSpaceSplit = false;
+        String trimmedS = s.trim();
+        
+        if (trimmedS.indexOf(' ') != -1)
+        {
+            hasSpaceSplit = true;
+        }
+        
+        return hasSpaceSplit;
+    }
+    
+    /**
+     * Verifie si la string contient un slash à l'intérieur, excluant le premier et le dernier caractère
+     * @param s String à vérifier
+     * @return hasSpaceSplit true si contient un espace intérieur, false sinon
+     */
+    public static boolean stringHasSlashSplit(String s)
+    {
+        boolean hasSlashSplit = false;
+        String trimmedS = s.trim();
+        
+        if (trimmedS.indexOf('/') != -1 && trimmedS.indexOf('/') != 0 && trimmedS.indexOf('/') != trimmedS.length() - 1)
+        {
+            hasSlashSplit = true;
+        }
+        
+        return hasSlashSplit;
+    }
+    
+    /**
      * Converti un nombre de pixels en millimètres.
      * @param pixels : le nombre de pixels.
      * @param zoom : le facteur avec lequel les pixels doivent être convertis.
