@@ -3593,6 +3593,7 @@ public class MainWindow extends javax.swing.JFrame
             }
             catch (java.text.ParseException e)
             {
+                //TODO gestion d'erreur invalide
                 createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
                 createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
@@ -3606,6 +3607,7 @@ public class MainWindow extends javax.swing.JFrame
             }
             catch (java.text.ParseException e)
             {
+                //TODO gestion d'erreur invalide 
                 createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
                 createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
@@ -3779,7 +3781,7 @@ public class MainWindow extends javax.swing.JFrame
                     controller.moveSurfaceToPoint(newPoint);
 
                     if (controller.getBounds2D().getX() == oldPoint.getX() && 
-                            controller.getBounds2D().getX() == oldPoint.getY()) 
+                            controller.getBounds2D().getY() == oldPoint.getY()) 
                     {
                         JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
                     }
