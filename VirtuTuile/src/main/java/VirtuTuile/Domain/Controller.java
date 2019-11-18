@@ -827,8 +827,7 @@ public class Controller
     
     public void startPatternOnFullTile()
     {
-        setOffsetX(0.0);
-        setOffsetY(0.0);
+        setOffsetXY(0, 0);
     }
     
     public void startPatternOnFullColumn()

@@ -323,8 +323,52 @@
             </MenuItem>
           </SubComponents>
         </Menu>
+        <MenuItem class="javax.swing.JMenuItem" name="relativePositionMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Envoyer &#xe0; une position relative &#xe0;..."/>
+            <Property name="toolTipText" type="java.lang.String" value="Permet d&#xe9;terminer une nouvelle position pour cette surface, relative &#xe0; l&apos;autre surface choisir. Ces positions sont en fonction de leur coin haut-gauche respectif"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="relativePositionMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
         <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator6">
         </Component>
+        <Menu class="javax.swing.JMenu" name="startPatternSubMenu">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec..."/>
+          </Properties>
+          <SubComponents>
+            <MenuItem class="javax.swing.JMenuItem" name="startPatternFullTileMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec une tuile pleine"/>
+                <Property name="toolTipText" type="java.lang.String" value="La premi&#xe8;re tuile en haut &#xe0; gauche de la surface ne sera pas tronqu&#xe9;e"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startPatternFullTileMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="startColumnFullTileMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec une colonne pleine"/>
+                <Property name="toolTipText" type="java.lang.String" value="&#xc9;vite le tronquage de la premi&#xe8;re colonne de la surfacec"/>
+                <Property name="actionCommand" type="java.lang.String" value=""/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startColumnFullTileMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="startRowFullTileMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec une rang&#xe9;e pleine"/>
+                <Property name="toolTipText" type="java.lang.String" value="&#xc9;vite de tronquer les tuiles de la premi&#xe8;re rang&#xe9;e"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="startRowFullTileMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+          </SubComponents>
+        </Menu>
         <Menu class="javax.swing.JMenu" name="centerPatternSubMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Centrer le motif"/>
@@ -344,34 +388,6 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="centerPatternVMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="centerPatternFullMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec une tuile pleine"/>
-                <Property name="toolTipText" type="java.lang.String" value="La premi&#xe8;re tuile en haut &#xe0; gauche de la surface ne sera pas tronqu&#xe9;e"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="centerPatternFullMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="centerPatternFullHMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="D&#xe9;buter le motif avec une colonne pleine"/>
-                <Property name="toolTipText" type="java.lang.String" value="&#xc9;vite le tronquage de la premi&#xe8;re colonne de la surfacec"/>
-                <Property name="actionCommand" type="java.lang.String" value=""/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="centerPatternFullHMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="centerPatternFullVMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="D&#xe9;but le motif avec une rang&#xe9;e pleine"/>
-                <Property name="toolTipText" type="java.lang.String" value="&#xc9;vite de tronquer les tuiles de la premi&#xe8;re rang&#xe9;e"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="centerPatternFullVMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>

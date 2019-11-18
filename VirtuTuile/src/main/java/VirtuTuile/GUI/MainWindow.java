@@ -30,7 +30,7 @@ public class MainWindow extends javax.swing.JFrame
     private enum ContextMenuModes
     {
         ALIGN_LEFT, ALIGN_RIGHT, ALIGN_TOP, ALIGN_BOTTOM,
-        CENTER_H, CENTER_V, STICK_H, STICK_V, NONE;
+        CENTER_H, CENTER_V, STICK_H, STICK_V, RELATIVE_MOVE, NONE;
     }
 
     private ContextMenuModes contextMode = ContextMenuModes.NONE;
@@ -330,13 +330,15 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu = new javax.swing.JMenu();
         centerHMenuItem = new javax.swing.JMenuItem();
         centerVMenuItem = new javax.swing.JMenuItem();
+        relativePositionMenuItem = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        startPatternSubMenu = new javax.swing.JMenu();
+        startPatternFullTileMenuItem = new javax.swing.JMenuItem();
+        startColumnFullTileMenuItem = new javax.swing.JMenuItem();
+        startRowFullTileMenuItem = new javax.swing.JMenuItem();
         centerPatternSubMenu = new javax.swing.JMenu();
         centerPatternHMenuItem = new javax.swing.JMenuItem();
         centerPatternVMenuItem = new javax.swing.JMenuItem();
-        centerPatternFullMenuItem = new javax.swing.JMenuItem();
-        centerPatternFullHMenuItem = new javax.swing.JMenuItem();
-        centerPatternFullVMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
         orientationGroup = new javax.swing.ButtonGroup();
@@ -705,7 +707,48 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu.add(centerVMenuItem);
 
         surfacePopupMenu.add(centerSubMenu);
+
+        relativePositionMenuItem.setText("Envoyer à une position relative à...");
+        relativePositionMenuItem.setToolTipText("Permet déterminer une nouvelle position pour cette surface, relative à l'autre surface choisir. Ces positions sont en fonction de leur coin haut-gauche respectif");
+        relativePositionMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                relativePositionMenuItemActionPerformed(evt);
+            }
+        });
+        surfacePopupMenu.add(relativePositionMenuItem);
         surfacePopupMenu.add(jSeparator6);
+
+        startPatternSubMenu.setText("Débuter le motif avec...");
+
+        startPatternFullTileMenuItem.setText("Débuter le motif avec une tuile pleine");
+        startPatternFullTileMenuItem.setToolTipText("La première tuile en haut à gauche de la surface ne sera pas tronquée");
+        startPatternFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startPatternFullTileMenuItemActionPerformed(evt);
+            }
+        });
+        startPatternSubMenu.add(startPatternFullTileMenuItem);
+
+        startColumnFullTileMenuItem.setText("Débuter le motif avec une colonne pleine");
+        startColumnFullTileMenuItem.setToolTipText("Évite le tronquage de la première colonne de la surfacec");
+        startColumnFullTileMenuItem.setActionCommand("");
+        startColumnFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startColumnFullTileMenuItemActionPerformed(evt);
+            }
+        });
+        startPatternSubMenu.add(startColumnFullTileMenuItem);
+
+        startRowFullTileMenuItem.setText("Débuter le motif avec une rangée pleine");
+        startRowFullTileMenuItem.setToolTipText("Évite de tronquer les tuiles de la première rangée");
+        startRowFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                startRowFullTileMenuItemActionPerformed(evt);
+            }
+        });
+        startPatternSubMenu.add(startRowFullTileMenuItem);
+
+        surfacePopupMenu.add(startPatternSubMenu);
 
         centerPatternSubMenu.setText("Centrer le motif");
 
@@ -724,34 +767,6 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
         centerPatternSubMenu.add(centerPatternVMenuItem);
-
-        centerPatternFullMenuItem.setText("Débuter le motif avec une tuile pleine");
-        centerPatternFullMenuItem.setToolTipText("La première tuile en haut à gauche de la surface ne sera pas tronquée");
-        centerPatternFullMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                centerPatternFullMenuItemActionPerformed(evt);
-            }
-        });
-        centerPatternSubMenu.add(centerPatternFullMenuItem);
-
-        centerPatternFullHMenuItem.setText("Débuter le motif avec une colonne pleine");
-        centerPatternFullHMenuItem.setToolTipText("Évite le tronquage de la première colonne de la surfacec");
-        centerPatternFullHMenuItem.setActionCommand("");
-        centerPatternFullHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                centerPatternFullHMenuItemActionPerformed(evt);
-            }
-        });
-        centerPatternSubMenu.add(centerPatternFullHMenuItem);
-
-        centerPatternFullVMenuItem.setText("Début le motif avec une rangée pleine");
-        centerPatternFullVMenuItem.setToolTipText("Évite de tronquer les tuiles de la première rangée");
-        centerPatternFullVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                centerPatternFullVMenuItemActionPerformed(evt);
-            }
-        });
-        centerPatternSubMenu.add(centerPatternFullVMenuItem);
 
         surfacePopupMenu.add(centerPatternSubMenu);
         surfacePopupMenu.add(jSeparator5);
@@ -2259,10 +2274,12 @@ public class MainWindow extends javax.swing.JFrame
         if (controller.isHole() || !controller.hasTileType())
         {
             centerPatternSubMenu.setEnabled(false);
+            startPatternSubMenu.setEnabled(false);
         }
         else
         {
             centerPatternSubMenu.setEnabled(true);
+            startPatternSubMenu.setEnabled(true);
         }
         surfacePopupMenu.show(canvasPanel, evt.getX(), evt.getY());
     }
@@ -2296,6 +2313,9 @@ public class MainWindow extends javax.swing.JFrame
                 break;
             case STICK_V:
                 stickV(pointToMetric(evt.getPoint()));
+                break;
+            case RELATIVE_MOVE:
+                moveRelatively(pointToMetric(evt.getPoint()));
         }
         contextMode = ContextMenuModes.NONE;
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -2359,40 +2379,49 @@ public class MainWindow extends javax.swing.JFrame
      */
     private void createNewRectangularSurface(Point2D.Double point)
     {
-        if (gridIsMagnetic)
+        if (canvasPanel.getZoom() * 100 < 5)
         {
-            Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
+            javax.swing.JOptionPane.showMessageDialog(null, 
+                    "Impossible de créer une surface avec un zoom inférieur à 5%.\nVeuillez augmenter le zoom, puis réessayer", 
+                    "Action interdite", JOptionPane.ERROR_MESSAGE);
         }
-
-        // Sélectionne le premier coin du nouveau rectangle.
-        if (firstRectangleCorner == null)
-        {
-            unselect();
-            firstRectangleCorner = point;
-        } // Sélectionne le deuxième coin du nouveau rectangle.
         else
         {
-            Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstRectangleCorner, point);
-            unselect();
-
-            if (rectangle.width < 100 || rectangle.height < 100)
+            if (gridIsMagnetic)
             {
-                canvasPanel.repaint();
-                JOptionPane.showMessageDialog(this,
-                        "Erreur: surface trop petite.");
-            } else
-            {
-                // Fait une requête pour la création du rectangle.
-                boolean status = controller.addRectangularSurface(rectangle);
+                Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
+            }
 
-                if (status)
-                {
-                    selectSurface(new Point2D.Double(rectangle.x + 0.1, rectangle.y + 0.1));
-                } else
+            // Sélectionne le premier coin du nouveau rectangle.
+            if (firstRectangleCorner == null)
+            {
+                unselect();
+                firstRectangleCorner = point;
+            } // Sélectionne le deuxième coin du nouveau rectangle.
+            else
+            {
+                Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstRectangleCorner, point);
+                unselect();
+
+                if (rectangle.width < 100 || rectangle.height < 100)
                 {
                     canvasPanel.repaint();
                     JOptionPane.showMessageDialog(this,
-                            "Erreur: création de la surface entraîne un conflit.");
+                            "Erreur: surface trop petite.");
+                } else
+                {
+                    // Fait une requête pour la création du rectangle.
+                    boolean status = controller.addRectangularSurface(rectangle);
+
+                    if (status)
+                    {
+                        selectSurface(new Point2D.Double(rectangle.x + 0.1, rectangle.y + 0.1));
+                    } else
+                    {
+                        canvasPanel.repaint();
+                        JOptionPane.showMessageDialog(this,
+                                "Erreur: création de la surface entraîne un conflit.");
+                    }
                 }
             }
         }
@@ -3641,26 +3670,130 @@ public class MainWindow extends javax.swing.JFrame
         updatePanelInformation();
     }//GEN-LAST:event_centerPatternVMenuItemActionPerformed
 
-    private void centerPatternFullMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_centerPatternFullMenuItemActionPerformed
+    private void startPatternFullTileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startPatternFullTileMenuItemActionPerformed
         controller.startPatternOnFullTile();
         updatePanelInformation();
         repaint();
-    }//GEN-LAST:event_centerPatternFullMenuItemActionPerformed
+    }//GEN-LAST:event_startPatternFullTileMenuItemActionPerformed
 
-    private void centerPatternFullHMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_centerPatternFullHMenuItemActionPerformed
+    private void startColumnFullTileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startColumnFullTileMenuItemActionPerformed
         controller.startPatternOnFullColumn();
         updatePanelInformation();
         repaint();
-    }//GEN-LAST:event_centerPatternFullHMenuItemActionPerformed
+    }//GEN-LAST:event_startColumnFullTileMenuItemActionPerformed
 
-    private void centerPatternFullVMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_centerPatternFullVMenuItemActionPerformed
+    private void startRowFullTileMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_startRowFullTileMenuItemActionPerformed
         controller.startPatternOnFullRow();
         updatePanelInformation();
         repaint();
-    }//GEN-LAST:event_centerPatternFullVMenuItemActionPerformed
+    }//GEN-LAST:event_startRowFullTileMenuItemActionPerformed
+
+    private void relativePositionMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_relativePositionMenuItemActionPerformed
     
+        contextMode = ContextMenuModes.RELATIVE_MOVE;
+        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+    }//GEN-LAST:event_relativePositionMenuItemActionPerformed
     
-    
+    private void moveRelatively(Point2D.Double point) 
+    {
+        Rectangle2D bounds = controller.getBounds2DByPoint(point);
+        Rectangle2D boundsSelected = controller.getBounds2D();
+
+        if (bounds != null && boundsSelected != null) 
+        {
+            if (bounds.equals(boundsSelected)) 
+            {
+                JOptionPane.showMessageDialog(this, "Erreur: sélection de la même surface.");
+            } 
+            else
+            {
+                String strMeasureUnit;
+                
+                if (isMetric)
+                {
+                    strMeasureUnit = "(en mètres): ";
+                }
+                else
+                {
+                    strMeasureUnit = "(en pouces): ";
+                }
+                
+                // Prendre input utilisateur
+                javax.swing.JTextField xField = new javax.swing.JTextField(5);
+                javax.swing.JTextField yField = new javax.swing.JTextField(5);
+
+                javax.swing.JPanel relativePosBox = new javax.swing.JPanel();
+
+                relativePosBox.setLayout(new javax.swing.BoxLayout(relativePosBox, javax.swing.BoxLayout.PAGE_AXIS));
+                relativePosBox.add(new javax.swing.JLabel("Position horizontale " + strMeasureUnit));
+                relativePosBox.add(xField);
+
+                relativePosBox.add(new javax.swing.JLabel("Position verticale " + strMeasureUnit));
+                relativePosBox.add(yField);
+
+                int result = JOptionPane.showConfirmDialog(null, relativePosBox,
+                        "Entrez la position de la surface à déplacer, par rapport à la surface "
+                        + "de référence dont le coin haut-gauche est de (0,0)",
+                        JOptionPane.OK_CANCEL_OPTION);
+
+                if (result == JOptionPane.OK_OPTION)
+                {
+                    double requestedXPos = 0;
+                    double requestedYPos = 0;
+                    // Créer le point à partir de l'input
+                    if (isMetric)
+                    {
+                        try 
+                        {
+                            requestedXPos = Utilities.parseDoubleLocale(xField.getText()) * 1000;
+                            requestedYPos = Utilities.parseDoubleLocale(yField.getText()) * 1000;
+                        }
+                        catch(java.text.ParseException e)
+                        {
+                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides");
+                        }
+                    }
+                    else
+                    {
+                        try 
+                        {
+                            requestedXPos = Utilities.parseDoubleLocale(xField.getText());
+                            requestedYPos = Utilities.parseDoubleLocale(yField.getText());
+                            
+                            requestedXPos = Utilities.inchesToMm(requestedXPos);
+                            requestedYPos = Utilities.inchesToMm(requestedYPos);
+                        }
+                        catch(java.text.ParseException e)
+                        {
+                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides");
+                        }
+                    }
+                        
+                    double relativeXPos = bounds.getX() + requestedXPos;
+                    double relativeYPos = bounds.getY() + requestedYPos;
+
+                    Point2D.Double newPoint = new Point2D.Double(relativeXPos, relativeYPos);
+                    Point2D.Double oldPoint = new Point2D.Double(boundsSelected.getX(), boundsSelected.getY());
+
+                    controller.moveSurfaceToPoint(newPoint);
+
+                    if (controller.getBounds2D().getX() == oldPoint.getX() && 
+                            controller.getBounds2D().getX() == oldPoint.getY()) 
+                    {
+                        JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                    }
+                    updatePanelInformation();
+                    canvasPanel.repaint();
+                } 
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(this, "Erreur: Surface sélectionnée invalide"); 
+        }
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -3710,9 +3843,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem alignTopMenuItem;
     private VirtuTuile.GUI.CanvasPanel canvasPanel;
     private javax.swing.JMenuItem centerHMenuItem;
-    private javax.swing.JMenuItem centerPatternFullHMenuItem;
-    private javax.swing.JMenuItem centerPatternFullMenuItem;
-    private javax.swing.JMenuItem centerPatternFullVMenuItem;
     private javax.swing.JMenuItem centerPatternHMenuItem;
     private javax.swing.JMenu centerPatternSubMenu;
     private javax.swing.JMenuItem centerPatternVMenuItem;
@@ -3828,10 +3958,15 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JButton quantitiesButton;
     private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JButton redoButton;
+    private javax.swing.JMenuItem relativePositionMenuItem;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;
     private javax.swing.JToggleButton selectionToggle;
+    private javax.swing.JMenuItem startColumnFullTileMenuItem;
+    private javax.swing.JMenuItem startPatternFullTileMenuItem;
+    private javax.swing.JMenu startPatternSubMenu;
+    private javax.swing.JMenuItem startRowFullTileMenuItem;
     private javax.swing.JMenuItem stickHMenuItem;
     private javax.swing.JMenu stickSubMenu;
     private javax.swing.JMenuItem stickVMenuItem;
