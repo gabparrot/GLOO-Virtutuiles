@@ -9,6 +9,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
 
 /**
  * La fenêtre principale de l'application.
@@ -683,8 +685,8 @@ public class MainWindow extends javax.swing.JFrame
         alignSubMenu.setText("Aligner");
         alignSubMenu.setActionCommand("Aligner");
 
+        alignTopMenuItem.setText("Aligner en haut avec...");
         alignTopMenuItem.setActionCommand("Aligner en-haut avec...");
-        alignTopMenuItem.setLabel("Aligner en-haut avec...");
         alignTopMenuItem.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -696,6 +698,7 @@ public class MainWindow extends javax.swing.JFrame
         alignTopMenuItem.getAccessibleContext().setAccessibleDescription("");
 
         alignBottomMenuItem.setText("Aligner en-bas avec...");
+        alignBottomMenuItem.setToolTipText("");
         alignBottomMenuItem.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -2038,7 +2041,7 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichier.setText("Fichier");
 
-        menuFichierNouveauProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierNouveauProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
         menuFichierNouveauProjet.setText("Nouveau Projet");
         menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2049,7 +2052,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         menuFichier.add(menuFichierNouveauProjet);
 
-        menuFichierOuvrirProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierOuvrirProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
         menuFichierOuvrirProjet.setText("Ouvrir Projet");
         menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2060,7 +2063,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         menuFichier.add(menuFichierOuvrirProjet);
 
-        menuFichierFermerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierFermerProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
         menuFichierFermerProjet.setText("Fermer Projet");
         menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2071,7 +2074,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         menuFichier.add(menuFichierFermerProjet);
 
-        menuFichierEnregistrerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierEnregistrerProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
         menuFichierEnregistrerProjet.setText("Enregistrer Projet");
         menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2082,7 +2085,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         menuFichier.add(menuFichierEnregistrerProjet);
 
-        menuFichierQuitter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        menuFichierQuitter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
         menuFichierQuitter.setText("Quitter");
         menuFichierQuitter.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2097,7 +2100,7 @@ public class MainWindow extends javax.swing.JFrame
 
         menuEdition.setText("Edition");
 
-        menuEditionAnnuler.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        menuEditionAnnuler.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK));
         menuEditionAnnuler.setText("Annuler");
         menuEditionAnnuler.setEnabled(false);
         menuEditionAnnuler.addActionListener(new java.awt.event.ActionListener()
@@ -2109,7 +2112,7 @@ public class MainWindow extends javax.swing.JFrame
         });
         menuEdition.add(menuEditionAnnuler);
 
-        menuEditionRepeter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
+        menuEditionRepeter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK));
         menuEditionRepeter.setText("Répéter");
         menuEditionRepeter.setEnabled(false);
         menuEditionRepeter.addActionListener(new java.awt.event.ActionListener()
