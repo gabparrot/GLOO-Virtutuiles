@@ -186,6 +186,16 @@
         <Property name="useNullLayout" type="boolean" value="true"/>
       </Layout>
       <SubComponents>
+        <MenuItem class="javax.swing.JMenuItem" name="relativeMoveMenuItem">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Repositionner par rapport &#xe0;..."/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="relativeMoveMenuItemActionPerformed"/>
+          </Events>
+        </MenuItem>
+        <Component class="javax.swing.JPopupMenu$Separator" name="jSeparator7">
+        </Component>
         <Menu class="javax.swing.JMenu" name="pushSubMenu">
           <Properties>
             <Property name="text" type="java.lang.String" value="Pousser"/>
@@ -392,11 +402,6 @@
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteSurfaceMenuItemActionPerformed"/>
           </Events>
-        </MenuItem>
-        <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
-          <Properties>
-            <Property name="text" type="java.lang.String" value="jMenuItem1"/>
-          </Properties>
         </MenuItem>
       </SubComponents>
     </Container>
@@ -1158,6 +1163,9 @@
                       </Properties>
                     </Component>
                     <Component class="javax.swing.JTextField" name="createWindowWidthField">
+                      <Events>
+                        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="createWindowWidthFieldActionPerformed"/>
+                      </Events>
                     </Component>
                     <Component class="javax.swing.JTextField" name="createWindowHeightField">
                     </Component>

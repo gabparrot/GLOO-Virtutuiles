@@ -33,7 +33,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     }
 
     /**
-     * La surface doit-elle être couverte?
+     * Représente si cette surface est non couvrable
      * @return false si la surface doit être couverte, true sinon.
      */
     @Override
@@ -85,7 +85,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     
     /**
      * Retourne l'aire de la surface rectangulaire.
-     * @return area Un double representant l'aire
+     * @return area Un double representant l'aire en mm carrés
      */
     @Override
     public double getArea()
@@ -93,12 +93,22 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         return width * height;
     }
     
+    /**
+     * Demande au covering de se couvrir de tuiles, selon les valeurs qu'il porte déjà en attribut
+     */
     @Override
     public void coverSurface()
     {
         covering.cover();
     }
 
+    /**
+     * Tente de repositionner la surface à une nouvelle coordonnée X (horizontale), préserve sa valeur verticale. En cas
+     * de superposition, l'opération est annulée.
+     * @param x la nouvelle coordonnée X, en mm
+     * @param project le projet possédant cette surface
+     * @return 
+     */
     @Override
     public boolean setX(double x, Project project)
     {
@@ -120,6 +130,13 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         }
     }
 
+    /**
+     * Tente de repositionner la surface à une nouvelle coordonnée Y (verticale), préserve sa valeur horizontale. En cas
+     * de superposition, l'opération est annulée.
+     * @param y la nouvelle coordonnée Y, en mm
+     * @param project le projet possédant cette surface
+     * @return si oui ou non l'opération s'est déroulée avec succès
+     */
     @Override
     public boolean setY(double y, Project project)
     {
@@ -141,6 +158,13 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         }
     }
 
+    /**
+     * Tente de redimensionner la largeur de la surface, en conservant son coin haut-gauche à la même position. 
+     * En cas de superposition, l'opération est annulée.
+     * @param width la nouvelle largeur
+     * @param project le projet possédant cette surface
+     * @return si oui ou non l'opération s'est déroulée avec succès
+     */
     @Override
     public boolean setWidth(double width, Project project)
     {
@@ -165,6 +189,13 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         }
     }
 
+    /**
+     * Tente de redimensionner la hauteur de la surface, en conservant son coin haut-gauche à la même position. 
+     * En cas de superposition, l'opération est annulée.
+     * @param height la nouvelle largeur
+     * @param project le projet possédant cette surface
+     * @return si oui ou non l'opération s'est déroulée avec succès
+     */
     @Override
     public boolean setHeight(double height, Project project)
     {
@@ -189,6 +220,15 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         }
     }
     
+    /**
+     * Tente de repositionner la surface à une nouvelle coordonnée Y (verticale), préserve sa valeur horizontale. En cas
+     * de superposition, l'opération est annulée, et la surface est poussée jusqu'au prochain obstacle dans cette
+     * direction.
+     * @param y la nouvelle coordonnée Y, en mm
+     * @param x la nouvelle coordonéée X, en mm
+     * @param project le projet possédant cette surface
+
+     */
     @Override
     public void setXY(double x, double y, Project project)
     {
@@ -209,6 +249,12 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         coverSurface();
     }
     
+    /**
+     * Pousse la surface horizontalement vers la coordonnée X demandée, arrête au prochain obstacle
+     * @param newX Position horizontale demandée, en mm
+     * @param oldX
+     * @param project 
+     */
     private void pushHorizontally(double newX, double oldX, Project project)
     {
         double surroundingBounds[] = getSurroundingBounds(project);
@@ -229,6 +275,12 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         }
     }
     
+    /**
+     * Pousse la surface verticalement vers la coordonnée Y demandée, arrête au prochain obstacle
+     * @param newY Position verticale demandée, en mm
+     * @param oldY Ancienne position verticale
+     * @param project le projet en cours
+     */
     private void pushVertically(double newY, double oldY, Project project)
     {
         double surroundingBounds[] = getSurroundingBounds(project);
@@ -259,6 +311,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
     {
         double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
         Area totalArea = new Area();
+        
         for (Surface surface : project.getSurfaces())
         {
             if (surface != this) totalArea.add(new Area(surface));

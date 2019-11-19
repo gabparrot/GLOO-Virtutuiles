@@ -20,6 +20,7 @@ public class Main
                  InstantiationException | UnsupportedLookAndFeelException e) {}
         
         VirtuTuile.GUI.MainWindow mainWindow = new VirtuTuile.GUI.MainWindow();
+        mainWindow.setExtendedState(javax.swing.JFrame.MAXIMIZED_BOTH);
         
         try
         {

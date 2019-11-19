@@ -54,7 +54,7 @@ public final class Utilities
         boolean hasSpaceSplit = false;
         String trimmedS = s.trim();
         
-        if (trimmedS.indexOf(' ') != -1)
+        if (trimmedS.indexOf(' ') != -1 && trimmedS.lastIndexOf(' ') == trimmedS.indexOf(' '))
         {
             hasSpaceSplit = true;
         }
@@ -72,12 +72,57 @@ public final class Utilities
         boolean hasSlashSplit = false;
         String trimmedS = s.trim();
         
-        if (trimmedS.indexOf('/') != -1 && trimmedS.indexOf('/') != 0 && trimmedS.indexOf('/') != trimmedS.length() - 1)
+        if (trimmedS.indexOf('/') != -1 && trimmedS.indexOf('/') != 0 && 
+                trimmedS.indexOf('/') != trimmedS.length() - 1 &&
+                trimmedS.lastIndexOf('/') == trimmedS.indexOf('/'))
         {
             hasSlashSplit = true;
         }
         
         return hasSlashSplit;
+    }
+    
+    /**
+     * Prend une string contenant des pouces entiers, fractionnaires ou les deux séparés par un espace, et retourne un
+     * double avec le total en pouces
+     * @param inchesFieldText la string à traiter
+     * @return un double représentant le total de pouces contenu dans la string reçue
+     * @throws ParseException Exception engendrée lors de la lecture d'un double invalide
+     */
+    public static double getInchesFromField(String inchesFieldText) throws ParseException
+    {
+        double dblFullInches = 0;
+        double numerator = 0;
+        double denominator = 1;
+        String strFractionInches = "";
+        try
+        {
+            if (Utilities.stringHasSpaceSplit(inchesFieldText))
+            {
+                inchesFieldText = inchesFieldText.trim();
+                String[] spaceSplit = inchesFieldText.split(" ");
+                String strFullInches = spaceSplit[0];
+                strFractionInches = spaceSplit[1];
+                dblFullInches = Utilities.parseDoubleLocale(strFullInches);
+            }
+            else if (Utilities.stringHasSlashSplit(inchesFieldText))
+            {
+                strFractionInches = inchesFieldText.trim();
+            }
+            else
+            {
+                dblFullInches = Utilities.parseDoubleLocale(inchesFieldText);
+            }
+            if (!"".equals(strFractionInches))
+            {
+                strFractionInches = strFractionInches.trim();
+                String[] slashSplit = strFractionInches.split("/");
+                numerator = Utilities.parseDoubleLocale(slashSplit[0]);
+                denominator = Utilities.parseDoubleLocale(slashSplit[1]);
+            }
+        }
+        catch(ParseException e) { throw e; }
+        return dblFullInches + (numerator / denominator);
     }
     
     /**
@@ -98,7 +143,7 @@ public final class Utilities
      */
     public static int mmToFeet(double mm)
     {
-        return (int) (mm / 0.00328084);
+        return (int) (mm * 0.00328084);
     }
     
     /**
@@ -109,7 +154,7 @@ public final class Utilities
     public static double mmToRemainingInches(double mm)
     {
         int feet = mmToFeet(mm);
-        double inches = mm / 0.0393701;
+        double inches = mm * 0.0393701;
         return inches - feet * 12;
     }
     
@@ -120,7 +165,7 @@ public final class Utilities
      */
     public static double mmToInches(double mm)
     {
-        return mm / 0.0393701;
+        return mm * 0.0393701;
     }
     
     /**

@@ -825,16 +825,25 @@ public class Controller
         setOffsetY(newOffsetY);
     }
     
+    /**
+     * Débute le motif des tuiles de la surface sélectionnée par une tuile pleine
+     */
     public void startPatternOnFullTile()
     {
         setOffsetXY(0, 0);
     }
     
+    /**
+     * Débute le motif des tuiles de la surface sélectionnée par une colonne pleine
+     */
     public void startPatternOnFullColumn()
     {
         setOffsetX(0.0);
     }
     
+    /**
+     * Débute le motif des tuiles de la surface sélectionnée par une colonne pleine
+     */
     public void startPatternOnFullRow()
     {
         setOffsetY(0.0);

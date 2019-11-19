@@ -16,7 +16,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * @class definissant le projet en cours
+ * @class définissant le projet en cours
  * @author gabparrot
  */
 public class Project
@@ -67,7 +67,7 @@ public class Project
 
     
     /**
-     * Ajoûte une surface, utilisée par le UndoManager.
+     * Ajoute une surface, utilisée par le UndoManager.
      * @param surface : la surface qui doit être ajoutée.
      */
     public void addSurface(Surface surface)
@@ -325,6 +325,10 @@ public class Project
         return point;
     }
     
+    /**
+     * Ajoute les surfaces au fichier de sauvegarde
+     * @param file le fichier de sauvegarde du projet en cours
+     */
     public void saveSurfacesToFile(File file)
     {
         try
@@ -338,6 +342,10 @@ public class Project
         catch(IOException i) { i.printStackTrace(System.out); }
     }
     
+    /**
+     * Charge les surfaces à partir du fichier de sauvegarde donné
+     * @param file Le fichier de sauvegarde représentant le projet en cours
+     */
     public void loadSurfacesFromFile(File file)
     {
         try

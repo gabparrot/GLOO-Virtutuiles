@@ -298,7 +298,8 @@ public class MainWindow extends javax.swing.JFrame
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
+    private void initComponents()
+    {
 
         menuBar = new javax.swing.JMenu();
         toggleGroup = new javax.swing.ButtonGroup();
@@ -314,6 +315,8 @@ public class MainWindow extends javax.swing.JFrame
         imperialGridDistanceLabel = new javax.swing.JLabel();
         imperialGridDistanceOKButton = new javax.swing.JButton();
         surfacePopupMenu = new javax.swing.JPopupMenu();
+        relativeMoveMenuItem = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
         pushSubMenu = new javax.swing.JMenu();
         pushTopMenuItem = new javax.swing.JMenuItem();
         pushBottomMenuItem = new javax.swing.JMenuItem();
@@ -340,7 +343,6 @@ public class MainWindow extends javax.swing.JFrame
         centerPatternVMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
         orientationGroup = new javax.swing.ButtonGroup();
         measureGroup = new javax.swing.ButtonGroup();
         toolBar = new javax.swing.JToolBar();
@@ -488,8 +490,10 @@ public class MainWindow extends javax.swing.JFrame
         gridDistanceSlider.setMinimum(5);
         gridDistanceSlider.setMinorTickSpacing(5);
         gridDistanceSlider.setValue(20);
-        gridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        gridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
                 gridDistanceSliderStateChanged(evt);
             }
         });
@@ -497,8 +501,10 @@ public class MainWindow extends javax.swing.JFrame
         gridDistanceLabel.setText("20 cm");
 
         gridDistanceOKButton.setText("OK");
-        gridDistanceOKButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        gridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 gridDistanceOKButtonActionPerformed(evt);
             }
         });
@@ -545,8 +551,10 @@ public class MainWindow extends javax.swing.JFrame
         imperialGridDistanceSlider.setMinimum(1);
         imperialGridDistanceSlider.setMinorTickSpacing(5);
         imperialGridDistanceSlider.setValue(12);
-        imperialGridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        imperialGridDistanceSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
                 imperialGridDistanceSliderStateChanged(evt);
             }
         });
@@ -554,8 +562,10 @@ public class MainWindow extends javax.swing.JFrame
         imperialGridDistanceLabel.setText("12 pouces");
 
         imperialGridDistanceOKButton.setText("OK");
-        imperialGridDistanceOKButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        imperialGridDistanceOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 imperialGridDistanceOKButtonActionPerformed(evt);
             }
         });
@@ -591,35 +601,54 @@ public class MainWindow extends javax.swing.JFrame
 
         surfacePopupMenu.setLabel("Surface");
 
+        relativeMoveMenuItem.setText("Repositionner par rapport à...");
+        relativeMoveMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                relativeMoveMenuItemActionPerformed(evt);
+            }
+        });
+        surfacePopupMenu.add(relativeMoveMenuItem);
+        surfacePopupMenu.add(jSeparator7);
+
         pushSubMenu.setText("Pousser");
 
         pushTopMenuItem.setText("Pousser la surface en-haut");
-        pushTopMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushTopMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushTopMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushTopMenuItem);
 
         pushBottomMenuItem.setText("Pousser la surface en-bas");
-        pushBottomMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushBottomMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushBottomMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushBottomMenuItem);
 
         pushLeftJMenuItem.setText("Pousser la surface à gauche");
-        pushLeftJMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushLeftJMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushLeftJMenuItemActionPerformed(evt);
             }
         });
         pushSubMenu.add(pushLeftJMenuItem);
 
         pushRightMenuItem.setText("Pousser la surface à droite");
-        pushRightMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        pushRightMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 pushRightMenuItemActionPerformed(evt);
             }
         });
@@ -630,16 +659,20 @@ public class MainWindow extends javax.swing.JFrame
         stickSubMenu.setText("Coller");
 
         stickHMenuItem.setText("Coller horizontalement avec...");
-        stickHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stickHMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 stickHMenuItemActionPerformed(evt);
             }
         });
         stickSubMenu.add(stickHMenuItem);
 
         stickVMenuItem.setText("Coller verticalement avec...");
-        stickVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        stickVMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 stickVMenuItemActionPerformed(evt);
             }
         });
@@ -652,8 +685,10 @@ public class MainWindow extends javax.swing.JFrame
 
         alignTopMenuItem.setActionCommand("Aligner en-haut avec...");
         alignTopMenuItem.setLabel("Aligner en-haut avec...");
-        alignTopMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignTopMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignTopMenuItemActionPerformed(evt);
             }
         });
@@ -661,16 +696,20 @@ public class MainWindow extends javax.swing.JFrame
         alignTopMenuItem.getAccessibleContext().setAccessibleDescription("");
 
         alignBottomMenuItem.setText("Aligner en-bas avec...");
-        alignBottomMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignBottomMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignBottomMenuItemActionPerformed(evt);
             }
         });
         alignSubMenu.add(alignBottomMenuItem);
 
         alignLeftMenuItem.setText("Aligner à gauche avec...");
-        alignLeftMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignLeftMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignLeftMenuItemActionPerformed(evt);
             }
         });
@@ -678,8 +717,10 @@ public class MainWindow extends javax.swing.JFrame
         alignLeftMenuItem.getAccessibleContext().setAccessibleDescription("");
 
         alignRightMenuItem.setText("Aligner à droite avec...");
-        alignRightMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        alignRightMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 alignRightMenuItemActionPerformed(evt);
             }
         });
@@ -691,16 +732,20 @@ public class MainWindow extends javax.swing.JFrame
         centerSubMenu.setText("Centrer");
 
         centerHMenuItem.setText("Centrer horizontalement avec...");
-        centerHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerHMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerHMenuItemActionPerformed(evt);
             }
         });
         centerSubMenu.add(centerHMenuItem);
 
         centerVMenuItem.setText("Centrer verticalement avec...");
-        centerVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerVMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerVMenuItemActionPerformed(evt);
             }
         });
@@ -713,8 +758,10 @@ public class MainWindow extends javax.swing.JFrame
 
         startPatternFullTileMenuItem.setText("Débuter le motif avec une tuile pleine");
         startPatternFullTileMenuItem.setToolTipText("La première tuile en haut à gauche de la surface ne sera pas tronquée");
-        startPatternFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        startPatternFullTileMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 startPatternFullTileMenuItemActionPerformed(evt);
             }
         });
@@ -723,8 +770,10 @@ public class MainWindow extends javax.swing.JFrame
         startColumnFullTileMenuItem.setText("Débuter le motif avec une colonne pleine");
         startColumnFullTileMenuItem.setToolTipText("Évite le tronquage de la première colonne de la surfacec");
         startColumnFullTileMenuItem.setActionCommand("");
-        startColumnFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        startColumnFullTileMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 startColumnFullTileMenuItemActionPerformed(evt);
             }
         });
@@ -732,8 +781,10 @@ public class MainWindow extends javax.swing.JFrame
 
         startRowFullTileMenuItem.setText("Débuter le motif avec une rangée pleine");
         startRowFullTileMenuItem.setToolTipText("Évite de tronquer les tuiles de la première rangée");
-        startRowFullTileMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        startRowFullTileMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 startRowFullTileMenuItemActionPerformed(evt);
             }
         });
@@ -744,16 +795,20 @@ public class MainWindow extends javax.swing.JFrame
         centerPatternSubMenu.setText("Centrer le motif");
 
         centerPatternHMenuItem.setText("Centrer le motif horizontalement");
-        centerPatternHMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerPatternHMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerPatternHMenuItemActionPerformed(evt);
             }
         });
         centerPatternSubMenu.add(centerPatternHMenuItem);
 
         centerPatternVMenuItem.setText("Centrer le motif verticalement");
-        centerPatternVMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        centerPatternVMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 centerPatternVMenuItemActionPerformed(evt);
             }
         });
@@ -763,21 +818,22 @@ public class MainWindow extends javax.swing.JFrame
         surfacePopupMenu.add(jSeparator5);
 
         deleteSurfaceMenuItem.setText("Effacer la surface");
-        deleteSurfaceMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        deleteSurfaceMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 deleteSurfaceMenuItemActionPerformed(evt);
             }
         });
         surfacePopupMenu.add(deleteSurfaceMenuItem);
 
-        jMenuItem1.setText("jMenuItem1");
-        surfacePopupMenu.add(jMenuItem1);
-
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("VirtuTuile");
         setMinimumSize(new java.awt.Dimension(1000, 700));
-        addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
+        addComponentListener(new java.awt.event.ComponentAdapter()
+        {
+            public void componentResized(java.awt.event.ComponentEvent evt)
+            {
                 formComponentResized(evt);
             }
         });
@@ -790,13 +846,17 @@ public class MainWindow extends javax.swing.JFrame
         undoButton.setFocusable(false);
         undoButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         undoButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        undoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        undoButton.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
                 undoButtonMouseEntered(evt);
             }
         });
-        undoButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        undoButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 undoButtonActionPerformed(evt);
             }
         });
@@ -806,13 +866,17 @@ public class MainWindow extends javax.swing.JFrame
         redoButton.setFocusable(false);
         redoButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         redoButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        redoButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        redoButton.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mouseEntered(java.awt.event.MouseEvent evt)
+            {
                 redoButtonMouseEntered(evt);
             }
         });
-        redoButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        redoButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 redoButtonActionPerformed(evt);
             }
         });
@@ -828,8 +892,10 @@ public class MainWindow extends javax.swing.JFrame
         selectionToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         selectionToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         selectionToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        selectionToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectionToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 selectionToggleActionPerformed(evt);
             }
         });
@@ -844,8 +910,10 @@ public class MainWindow extends javax.swing.JFrame
         surfaceMoveToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         surfaceMoveToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         surfaceMoveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        surfaceMoveToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceMoveToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceMoveToggleActionPerformed(evt);
             }
         });
@@ -857,8 +925,10 @@ public class MainWindow extends javax.swing.JFrame
         tileMoveToggle.setFocusable(false);
         tileMoveToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         tileMoveToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        tileMoveToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileMoveToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileMoveToggleActionPerformed(evt);
             }
         });
@@ -873,8 +943,10 @@ public class MainWindow extends javax.swing.JFrame
         rectangleToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         rectangleToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         rectangleToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        rectangleToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        rectangleToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 rectangleToggleActionPerformed(evt);
             }
         });
@@ -889,8 +961,10 @@ public class MainWindow extends javax.swing.JFrame
         polygonToggle.setMaximumSize(new java.awt.Dimension(30, 30));
         polygonToggle.setMinimumSize(new java.awt.Dimension(30, 30));
         polygonToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        polygonToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        polygonToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 polygonToggleActionPerformed(evt);
             }
         });
@@ -902,8 +976,10 @@ public class MainWindow extends javax.swing.JFrame
         mergeToggle.setFocusable(false);
         mergeToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         mergeToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        mergeToggle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        mergeToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 mergeToggleActionPerformed(evt);
             }
         });
@@ -931,8 +1007,10 @@ public class MainWindow extends javax.swing.JFrame
         magnetButton.setMaximumSize(new java.awt.Dimension(30, 30));
         magnetButton.setMinimumSize(new java.awt.Dimension(30, 30));
         magnetButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        magnetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        magnetButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 magnetButtonActionPerformed(evt);
             }
         });
@@ -954,8 +1032,10 @@ public class MainWindow extends javax.swing.JFrame
         debugToggleButton.setFocusable(false);
         debugToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         debugToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        debugToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        debugToggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 debugToggleButtonActionPerformed(evt);
             }
         });
@@ -965,37 +1045,49 @@ public class MainWindow extends javax.swing.JFrame
         leftPanel.setPreferredSize(new java.awt.Dimension(0, 0));
 
         zoomOutButton.setText("-");
-        zoomOutButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomOutButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zoomOutButtonActionPerformed(evt);
             }
         });
 
         zoomInButton.setText("+");
-        zoomInButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zoomInButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zoomInButtonActionPerformed(evt);
             }
         });
 
-        canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
-            public void mouseDragged(java.awt.event.MouseEvent evt) {
+        canvasPanel.addMouseMotionListener(new java.awt.event.MouseMotionAdapter()
+        {
+            public void mouseDragged(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseDragged(evt);
             }
-            public void mouseMoved(java.awt.event.MouseEvent evt) {
+            public void mouseMoved(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseMoved(evt);
             }
         });
-        canvasPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+        canvasPanel.addMouseWheelListener(new java.awt.event.MouseWheelListener()
+        {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt)
+            {
                 canvasPanelMouseWheelMoved(evt);
             }
         });
-        canvasPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+        canvasPanel.addMouseListener(new java.awt.event.MouseAdapter()
+        {
+            public void mousePressed(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMousePressed(evt);
             }
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
+            public void mouseReleased(java.awt.event.MouseEvent evt)
+            {
                 canvasPanelMouseReleased(evt);
             }
         });
@@ -1007,8 +1099,10 @@ public class MainWindow extends javax.swing.JFrame
         jLabel21.setText("Créer une nouvelle tuile");
 
         createWindowOKButton.setText("OK");
-        createWindowOKButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createWindowOKButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 createWindowOKButtonActionPerformed(evt);
             }
         });
@@ -1023,15 +1117,27 @@ public class MainWindow extends javax.swing.JFrame
 
         jLabel27.setText("Couleur :");
 
-        createWindowColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createWindowWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                createWindowWidthFieldActionPerformed(evt);
+            }
+        });
+
+        createWindowColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 createWindowColorButtonActionPerformed(evt);
             }
         });
 
         createWindowCancelButton.setText("Annuler");
-        createWindowCancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createWindowCancelButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 createWindowCancelButtonActionPerformed(evt);
             }
         });
@@ -1148,16 +1254,20 @@ public class MainWindow extends javax.swing.JFrame
         percentLabel.setText("%");
 
         verticalScrollBar.setVisibleAmount(40);
-        verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
-            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
+        verticalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
                 verticalScrollBarAdjustmentValueChanged(evt);
             }
         });
 
         horizontalScrollBar.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         horizontalScrollBar.setVisibleAmount(40);
-        horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener() {
-            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt) {
+        horizontalScrollBar.addAdjustmentListener(new java.awt.event.AdjustmentListener()
+        {
+            public void adjustmentValueChanged(java.awt.event.AdjustmentEvent evt)
+            {
                 horizontalScrollBarAdjustmentValueChanged(evt);
             }
         });
@@ -1169,16 +1279,20 @@ public class MainWindow extends javax.swing.JFrame
         measureGroup.add(metricButton);
         metricButton.setSelected(true);
         metricButton.setText("Métrique");
-        metricButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        metricButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 metricButtonActionPerformed(evt);
             }
         });
 
         measureGroup.add(imperialButton);
         imperialButton.setText("Impérial");
-        imperialButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        imperialButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 imperialButtonActionPerformed(evt);
             }
         });
@@ -1272,8 +1386,10 @@ public class MainWindow extends javax.swing.JFrame
         surfaceColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         surfaceColorButton.setBorderPainted(false);
         surfaceColorButton.setEnabled(false);
-        surfaceColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceColorButtonActionPerformed(evt);
             }
         });
@@ -1282,8 +1398,10 @@ public class MainWindow extends javax.swing.JFrame
         coverButtonGroup.add(coverRadioButton);
         coverRadioButton.setText("Oui");
         coverRadioButton.setEnabled(false);
-        coverRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        coverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 coverRadioButtonActionPerformed(evt);
             }
         });
@@ -1292,40 +1410,50 @@ public class MainWindow extends javax.swing.JFrame
         coverButtonGroup.add(doNotCoverRadioButton);
         doNotCoverRadioButton.setText("Non");
         doNotCoverRadioButton.setEnabled(false);
-        doNotCoverRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        doNotCoverRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 doNotCoverRadioButtonActionPerformed(evt);
             }
         });
 
         surfaceXField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceXField.setEnabled(false);
-        surfaceXField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceXFieldActionPerformed(evt);
             }
         });
 
         surfaceYField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceYField.setEnabled(false);
-        surfaceYField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceYFieldActionPerformed(evt);
             }
         });
 
         surfaceWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceWidthField.setEnabled(false);
-        surfaceWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceWidthFieldActionPerformed(evt);
             }
         });
 
         surfaceHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceHeightField.setEnabled(false);
-        surfaceHeightField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceHeightFieldActionPerformed(evt);
             }
         });
@@ -1340,24 +1468,30 @@ public class MainWindow extends javax.swing.JFrame
 
         surfaceHeightFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceHeightFieldInches.setEnabled(false);
-        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceHeightFieldInchesActionPerformed(evt);
             }
         });
 
         surfaceWidthFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceWidthFieldInches.setEnabled(false);
-        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceWidthFieldInchesActionPerformed(evt);
             }
         });
 
         surfaceYFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceYFieldInches.setEnabled(false);
-        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceYFieldInchesActionPerformed(evt);
             }
         });
@@ -1365,8 +1499,10 @@ public class MainWindow extends javax.swing.JFrame
         surfaceXFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         surfaceXFieldInches.setToolTipText("");
         surfaceXFieldInches.setEnabled(false);
-        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 surfaceXFieldInchesActionPerformed(evt);
             }
         });
@@ -1467,16 +1603,20 @@ public class MainWindow extends javax.swing.JFrame
         jointColorButton.setMaximumSize(new java.awt.Dimension(100, 30));
         jointColorButton.setMinimumSize(new java.awt.Dimension(100, 30));
         jointColorButton.setPreferredSize(new java.awt.Dimension(100, 30));
-        jointColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jointColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 jointColorButtonActionPerformed(evt);
             }
         });
 
         jointWidthField.setEnabled(false);
         jointWidthField.setPreferredSize(new java.awt.Dimension(50, 30));
-        jointWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jointWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 jointWidthFieldActionPerformed(evt);
             }
         });
@@ -1488,8 +1628,10 @@ public class MainWindow extends javax.swing.JFrame
         patternComboBox.setEnabled(false);
         patternComboBox.setFocusable(false);
         patternComboBox.setPreferredSize(new java.awt.Dimension(50, 30));
-        patternComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        patternComboBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 patternComboBoxActionPerformed(evt);
             }
         });
@@ -1498,8 +1640,10 @@ public class MainWindow extends javax.swing.JFrame
         orientationGroup.add(zeroOrientationRadioButton);
         zeroOrientationRadioButton.setText("0°");
         zeroOrientationRadioButton.setEnabled(false);
-        zeroOrientationRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        zeroOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 zeroOrientationRadioButtonActionPerformed(evt);
             }
         });
@@ -1508,15 +1652,19 @@ public class MainWindow extends javax.swing.JFrame
         orientationGroup.add(ninetyOrientationRadioButton);
         ninetyOrientationRadioButton.setText("90°");
         ninetyOrientationRadioButton.setEnabled(false);
-        ninetyOrientationRadioButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        ninetyOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 ninetyOrientationRadioButtonActionPerformed(evt);
             }
         });
 
         offsetXField.setEnabled(false);
-        offsetXField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        offsetXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 offsetXFieldActionPerformed(evt);
             }
         });
@@ -1526,8 +1674,10 @@ public class MainWindow extends javax.swing.JFrame
         offsetYText.setText("cm");
 
         offsetYField.setEnabled(false);
-        offsetYField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        offsetYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 offsetYFieldActionPerformed(evt);
             }
         });
@@ -1535,20 +1685,26 @@ public class MainWindow extends javax.swing.JFrame
         tileTypeComboBox.setEnabled(false);
         tileTypeComboBox.setMinimumSize(new java.awt.Dimension(200, 22));
         tileTypeComboBox.setPreferredSize(new java.awt.Dimension(200, 30));
-        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileTypeComboBoxActionPerformed(evt);
             }
         });
 
-        tileWidthField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileWidthFieldActionPerformed(evt);
             }
         });
 
-        tileHeightField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileHeightFieldActionPerformed(evt);
             }
         });
@@ -1565,22 +1721,28 @@ public class MainWindow extends javax.swing.JFrame
 
         tileNameLabel.setText("Nom :");
 
-        tileNameField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileNameField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileNameFieldActionPerformed(evt);
             }
         });
 
         jLabel19.setText("Nb/boîte :");
 
-        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileNbPerBoxFieldActionPerformed(evt);
             }
         });
 
-        tileColorButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        tileColorButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 tileColorButtonActionPerformed(evt);
             }
         });
@@ -1588,8 +1750,10 @@ public class MainWindow extends javax.swing.JFrame
         jLabel20.setText("Décalage rangées :");
 
         rowOffsetField.setEnabled(false);
-        rowOffsetField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        rowOffsetField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 rowOffsetFieldActionPerformed(evt);
             }
         });
@@ -1597,8 +1761,10 @@ public class MainWindow extends javax.swing.JFrame
         rowOffsetLabel.setText("%");
 
         createTileButton.setText("Créer");
-        createTileButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        createTileButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 createTileButtonActionPerformed(evt);
             }
         });
@@ -1874,8 +2040,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierNouveauProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierNouveauProjet.setText("Nouveau Projet");
-        menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierNouveauProjetActionPerformed(evt);
             }
         });
@@ -1883,8 +2051,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierOuvrirProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierOuvrirProjet.setText("Ouvrir Projet");
-        menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierOuvrirProjetActionPerformed(evt);
             }
         });
@@ -1892,8 +2062,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierFermerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierFermerProjet.setText("Fermer Projet");
-        menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierFermerProjetActionPerformed(evt);
             }
         });
@@ -1901,8 +2073,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierEnregistrerProjet.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierEnregistrerProjet.setText("Enregistrer Projet");
-        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierEnregistrerProjetActionPerformed(evt);
             }
         });
@@ -1910,8 +2084,10 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichierQuitter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         menuFichierQuitter.setText("Quitter");
-        menuFichierQuitter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuFichierQuitter.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuFichierQuitterActionPerformed(evt);
             }
         });
@@ -1924,8 +2100,10 @@ public class MainWindow extends javax.swing.JFrame
         menuEditionAnnuler.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
         menuEditionAnnuler.setText("Annuler");
         menuEditionAnnuler.setEnabled(false);
-        menuEditionAnnuler.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuEditionAnnuler.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuEditionAnnulerActionPerformed(evt);
             }
         });
@@ -1934,8 +2112,10 @@ public class MainWindow extends javax.swing.JFrame
         menuEditionRepeter.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Y, java.awt.event.InputEvent.CTRL_MASK));
         menuEditionRepeter.setText("Répéter");
         menuEditionRepeter.setEnabled(false);
-        menuEditionRepeter.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuEditionRepeter.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuEditionRepeterActionPerformed(evt);
             }
         });
@@ -1946,8 +2126,10 @@ public class MainWindow extends javax.swing.JFrame
         menuAffichage.setText("Affichage");
 
         menuGridDistance.setText("Distance grille");
-        menuGridDistance.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuGridDistance.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuGridDistanceActionPerformed(evt);
             }
         });
@@ -1958,8 +2140,10 @@ public class MainWindow extends javax.swing.JFrame
         menuAide.setText("Aide");
 
         menuAidePropos.setText("À propos de");
-        menuAidePropos.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        menuAidePropos.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
                 menuAideProposActionPerformed(evt);
             }
         });
@@ -2662,7 +2846,7 @@ public class MainWindow extends javax.swing.JFrame
             {
                 double feet = Utilities.parseDoubleLocale(surfaceWidthField.getText());
                 
-                double dblInchesField = getInchesFromField(surfaceWidthFieldInches.getText());
+                double dblInchesField = Utilities.getInchesFromField(surfaceWidthFieldInches.getText());
                 
                 if (dblInchesField == -1)
                 {
@@ -2716,7 +2900,7 @@ public class MainWindow extends javax.swing.JFrame
             {
                 double feet = Utilities.parseDoubleLocale(surfaceXField.getText());
                 
-                double dblInchesField = getInchesFromField(surfaceXFieldInches.getText());
+                double dblInchesField = Utilities.getInchesFromField(surfaceXFieldInches.getText());
                 
                 if (dblInchesField == -1)
                 {
@@ -2771,23 +2955,17 @@ public class MainWindow extends javax.swing.JFrame
             {
                 double feet = Utilities.parseDoubleLocale(surfaceYField.getText());
                 
-                double dblInchesField = getInchesFromField(surfaceYFieldInches.getText());
-                
-                //TEST
-                System.out.println("Nombre de pouces reçu par surfaceYField: " + dblInchesField);
-                
+                double dblInchesField = Utilities.getInchesFromField(surfaceYFieldInches.getText());
+
                 if (dblInchesField == -1)
                 {
                     throw new java.text.ParseException("Valeur invalide", 0);
                 }
                 
                 double totalInches = feet * 12 + dblInchesField;
-                System.out.println("totalInches dans surfaceY: " + totalInches); //TEST
                 double mm = Utilities.inchesToMm(totalInches);
-                System.out.println("total mm dans surfaceY: " + mm); //TEST
                 boolean status = controller.setSurfaceY(mm);
                 double newY = controller.getBounds2D().getY();
-                System.out.println("newY metrique: " + newY + ", newY feet: " + String.valueOf(Utilities.mmToFeet(newY)) + ", newY inches: " + String.valueOf(Utilities.mmToFeet(mm))); //TESt
                 surfaceYField.setText(String.valueOf(Utilities.mmToFeet(newY)));
                 surfaceYFieldInches.setText(String.format("%.02f",
                         Utilities.mmToRemainingInches(newY)));
@@ -2806,51 +2984,6 @@ public class MainWindow extends javax.swing.JFrame
             }
         }
     }//GEN-LAST:event_surfaceYFieldActionPerformed
-
-    private double getInchesFromField(String inchesFieldText)
-    {
-        double dblFullInches = 0;
-        double numerator = 0;
-        double denominator = 1;
-        String strFractionInches = "";
-        
-        try
-        {
-            if (Utilities.stringHasSpaceSplit(inchesFieldText))
-            {
-                inchesFieldText = inchesFieldText.trim();
-                String[] spaceSplit = inchesFieldText.split(" ");
-                String strFullInches = spaceSplit[0];
-                strFractionInches = spaceSplit[1];
-
-                dblFullInches = Utilities.parseDoubleLocale(strFullInches);
-            }
-            else if(Utilities.stringHasSlashSplit(inchesFieldText))
-            {
-                strFractionInches = inchesFieldText.trim();
-            }
-            else
-            {
-                dblFullInches = Utilities.parseDoubleLocale(inchesFieldText);
-            }
-
-            if (!"".equals(strFractionInches))
-            {
-                strFractionInches = strFractionInches.trim();
-                String[] slashSplit = strFractionInches.split("/");
-                numerator = Utilities.parseDoubleLocale(slashSplit[0]);
-                denominator = Utilities.parseDoubleLocale(slashSplit[1]);
-            }
-        }
-        catch(java.text.ParseException e)
-        {
-            return -1;
-        }
-        
-        //TEST
-        System.out.println("dblFullInches: " + dblFullInches + ", numerator: " + numerator + ", denominator : " + denominator);
-        return dblFullInches + (numerator / denominator);
-    }
     
     private void surfaceHeightFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceHeightFieldActionPerformed
     {//GEN-HEADEREND:event_surfaceHeightFieldActionPerformed
@@ -2880,7 +3013,7 @@ public class MainWindow extends javax.swing.JFrame
             {
                 double feet = Utilities.parseDoubleLocale(surfaceHeightField.getText());
                 
-                double dblInchesField = getInchesFromField(surfaceHeightFieldInches.getText());
+                double dblInchesField = Utilities.getInchesFromField(surfaceHeightFieldInches.getText());
                 
                 if (dblInchesField == -1)
                 {
@@ -2957,8 +3090,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             try
             {
-                double width = Utilities.inchesToMm(Utilities.parseDoubleLocale(tileWidthField.getText()));
-                controller.setTileWidth(width);
+                double dblInchesField = Utilities.getInchesFromField(tileWidthField.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double tileWidth = Utilities.inchesToMm(dblInchesField);
+                controller.setTileWidth(tileWidth);
                 tileWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getTileWidth())));
                 updatePanelInformation();
@@ -2991,8 +3131,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             try
             {
-                double offset = Utilities.inchesToMm(Utilities.parseDoubleLocale(offsetXField.getText()));
-                controller.setOffsetX(offset);
+                double dblInchesField = Utilities.getInchesFromField(offsetXField.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double offsetX = Utilities.inchesToMm(dblInchesField);
+                controller.setOffsetX(offsetX);
                 offsetXField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getOffsetX())));
                 updatePanelInformation();
@@ -3491,8 +3638,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             try
             {
-                double width = Utilities.inchesToMm(Utilities.parseDoubleLocale(jointWidthField.getText()));
-                controller.setJointWidth(width);
+                double dblInchesField = Utilities.getInchesFromField(jointWidthField.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double jointWidth = Utilities.inchesToMm(dblInchesField);
+                controller.setJointWidth(jointWidth);
                 jointWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getJointWidth())));
                 updatePanelInformation();
@@ -3570,8 +3724,15 @@ public class MainWindow extends javax.swing.JFrame
        {
            try
            {
-                double height = Utilities.inchesToMm(Utilities.parseDoubleLocale(tileHeightField.getText()));
-                controller.setTileHeight(height);
+                double dblInchesField = Utilities.getInchesFromField(tileWidthField.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double tileHeight = Utilities.inchesToMm(dblInchesField);
+                controller.setTileHeight(tileHeight);
                 tileHeightField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getTileHeight())));
                 controller.refreshSurfaces();
@@ -3607,8 +3768,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             try
             {
-                double offset = Utilities.inchesToMm(Utilities.parseDoubleLocale(offsetYField.getText()));
-                controller.setOffsetY(offset);
+                double dblInchesField = Utilities.getInchesFromField(offsetYField.getText());
+                
+                if (dblInchesField == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                double offsetY = Utilities.inchesToMm(dblInchesField);
+                controller.setOffsetY(offsetY);
                 offsetYField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getOffsetY())));
                 updatePanelInformation();
@@ -3664,35 +3832,50 @@ public class MainWindow extends javax.swing.JFrame
         String newTileName = createWindowNameField.getText();
         Color newTileColor = createWindowColorButton.getBackground();
         int newTileNbPerBox = Integer.parseInt(createWindowNbPerBoxField.getText());
-        double width = 0;
-        double height = 0;
+        double newTileWidth = 0;
+        double newTileHeight = 0;
         
         if(isMetric)
         {
             try
             {
-                width = Utilities.parseDoubleLocale(createWindowWidthField.getText()) * 10;
-                height = Utilities.parseDoubleLocale(createWindowHeightField.getText()) * 10;
+                newTileWidth = Utilities.parseDoubleLocale(createWindowWidthField.getText()) * 10;
+                newTileHeight = Utilities.parseDoubleLocale(createWindowHeightField.getText()) * 10;
             }
             catch (java.text.ParseException e)
             {
+                createWindowCancelButtonActionPerformed(evt);
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                
                 //TODO gestion d'erreur invalide
-                createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
-                createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
+                //createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
+                //createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
         }
         else
         {            
             try
             {
-                width = Utilities.inchesToMm(Utilities.parseDoubleLocale(createWindowWidthField.getText()));
-                height = Utilities.inchesToMm(Utilities.parseDoubleLocale(createWindowHeightField.getText()));
+                newTileWidth = Utilities.getInchesFromField(tileWidthField.getText());
+                newTileHeight = Utilities.getInchesFromField(tileWidthField.getText());
+                
+                if (newTileWidth == -1 || newTileHeight == -1)
+                {
+                    throw new java.text.ParseException("Valeur invalide", 0);
+                }
+                
+                newTileWidth = Utilities.inchesToMm(newTileWidth);
+                newTileHeight = Utilities.inchesToMm(newTileHeight);
+                
             }
             catch (java.text.ParseException e)
             {
+                createWindowCancelButtonActionPerformed(evt);
+                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                
                 //TODO gestion d'erreur invalide 
-                createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
-                createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
+                //createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
+                //createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
         }
         
@@ -3701,12 +3884,12 @@ public class MainWindow extends javax.swing.JFrame
             javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
         }
-        if(width < 20)
+        if(newTileWidth < 20)
         {
             javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de largeur", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
         }
-        if(height < 20)
+        if(newTileHeight < 20)
         {
             javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
@@ -3716,9 +3899,9 @@ public class MainWindow extends javax.swing.JFrame
             javax.swing.JOptionPane.showMessageDialog(null, "Une boîte doit contenir au moins 10 tuiles", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
         }
-        if(newTileName.length() > 5 && width >= 20 && height >= 20 && newTileNbPerBox >= 10)
+        if(newTileName.length() > 5 && newTileWidth >= 20 && newTileHeight >= 20 && newTileNbPerBox >= 10)
         {
-            controller.addTileType(width, height, newTileName, newTileNbPerBox, newTileColor);
+            controller.addTileType(newTileWidth, newTileHeight, newTileName, newTileNbPerBox, newTileColor);
             
             createWindowNameField.setText("");
             createWindowWidthField.setText("");
@@ -3772,6 +3955,17 @@ public class MainWindow extends javax.swing.JFrame
         updatePanelInformation();
         repaint();
     }//GEN-LAST:event_startRowFullTileMenuItemActionPerformed
+
+    private void relativeMoveMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_relativeMoveMenuItemActionPerformed
+    {//GEN-HEADEREND:event_relativeMoveMenuItemActionPerformed
+        contextMode = ContextMenuModes.RELATIVE_MOVE;
+        this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_relativeMoveMenuItemActionPerformed
+
+    private void createWindowWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowWidthFieldActionPerformed
+    {//GEN-HEADEREND:event_createWindowWidthFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_createWindowWidthFieldActionPerformed
     
     private void moveRelatively(Point2D.Double point) 
     {
@@ -3836,8 +4030,8 @@ public class MainWindow extends javax.swing.JFrame
                     {
                         try 
                         {
-                            requestedXPos = Utilities.parseDoubleLocale(xField.getText());
-                            requestedYPos = Utilities.parseDoubleLocale(yField.getText());
+                            requestedXPos = Utilities.getInchesFromField(xField.getText());
+                            requestedYPos = Utilities.getInchesFromField(yField.getText());
                             
                             requestedXPos = Utilities.inchesToMm(requestedXPos);
                             requestedYPos = Utilities.inchesToMm(requestedYPos);
@@ -3985,7 +4179,6 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -3996,6 +4189,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JButton jointColorButton;
     private javax.swing.JTextField jointWidthField;
     private javax.swing.JLabel largeurJointText;
@@ -4037,6 +4231,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JButton quantitiesButton;
     private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JButton redoButton;
+    private javax.swing.JMenuItem relativeMoveMenuItem;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;

@@ -137,12 +137,22 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
         return area;
     }
     
+    /**
+     * Demande au covering de se couvrir de tuiles, selon les règles définies par ses attributs actuels
+     */
     @Override
     public void coverSurface()
     {
         covering.cover();
     }
 
+    /**
+     * Tente de déplacer la surface horizontalement vers la coordonnée X reçue, en préservant sa valeur en Y. Arrête au
+     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
+     * @param y La destination en X, en mm
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setX(double x, Project project)
     {
@@ -169,6 +179,13 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
         }
     }
 
+    /**
+     * Tente de déplacer la surface verticalement vers la coordonnée Y reçue, en préservant sa valeur en X. Arrête au
+     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
+     * @param y La destination en Y, en mm
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setY(double y, Project project)
     {
@@ -195,6 +212,13 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
         }
     }
 
+    /**
+     * Tente de modifier la largeur de la surface pour celle demandée. Si cette opération cause une superposition entre
+     * deux surfaces, elle est annulée.
+     * @param width la largeur demandée.
+     * @param project le projet en cours.
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setWidth(double width, Project project)
     {
@@ -226,6 +250,13 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
         }
     }
 
+    /**
+     * Tente de modifier la hauteur de la surface pour celle demandée. Si cette opération cause une superposition entre
+     * deux surfaces, elle est annulée.
+     * @param height la largeur demandée.
+     * @param project le projet en cours.
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setHeight(double height, Project project)
     {
@@ -257,6 +288,13 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
         }
     }
 
+    /**
+     * Tente de déplacer la surface vers la coordonnée XY reçue. Arrête au premier obstacle rencontré. Si le déplacement
+     * est impossible, il est annulé.
+     * @param x La destination en X, en mm
+     * @param y La destination en Y, en mm
+     * @param project le projet en cours
+     */
     @Override
     public void setXY(double x, double y, Project project)
     {

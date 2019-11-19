@@ -28,17 +28,31 @@ public class Covering implements Serializable, Cloneable
     private TileType tileType = Utilities.DEFAULT_TILE_1;
     private Surface parent;
     
+    
+    /**
+     * Constructeur standard de covering
+     * @param parent La surface qui possède ce covering en attribut
+     */
     public Covering(Surface parent)
     {
         this.parent = parent;
         cover();
     }
     
+    /**
+     * Setter de la surface parente à ce covering
+     * @param parent La surface qui possède ce covering en attribut
+     */
     public void setParent(Surface parent)
     {
         this.parent = parent;
     }
     
+    /**
+     * Contructeur clone de Covering
+     * @return Objet Covering clôné
+     * @throws CloneNotSupportedException 
+     */
     @Override
     public Object clone() throws CloneNotSupportedException 
     { 
@@ -75,10 +89,13 @@ public class Covering implements Serializable, Cloneable
         }
     }
     
-    
+    /**
+     * Permet de placer les tuiles sur le covering, en rangées traditionnelles. Les tuiles suivent le modèle du type de 
+     * tuile du covering, l'orientation, le décalage. Ce motif prend en compte le décalage de rangée
+     */
     private void coverSurfaceA()
     {
-        
+        // Position et orientation
         double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
         double tileHeight = isNinetyDegree ? tileType.getWidth() : tileType.getHeight();
         
@@ -89,7 +106,7 @@ public class Covering implements Serializable, Cloneable
         rowOffsetMod = tileWidth - (rowOffset / 100. * tileWidth);
         rowOffsetMod -= jointWidth * rowOffset / 100;
         
-
+        // Définition de l'aire à couvrir
         Area fullArea = new Area(parent);
         Rectangle2D bounds = fullArea.getBounds2D();
         if (parent instanceof CombinedSurface)
@@ -99,6 +116,7 @@ public class Covering implements Serializable, Cloneable
         
         Area innerArea = getInnerArea(fullArea);
         
+        // Création des tuiles
         Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth + offsetXMod,
                                                          bounds.getY() - tileHeight + offsetYMod);
         int tileCount = 0;
@@ -144,19 +162,35 @@ public class Covering implements Serializable, Cloneable
         }
     }
     
+    /**
+     * Crée et place les tuiles sur le covering, selon un motif croisé en L, pour chaque tuile. Le décalage de rangée
+     * est ignoré. Le tuiles suivent le modèle du tileType, l'orientation et le décalage en attribut dans le covering
+     */
     private void coverSurfaceB()
     {
-        
+        //TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    /**
+     * Crée et place les tuiles sur le covering, selon un motif , par paire de tuiles. Le décalage de rangée
+     * est considéré, par bloc de 2x2 tuiles. Le tuiles suivent le modèle du tileType, l'orientation et le décalage 
+     * en attribut dans le covering
+     */
     private void coverSurfaceC()
     {
-        
+        //TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
+    /**
+     * Crée et place les tuiles sur le covering, selon des rangées en diagonale. Le décalage de rangée
+     * est considéré. Le tuiles suivent le modèle du tileType, l'orientation et le décalage en attribut dans le covering
+     */
     private void coverSurfaceD()
     {
-        
+        //TODO
+        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -366,6 +400,12 @@ public class Covering implements Serializable, Cloneable
         return rowOffset;
     }
     
+    /**
+     * 
+     * @param in 
+     * @throws IOException
+     * @throws ClassNotFoundException 
+     */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
     {
         tiles = new java.util.ArrayList<>();

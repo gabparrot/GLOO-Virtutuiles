@@ -151,6 +151,11 @@ public class CombinedSurface extends Area implements Surface, Serializable
         return area;
     }
     
+    /**
+     * Permet la sauvegarde d'une surface combinée dans un OutputStream
+     * @param out le OutputStream de destination
+     * @throws IOException Erreur d'écriture
+     */
     private void writeObject(ObjectOutputStream out) throws IOException
     {
         out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(this));
@@ -161,6 +166,12 @@ public class CombinedSurface extends Area implements Surface, Serializable
         out.writeObject(absorbedSurfaces);
     }
     
+    /**
+     * Permet le chargement d'une surface combinée à partir d'un InputStream de sauvegarde
+     * @param in L'InputStream de sauvegarde
+     * @throws IOException erreur d'écriture
+     * @throws ClassNotFoundException erreur de définition de classe
+     */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
     {
         add(new Area((Shape) in.readObject()));
@@ -193,6 +204,13 @@ public class CombinedSurface extends Area implements Surface, Serializable
         transform(translation);
     }
 
+    /**
+     * Tente de déplacer la surface horizontalement vers la coordonnée X reçue, en préservant sa valeur en Y. Arrête au
+     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
+     * @param x La destination en X, en mm
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setX(double x, Project project)
     {
@@ -220,6 +238,13 @@ public class CombinedSurface extends Area implements Surface, Serializable
         }
     }
 
+    /**
+     * Tente de déplacer la surface verticalement vers la coordonnée Y reçue, en préservant sa valeur en X. Arrête au
+     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
+     * @param y La destination en Y, en mm
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setY(double y, Project project)
     {
@@ -247,6 +272,13 @@ public class CombinedSurface extends Area implements Surface, Serializable
         }
     }
 
+    /**
+     * Tente de modifier la largeur de la surface pour celle demandée. Si cette opération cause une superposition entre
+     * deux surfaces, elle est annulée.
+     * @param width la largeur demandée
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setWidth(double width, Project project)
     {
@@ -279,6 +311,13 @@ public class CombinedSurface extends Area implements Surface, Serializable
         }
     }
 
+    /**
+     * Tente de modifier la hauteur de la surface pour celle demandée. Si cette opération cause une superposition entre
+     * deux surfaces, elle est annulée.
+     * @param height la hauteur demandée
+     * @param project le projet en cours
+     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
+     */
     @Override
     public boolean setHeight(double height, Project project)
     {
@@ -311,6 +350,13 @@ public class CombinedSurface extends Area implements Surface, Serializable
         }
     }
 
+    /**
+     * Tente de déplacer la surface vers la coordonnée XY reçue. Arrête au premier obstacle rencontré. Si le déplacement
+     * est impossible, il est annulé.
+     * @param x La destination en X, en mm
+     * @param y La destination en Y, en mm
+     * @param project le projet en cours
+     */
     @Override
     public void setXY(double x, double y, Project project)
     {
