@@ -116,8 +116,11 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         {
             return false;
         }
+        
         double oldX = this.x;
         this.x = x;
+        
+        //TODO enlever appel au parent
         if (project.conflictCheck(this))
         {
             coverSurface();
@@ -316,6 +319,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Elementary
         {
             if (surface != this) totalArea.add(new Area(surface));
         }
+        
         // LEFT
         Area leftArea = new Area(totalArea);
         leftArea.intersect(new Area(new Rectangle2D.Double(0, y, x, height)));

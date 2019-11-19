@@ -2697,7 +2697,7 @@ public class MainWindow extends javax.swing.JFrame
             double jointWidth = controller.getJointWidth();
             
             double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
-            double offsetY = (controller.getOffsetY() + deltaY) % (tileHeight + jointWidth);
+            double offsetY = (controller.getOffsetY() + deltaY) % (2 * (tileHeight + jointWidth));
             controller.setOffsetXY(offsetX, offsetY);
             originPoint = currentCursorPosition;
             updatePanelInformation();
@@ -3079,8 +3079,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             try
             {
-                double width = Utilities.parseDoubleLocale(tileWidthField.getText()) * 10;
-                controller.setTileWidth(width);
+                double newTileWidth = Utilities.parseDoubleLocale(tileWidthField.getText()) * 10;
+                
+                if(newTileWidth < 20)
+                {
+                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de "
+                            + "largeur", "Erreur", JOptionPane.ERROR_MESSAGE);
+                    throw new java.text.ParseException("Une tuile doit avoir au moins 2cm ou 1 pouce de largeur", 0);
+                }
+                controller.setTileWidth(newTileWidth);
                 tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
                 updatePanelInformation();
                 controller.refreshSurfaces();
@@ -3100,8 +3107,16 @@ public class MainWindow extends javax.swing.JFrame
                     throw new java.text.ParseException("Valeur invalide", 0);
                 }
                 
-                double tileWidth = Utilities.inchesToMm(dblInchesField);
-                controller.setTileWidth(tileWidth);
+                double newTileWidth = Utilities.inchesToMm(dblInchesField);
+                
+                if(newTileWidth < 20)
+                {
+                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de "
+                            + "largeur", "Erreur", JOptionPane.ERROR_MESSAGE);
+                    throw new java.text.ParseException("Une tuile doit avoir au moins 2cm ou 1 pouce de largeur", 0);
+                }
+                
+                controller.setTileWidth(newTileWidth);
                 tileWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getTileWidth())));
                 updatePanelInformation();
@@ -3157,15 +3172,28 @@ public class MainWindow extends javax.swing.JFrame
 
     private void tileNbPerBoxFieldActionPerformed(java.awt.event.ActionEvent evt)
        {
-           int nbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
-           controller.setTileNbPerBox(nbPerBox);
-           tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+           try
+           {
+                int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
+                controller.setTileNbPerBox(newTileNbPerBox);
+                tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+           } catch (java.lang.NumberFormatException e)
+           {
+               tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+           } 
        }
 
     private void tileNameFieldActionPerformed(java.awt.event.ActionEvent evt)
        {
-           String name = tileNameField.getText();
-           controller.setTileName(name);
+           String newTileName = tileNameField.getText();
+           
+           if(newTileName.length() <= 5)
+            {
+                javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", 
+                        "Erreur", JOptionPane.ERROR_MESSAGE);
+            }
+           
+           controller.setTileName(newTileName);
            tileNameField.setText(controller.getTileName());
            updatePanelInformation();
        }
@@ -3711,8 +3739,16 @@ public class MainWindow extends javax.swing.JFrame
        {
            try
            {
-                double height = Utilities.parseDoubleLocale(tileHeightField.getText()) * 10;
-                controller.setTileHeight(height);
+                double newTileHeight = Utilities.parseDoubleLocale(tileHeightField.getText()) * 10;
+                
+                if(newTileHeight < 20)
+                {
+                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
+                        JOptionPane.ERROR_MESSAGE);
+                    throw new java.text.ParseException("Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", 0);
+                }
+                
+                controller.setTileHeight(newTileHeight);
                 tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
                 updatePanelInformation();
                 controller.refreshSurfaces();
@@ -3734,8 +3770,16 @@ public class MainWindow extends javax.swing.JFrame
                     throw new java.text.ParseException("Valeur invalide", 0);
                 }
                 
-                double tileHeight = Utilities.inchesToMm(dblInchesField);
-                controller.setTileHeight(tileHeight);
+                double newTileHeight = Utilities.inchesToMm(dblInchesField);
+                
+                if(newTileHeight < 20)
+                {
+                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
+                        JOptionPane.ERROR_MESSAGE);
+                    throw new java.text.ParseException("Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", 0);
+                }
+                
+                controller.setTileHeight(newTileHeight);
                 tileHeightField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getTileHeight())));
                 controller.refreshSurfaces();
@@ -3746,7 +3790,7 @@ public class MainWindow extends javax.swing.JFrame
             {
                 tileHeightField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getTileHeight())));
-           }
+            }
        }
    }
     
@@ -3838,6 +3882,7 @@ public class MainWindow extends javax.swing.JFrame
         double newTileWidth = 0;
         double newTileHeight = 0;
         
+        // Hauteur et largeur
         if(isMetric)
         {
             try
@@ -3873,26 +3918,31 @@ public class MainWindow extends javax.swing.JFrame
             }
         }
         
-        if(newTileName.length() <= 5)
-        {
-            javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
-        }
-        if(newTileWidth < 20)
-        {
-            javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de largeur", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
-        }
         if(newTileHeight < 20)
         {
             javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
         }
+        
+        if(newTileHeight < 20)
+        {
+            javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
+                JOptionPane.ERROR_MESSAGE);
+        }
+        
+        // Nom
+        if(newTileName.length() <= 5)
+        {
+            javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", "Erreur",
+                JOptionPane.ERROR_MESSAGE);
+        }
+
         if(newTileNbPerBox < 10)
         {
             javax.swing.JOptionPane.showMessageDialog(null, "Une boîte doit contenir au moins 10 tuiles", "Erreur",
                 JOptionPane.ERROR_MESSAGE);
         }
+        
         if(newTileName.length() > 5 && newTileWidth >= 20 && newTileHeight >= 20 && newTileNbPerBox >= 10)
         {
             
@@ -3901,7 +3951,7 @@ public class MainWindow extends javax.swing.JFrame
             createWindowNameField.setText("");
             createWindowWidthField.setText("");
             createWindowHeightField.setText("");
-            createWindowColorButton.setBackground(new Color(255, 255, 255));
+            createWindowColorButton.setBackground(new Color(240, 240, 240));
             createWindowNbPerBoxField.setText("");
             createTileWindow.setVisible(false);
         
@@ -3914,7 +3964,7 @@ public class MainWindow extends javax.swing.JFrame
         createWindowNameField.setText("");
         createWindowWidthField.setText("");
         createWindowHeightField.setText("");
-        createWindowColorButton.setBackground(new Color(255, 255, 255));
+        createWindowColorButton.setBackground(new Color(240, 240, 240));
         createWindowNbPerBoxField.setText("");
         createTileWindow.setVisible(false);
     }//GEN-LAST:event_createWindowCancelButtonActionPerformed

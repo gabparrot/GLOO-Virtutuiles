@@ -159,6 +159,7 @@ public class Project
         selectedSurface = getSurfaceAtPoint(point);
     }
     
+
     public Surface getSurfaceAtPoint(Point2D.Double point)
     {
         for (Surface surface : surfaces)
@@ -169,6 +170,115 @@ public class Project
                 }
             }
         return null;
+    }
+    
+    //=== Déplacement de surface ===//
+    
+    //TODO work in progress
+    public boolean moveSurfaceToPoint(Point2D.Double newPos)
+    {
+        boolean success = false;
+        
+        /**
+         * Faire pushHoriz
+         * Faire pushVert
+         * Faire setX
+         * Faire setY
+         * Finir moveSurfaceToPoint
+         */
+        
+        
+        return success;
+        
+    }
+    
+    //TODO WORK IN PROGRESS
+    private void pushHorizontally(double newX, double oldX)
+    {
+        double surroundingBounds[] = getSurroundingBounds();
+        
+        setX(newX);
+        
+        if (!conflictCheck(selectedSurface))
+        {
+            // Déplacement à droite
+            if (newX > oldX)
+            {
+                setX(Math.min(newX, surroundingBounds[2] - selectedSurface.getWidth()));
+            }
+            // Déplacement à gauche
+            else
+            {
+                setX(Math.max(newX, surroundingBounds[0]));
+            }
+        }
+    }
+    
+    //TODO WORK IN PROGRESS
+    private void setX(double newX)
+    {
+        
+    }
+    
+    //TODO WORK IN PROGRESS
+    public double[] getSurroundingBounds()
+    {
+        double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
+        Area totalArea = new Area();
+        Rectangle2D selectedSurfaceBounds = selectedSurface.getBounds2D();
+        
+        for (Surface surface : surfaces)
+        {
+            if (surface != selectedSurface) totalArea.add(new Area(surface));
+        }
+        
+        
+        // LEFT
+        Area leftArea = new Area(totalArea);
+        leftArea.intersect(new Area(new Rectangle2D.Double(0, selectedSurfaceBounds.getY(), 
+                selectedSurfaceBounds.getX(), selectedSurfaceBounds.getHeight())));
+        Rectangle2D leftRect = leftArea.getBounds2D();
+        
+        if (leftRect.getX() + leftRect.getWidth() > 0)
+        {
+            surroundingBounds[0] = leftRect.getX() + leftRect.getWidth();
+        }
+        
+        // UP
+        Area upArea = new Area(totalArea);
+        upArea.intersect(new Area(new Rectangle2D.Double(selectedSurfaceBounds.getX(), 0, 
+                selectedSurfaceBounds.getWidth(), selectedSurfaceBounds.getY())));
+        Rectangle2D upRect = upArea.getBounds2D();
+        
+        if (upRect.getY() + upRect.getHeight() > 0)
+        {
+            surroundingBounds[1] = upRect.getY() + upRect.getHeight();
+        }
+        
+        // RIGHT
+        Area rightArea = new Area(totalArea);
+        rightArea.intersect(new Area(new Rectangle2D.Double(
+                selectedSurfaceBounds.getX() + selectedSurfaceBounds.getWidth(), selectedSurfaceBounds.getY(), 
+                Integer.MAX_VALUE, selectedSurfaceBounds.getHeight())));
+        Rectangle2D rightRect = rightArea.getBounds2D();
+        
+        if (!rightArea.isEmpty())
+        {
+            surroundingBounds[2] = rightRect.getX();
+        }
+        
+        // DOWN
+        Area downArea = new Area(totalArea);
+        downArea.intersect(new Area(new Rectangle2D.Double(
+                selectedSurfaceBounds.getX(), selectedSurfaceBounds.getY() + selectedSurfaceBounds.getHeight(), 
+                selectedSurfaceBounds.getWidth(), Integer.MAX_VALUE)));
+        Rectangle2D downRect = downArea.getBounds2D();
+        
+        if (!downArea.isEmpty())
+        {
+            surroundingBounds[3] = downRect.getY();
+        }
+        return surroundingBounds;
     }
     
     public String[] getTileAtPoint(Point2D.Double point)

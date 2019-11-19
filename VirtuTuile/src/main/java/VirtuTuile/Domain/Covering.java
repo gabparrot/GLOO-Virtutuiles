@@ -9,6 +9,7 @@ import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import static java.lang.Math.abs;
 import java.util.ArrayList;
 
 /**
@@ -27,7 +28,6 @@ public class Covering implements Serializable, Cloneable
     private transient ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = Utilities.DEFAULT_TILE_1;
     private Surface parent;
-    
     
     /**
      * Constructeur standard de covering
@@ -98,13 +98,9 @@ public class Covering implements Serializable, Cloneable
         // Position et orientation
         double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
         double tileHeight = isNinetyDegree ? tileType.getWidth() : tileType.getHeight();
-        
         double offsetXMod = this.offsetX % (tileWidth + jointWidth);
         double offsetYMod = this.offsetY % (tileHeight + jointWidth);
-        double rowOffsetMod;
-        
-        rowOffsetMod = tileWidth - (rowOffset / 100. * tileWidth);
-        rowOffsetMod -= jointWidth * rowOffset / 100;
+        double rowOffsetMod = tileWidth - rowOffset / 100. * tileWidth -  jointWidth * rowOffset / 100;
         
         // Définition de l'aire à couvrir
         Area fullArea = new Area(parent);
@@ -113,14 +109,20 @@ public class Covering implements Serializable, Cloneable
         {
             fullArea.subtract(((CombinedSurface) parent).getUncoveredArea());
         }
-        
         Area innerArea = getInnerArea(fullArea);
         
-        // Création des tuiles
         Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth + offsetXMod,
                                                          bounds.getY() - tileHeight + offsetYMod);
-        int tileCount = 0;
+        
+        // Détermine si on devrait commencer par une rangée paire ou impaire
         int rowCount = 0;
+        boolean shouldInvertRow = shouldInvertRow(tileHeight);
+        if (shouldInvertRow)
+        {
+            rowCount++;
+            currentPoint.x -= rowOffsetMod + jointWidth;
+        }
+        
         while (currentPoint.getX() < bounds.getMaxX() && currentPoint.y < bounds.getMaxY())
         {
             Point2D.Double tileTopLeft = currentPoint;
@@ -129,7 +131,6 @@ public class Covering implements Serializable, Cloneable
             
             Area tile = new Area(Utilities.cornersToRectangle(tileTopLeft, tileBotRight));
             tile.intersect(innerArea);
-            
             if (!tile.isEmpty())
             {
                 tiles.add(tile);
@@ -137,20 +138,14 @@ public class Covering implements Serializable, Cloneable
             
             if (currentPoint.x + tileWidth + jointWidth < bounds.getMaxX())
             {
-                currentPoint.x = currentPoint.getX() + tileWidth + jointWidth;
+                currentPoint.x += tileWidth + jointWidth;
             }
             else // Si on dépasse en X, on descend et on repart a gauche.
             {
-                if (tileCount < tiles.size())
+                if (rowCount % 2 == 1)
                 {
-                    rowCount += 1;
-                    tileCount = tiles.size();
-                }
-                if (rowCount % 2 == 0)
-                {
-                
-                currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod, 
-                                         currentPoint.y + tileHeight + jointWidth);
+                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod, 
+                                             currentPoint.y + tileHeight + jointWidth);
                 }
                 // Décaler les rangées paires (celle du haut est #1)
                 else
@@ -158,6 +153,7 @@ public class Covering implements Serializable, Cloneable
                     currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod - jointWidth,
                                              currentPoint.y + tileHeight + jointWidth);                    
                 }
+                rowCount++;
             }
         }
     }
@@ -191,6 +187,16 @@ public class Covering implements Serializable, Cloneable
     {
         //TODO
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
+    private boolean shouldInvertRow(double tileHeight)
+    {
+        double x = offsetY;
+        if (x < 0)
+        {
+            x = abs(x) + 2 * tileHeight + 2* jointWidth;
+        }
+        return x % ((tileHeight + jointWidth) * 2) < tileHeight + jointWidth;
     }
     
     /**

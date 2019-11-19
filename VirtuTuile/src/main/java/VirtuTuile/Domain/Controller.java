@@ -197,6 +197,7 @@ public class Controller
         // Sauvegarde
         bounds = surface.getBounds2D();
         Point2D.Double newPoint = new Point2D.Double(bounds.getX(), bounds.getY());
+        
         if (!oldPoint.equals(newPoint))
         {
             undoManager.addEdit(new UndoMoveSurfaceToPoint(project, oldPoint, newPoint, surface));
