@@ -3846,18 +3846,14 @@ public class MainWindow extends javax.swing.JFrame
             {
                 createWindowCancelButtonActionPerformed(evt);
                 JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                
-                //TODO gestion d'erreur invalide
-                //createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
-                //createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
         }
         else
         {            
             try
             {
-                newTileWidth = Utilities.getInchesFromField(tileWidthField.getText());
-                newTileHeight = Utilities.getInchesFromField(tileWidthField.getText());
+                newTileWidth = Utilities.getInchesFromField(createWindowWidthField.getText());
+                newTileHeight = Utilities.getInchesFromField(createWindowHeightField.getText());
                 
                 if (newTileWidth == -1 || newTileHeight == -1)
                 {
@@ -3866,16 +3862,11 @@ public class MainWindow extends javax.swing.JFrame
                 
                 newTileWidth = Utilities.inchesToMm(newTileWidth);
                 newTileHeight = Utilities.inchesToMm(newTileHeight);
-                
             }
             catch (java.text.ParseException e)
             {
                 createWindowCancelButtonActionPerformed(evt);
                 JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-                
-                //TODO gestion d'erreur invalide 
-                //createWindowWidthField.setText(String.format("%.03f", createWindowWidthField.getText()));
-                //createWindowHeightField.setText(String.format("%.03f", createWindowHeightField.getText()));
             }
         }
         
@@ -3901,6 +3892,7 @@ public class MainWindow extends javax.swing.JFrame
         }
         if(newTileName.length() > 5 && newTileWidth >= 20 && newTileHeight >= 20 && newTileNbPerBox >= 10)
         {
+            
             controller.addTileType(newTileWidth, newTileHeight, newTileName, newTileNbPerBox, newTileColor);
             
             createWindowNameField.setText("");
