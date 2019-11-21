@@ -293,11 +293,11 @@ public class CombinedSurface extends Area implements Surface, Serializable
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(width / oldWidth, 1);
         transform(scaleTransform);
-        setX(oldX, project);
         
         if (project.conflictCheck(this))
         {
             uncoveredArea.transform(scaleTransform);
+            setX(oldX, project);
             coverSurface();
             return true;
         }
@@ -306,7 +306,6 @@ public class CombinedSurface extends Area implements Surface, Serializable
             scaleTransform = new AffineTransform();
             scaleTransform.scale(oldWidth / width, 1);
             transform(scaleTransform);
-            setX(oldX, project);
             return false;
         }
     }
@@ -332,11 +331,11 @@ public class CombinedSurface extends Area implements Surface, Serializable
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(1, height / oldHeight);
         transform(scaleTransform);
-        setY(oldY, project);
         
         if (project.conflictCheck(this))
         {
             uncoveredArea.transform(scaleTransform);
+            setY(oldY, project);
             coverSurface();
             return true;
         }
@@ -345,7 +344,6 @@ public class CombinedSurface extends Area implements Surface, Serializable
             scaleTransform = new AffineTransform();
             scaleTransform.scale(1, oldHeight / height);
             transform(scaleTransform);
-            setY(oldY, project);
             return false;
         }
     }

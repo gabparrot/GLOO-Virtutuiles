@@ -97,6 +97,7 @@ public class Controller
     public void loadProject(File file)
     {
         project.loadSurfacesFromFile(file);
+        refreshSurfaces();
     }
 
 //************************************************************************************************\\
@@ -197,7 +198,6 @@ public class Controller
         // Sauvegarde
         bounds = surface.getBounds2D();
         Point2D.Double newPoint = new Point2D.Double(bounds.getX(), bounds.getY());
-        
         if (!oldPoint.equals(newPoint))
         {
             undoManager.addEdit(new UndoMoveSurfaceToPoint(project, oldPoint, newPoint, surface));
@@ -357,10 +357,10 @@ public class Controller
     {
         Covering covering = project.getSelectedSurface().getCovering();
         TileType oldTileType = covering.getTileType();
-        project.setTileTypeByIndex(selectedIndex);
-        TileType newTileType = covering.getTileType();
-        if (!oldTileType.getName().equals(newTileType.getName()))
+        if (selectedIndex != project.getTileTypeIndex(oldTileType))
         {
+            project.setTileTypeByIndex(selectedIndex);
+            TileType newTileType = covering.getTileType();
             undoManager.addEdit(new UndoSetTileType(oldTileType, newTileType, covering));
         }
     }
@@ -640,6 +640,16 @@ public class Controller
         return project.getSelectedSurface().getCovering().getRowOffset();
     }
     
+    /**
+     * Retourne les informations d'une tuile.
+     * @param point: un point
+     * @return un array avec les informations d'une tuile.
+     */
+    public Point2D.Double getTileAtPoint(Point2D.Double point)
+    {
+        return project.getTileAtPoint(point);
+    }
+
     /**
      * Retourne le nom de la tuile du recouvrement de la surface sélectionnée.
      * @return le nom de la tuile du recouvrement de la surface sélectionnée.

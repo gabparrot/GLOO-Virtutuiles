@@ -4,20 +4,29 @@ import VirtuTuile.Domain.Pattern;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.text.ParseException;
+import javax.swing.BoxLayout;
+import javax.swing.JColorChooser;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 /**
  * La fenêtre principale de l'application.
- *
- * @author Petros Fytilis
  */
-public class MainWindow extends javax.swing.JFrame
+public class MainWindow extends JFrame
 {
 
     // Le controller de l'application.
@@ -35,6 +44,11 @@ public class MainWindow extends javax.swing.JFrame
         CENTER_H, CENTER_V, STICK_H, STICK_V, RELATIVE_MOVE, NONE;
     }
 
+    private final String patternA = "Quadrillé";
+    private final String patternB = "L-shape";
+    private final String patternC = "Deux-par-deux";
+    private final String patternD = "Diagonal";
+    
     private ContextMenuModes contextMode = ContextMenuModes.NONE;
     private ApplicationModes selectedMode = ApplicationModes.NONE;
 
@@ -50,6 +64,9 @@ public class MainWindow extends javax.swing.JFrame
 
     // Si la grille est magnétique en ce moment.
     private boolean gridIsMagnetic = true;
+    
+    // La couleur utilisé pour les boutons désactivés.
+    private final Color disabledColor = new Color(240, 240, 240);
 
     /**
      * Constructeur.
@@ -69,6 +86,8 @@ public class MainWindow extends javax.swing.JFrame
         heightInLabel.setVisible(false);
         toolBar.setVisible(false);
         createTileWindow.setVisible(false);
+        tileInfoWidth.setText("Largeur : ");
+        tileInfoHeight.setText("Hauteur : ");
     }
 
     /**
@@ -83,80 +102,107 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel.setTemporaryRectangle(null);
         controller.unselectSurface();
 
-        surfaceColorButton.setEnabled(false);
-
+        disableSurfaceButtons();
+        disableCoveringButtons();
+        disableTileTypeButtons();
+        
+        canvasPanel.repaint();
+    }
+    
+    private void disableSurfaceButtons()
+    {
         surfaceXField.setText("");
-        surfaceYField.setText("");
-        surfaceWidthField.setText("");
-        surfaceHeightField.setText("");
+        surfaceXField.setEnabled(false);
         surfaceXFieldInches.setText("");
+        surfaceXFieldInches.setEnabled(false);
+        
+        surfaceYField.setText("");
+        surfaceYField.setEnabled(false);
         surfaceYFieldInches.setText("");
+        surfaceYFieldInches.setEnabled(false);
+        
+        surfaceWidthField.setText("");
+        surfaceWidthField.setEnabled(false);
         surfaceWidthFieldInches.setText("");
+        surfaceWidthFieldInches.setEnabled(false);
+        
+        surfaceHeightField.setText("");
+        surfaceHeightField.setEnabled(false);
         surfaceHeightFieldInches.setText("");
-        surfaceColorButton.setBackground(new Color(240, 240, 240));
+        surfaceHeightFieldInches.setEnabled(false);
+        
+        surfaceColorButton.setBackground(disabledColor);
+        surfaceColorButton.setEnabled(false);
+        
+        coverButtonGroup.clearSelection();
         doNotCoverRadioButton.setEnabled(false);
         coverRadioButton.setEnabled(false);
-        coverButtonGroup.clearSelection();
-        offsetXField.setText("");
-        offsetYField.setText("");
-        rowOffsetField.setText("");
-        tileNameField.setText("");
-        tileWidthField.setText("");
-        tileHeightField.setText("");
-        tileColorButton.setBackground(new Color(240, 240, 240));
-        tileNbPerBoxField.setText("");
-
+    }
+    
+    private void disableCoveringButtons()
+    {
         tileTypeComboBox.setSelectedItem(null);
-        jointWidthField.setText("");
-        jointColorButton.setBackground(new Color(240, 240, 240));
-        patternComboBox.setSelectedItem(null);
-        orientationGroup.clearSelection();
-
-        surfaceXField.setEnabled(false);
-        surfaceXFieldInches.setEnabled(false);
-        surfaceWidthField.setEnabled(false);
-        surfaceWidthFieldInches.setEnabled(false);
-        surfaceYField.setEnabled(false);
-        surfaceYFieldInches.setEnabled(false);
-        surfaceHeightField.setEnabled(false);
-        surfaceHeightFieldInches.setEnabled(false);
-
         tileTypeComboBox.setEnabled(false);
-        jointWidthField.setEnabled(false);
-        jointColorButton.setEnabled(false);
+        
+        patternComboBox.setSelectedItem(null);
         patternComboBox.setEnabled(false);
-        zeroOrientationRadioButton.setEnabled(false);
+        
+        jointColorButton.setBackground(disabledColor);
+        jointColorButton.setEnabled(false);
+        
+        jointWidthField.setText("");
+        jointWidthField.setEnabled(false);
+        
+        orientationGroup.clearSelection();
         ninetyOrientationRadioButton.setEnabled(false);
+        zeroOrientationRadioButton.setEnabled(false);
+        
+        offsetXField.setText("");
         offsetXField.setEnabled(false);
+        
+        offsetYField.setText("");
         offsetYField.setEnabled(false);
+        
+        rowOffsetField.setText("");
         rowOffsetField.setEnabled(false);
+    }
+    
+    private void disableTileTypeButtons()
+    {
+        tileNameField.setText("");
         tileNameField.setEnabled(false);
-        tileWidthField.setEnabled(false);
-        tileHeightField.setEnabled(false);
+        
+        tileColorButton.setBackground(disabledColor);
         tileColorButton.setEnabled(false);
+        
+        tileWidthField.setText("");
+        tileWidthField.setEnabled(false);
+        
+        tileHeightField.setText("");
+        tileHeightField.setEnabled(false);
+        
         tileNbPerBoxField.setEnabled(false);
-
-        canvasPanel.repaint();
+        tileNbPerBoxField.setText("");
     }
 
     private void updatePanelInformation()
+    {        
+        updateSurfacePanel();
+        updateCoveringPanel();
+        updateTileTypePanel();
+    }
+    
+    private void updateSurfacePanel()
     {
         Rectangle2D bounds = controller.getBounds2D();
-        tileNameField.setText(controller.getTileName());
-        tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-
         if (isMetric)
         {
             surfaceXField.setText(String.format("%.03f", bounds.getX() / 1000.));
             surfaceYField.setText(String.format("%.03f", bounds.getY() / 1000.));
             surfaceWidthField.setText(String.format("%.03f", bounds.getWidth() / 1000.));
             surfaceHeightField.setText(String.format("%.03f", bounds.getHeight() / 1000.));
-            jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
-            offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
-            offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
-            tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
-            tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
-        } else
+        }
+        else
         {
             surfaceXField.setText(String.valueOf(Utilities.mmToFeet(bounds.getX())));
             surfaceXFieldInches.setText(String.format("%.02f",
@@ -170,54 +216,118 @@ public class MainWindow extends javax.swing.JFrame
             surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(bounds.getHeight())));
             surfaceHeightFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(bounds.getHeight())));
+        }
+        surfaceColorButton.setBackground(controller.getColor());
+        if (controller.isHole())
+        {
+            doNotCoverRadioButton.setSelected(true);
+        }
+        else
+        {
+            coverRadioButton.setSelected(true);
+        }
+    }
+    
+    private void updateCoveringPanel()
+    {
+        if (isMetric)
+        {
+            jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
+            offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
+            offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
+        }
+        else
+        {
             jointWidthField.setText(String.format("%.03f",
                     Utilities.mmToInches(controller.getJointWidth())));
             offsetXField.setText(String.format("%.03f",
                     Utilities.mmToInches(controller.getOffsetX())));
             offsetYField.setText(String.format("%.03f",
                     Utilities.mmToInches(controller.getOffsetY())));
-            tileWidthField.setText(String.format("%.03f",
-                    Utilities.mmToInches(controller.getTileWidth())));
-            tileHeightField.setText(String.format("%.03f",
-                    Utilities.mmToInches(controller.getTileHeight())));
-
         }
         rowOffsetField.setText(String.format("" + controller.getRowOffset()));
-
-        surfaceColorButton.setBackground(controller.getColor());
-        if (controller.isHole())
-        {
-            doNotCoverRadioButton.setSelected(true);
-        } else
-        {
-            coverRadioButton.setSelected(true);
-        }
         if (controller.isNinetyDegree())
         {
             ninetyOrientationRadioButton.setSelected(true);
-        } else
+        }
+        else
         {
             zeroOrientationRadioButton.setSelected(true);
         }
-        patternComboBox.setSelectedItem(controller.getPattern().toString());
+        String patternString;
+        switch (controller.getPattern())
+        {
+            case CHECKERED:
+                patternString = patternA; break;
+            case LSHAPE:
+                patternString = patternB; break;
+            case TWOBYTWO:
+                patternString = patternC; break;
+            default:
+                patternString = patternD;
+        }
+        patternComboBox.setSelectedItem(patternString);
         jointColorButton.setBackground(controller.getJointColor());
-        tileColorButton.setBackground(controller.getTileColor());
-
         DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileTypeStrings());
         tileTypeComboBox.setModel(model);
-        tileTypeComboBox.setSelectedItem(controller.getTileName());
+    }
+    
+    private void updateTileTypePanel()
+    {
+        if (controller.hasTileType())
+        {
+            enableTileTypePanelButtons();
+            tileTypeComboBox.setSelectedItem(controller.getTileName());
+            if (isMetric)
+            {
+                tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
+                tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
+            }
+            else
+            {
+                tileWidthField.setText(String.format("%.03f",
+                        Utilities.mmToInches(controller.getTileWidth())));
+                tileHeightField.setText(String.format("%.03f",
+                        Utilities.mmToInches(controller.getTileHeight())));
+            }
+            tileNameField.setText(controller.getTileName());
+            tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+            tileColorButton.setBackground(controller.getTileColor());
+        }
+        else
+        {
+            tileTypeComboBox.setSelectedItem(null);
+            disableTileTypeButtons();
+        }
     }
 
     private void enablePanelButtons()
+    {
+        enableSurfacePanelButtons();
+        enableCoveringPanelButtons();
+        if (controller.hasTileType())
+        {
+            enableTileTypePanelButtons();
+        }
+    }
+    
+    private void enableSurfacePanelButtons()
     {
         surfaceXField.setEnabled(true);
         surfaceXFieldInches.setEnabled(true);
         surfaceYField.setEnabled(true);
         surfaceYFieldInches.setEnabled(true);
+        surfaceWidthField.setEnabled(true);
+        surfaceWidthFieldInches.setEnabled(true);
+        surfaceHeightField.setEnabled(true);
+        surfaceHeightFieldInches.setEnabled(true);
         surfaceColorButton.setEnabled(true);
         coverRadioButton.setEnabled(true);
         doNotCoverRadioButton.setEnabled(true);
-
+    }
+    
+    private void enableCoveringPanelButtons()
+    {
         tileTypeComboBox.setEnabled(true);
         jointWidthField.setEnabled(true);
         jointColorButton.setEnabled(true);
@@ -226,25 +336,22 @@ public class MainWindow extends javax.swing.JFrame
         ninetyOrientationRadioButton.setEnabled(true);
         offsetXField.setEnabled(true);
         offsetYField.setEnabled(true);
-
-        tileNameField.setEnabled(true);
-        tileWidthField.setEnabled(true);
-        tileHeightField.setEnabled(true);
-        tileColorButton.setEnabled(true);
-        tileNbPerBoxField.setEnabled(true);
-
-        surfaceWidthField.setEnabled(true);
-        surfaceWidthFieldInches.setEnabled(true);
-        surfaceHeightField.setEnabled(true);
-        surfaceHeightFieldInches.setEnabled(true);
-
-        if (controller.getPattern() == Pattern.A)
+        if (controller.getPattern() == Pattern.CHECKERED)
         {
             rowOffsetField.setEnabled(true);
         } else
         {
             rowOffsetField.setEnabled(false);
         }
+    }
+    
+    private void enableTileTypePanelButtons()
+    {
+        tileNameField.setEnabled(true);
+        tileWidthField.setEnabled(true);
+        tileHeightField.setEnabled(true);
+        tileColorButton.setEnabled(true);
+        tileNbPerBoxField.setEnabled(true);
     }
 
     /**
@@ -269,7 +376,7 @@ public class MainWindow extends javax.swing.JFrame
      * @param point : un Point représentant des coordonnées en pixels.
      * @return un Point représentant des millimètres.
      */
-    private Point2D.Double pointToMetric(java.awt.Point point)
+    private Point2D.Double pointToMetric(Point point)
     {
         int posXPixels = point.x + canvasPanel.getHorizontalOffset();
         int posYPixels = point.y + canvasPanel.getVerticalOffset();
@@ -278,19 +385,27 @@ public class MainWindow extends javax.swing.JFrame
         return new Point2D.Double(posXMetric, posYMetric);
     }
     
-    private void showTileInfo(java.awt.event.MouseEvent evt)
-    {                
-        if(isMetric)
+    private void showTileInfo(Point2D.Double dimensions)
+    {
+        double tileWidth = dimensions.x;
+        double tileHeight = dimensions.y;
+        if (tileWidth == 0 || tileHeight == 0)
         {
-            double width = controller.getTileWidth() / 10;
-            double height = controller.getTileHeight() / 10;
-            tileState.setText("Info Tuile : Largeur : " + width + " cm, Hauteur : " + height + " cm");
+            tileInfoWidth.setText("Largeur : ");
+            tileInfoHeight.setText("Hauteur : ");
+            return;
+        }
+        if (isMetric)
+        {            
+            tileInfoWidth.setText("Largeur : " + String.format("%.03f", tileWidth / 10) + " cm");
+            tileInfoHeight.setText("Hauteur : " + String.format("%.03f", tileHeight / 10) + " cm");         
         }
         else
         {
-            String width = String.format("%.03f", Utilities.mmToInches(controller.getTileWidth()));
-            String height = String.format("%.03f", Utilities.mmToInches(controller.getTileHeight()));
-            tileState.setText("Info Tuile : Largeur : " + width + " pouces, Hauteur : " + height + " pouces");
+            double tileWidthImp = Utilities.mmToInches(tileWidth);
+            double tileHeightImp = Utilities.mmToInches(tileHeight);
+            tileInfoWidth.setText("Largeur : " + String.format("%.03f", tileWidthImp) + " pouces");
+            tileInfoHeight.setText("Hauteur : " + String.format("%.03f", tileHeightImp) + " pouces");         
         }                
     }
 
@@ -371,18 +486,18 @@ public class MainWindow extends javax.swing.JFrame
         canvasPanel = new VirtuTuile.GUI.CanvasPanel();
         createTileWindow = new javax.swing.JPanel();
         jLabel21 = new javax.swing.JLabel();
-        createWindowNameField = new javax.swing.JTextField();
-        createWindowOKButton = new javax.swing.JButton();
+        createTileNameField = new javax.swing.JTextField();
+        createTileOKButton = new javax.swing.JButton();
         jLabel22 = new javax.swing.JLabel();
         jLabel23 = new javax.swing.JLabel();
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
         jLabel27 = new javax.swing.JLabel();
-        createWindowWidthField = new javax.swing.JTextField();
-        createWindowHeightField = new javax.swing.JTextField();
-        createWindowNbPerBoxField = new javax.swing.JTextField();
-        createWindowColorButton = new javax.swing.JButton();
-        createWindowCancelButton = new javax.swing.JButton();
+        createTileWidthField = new javax.swing.JTextField();
+        createTileHeightField = new javax.swing.JTextField();
+        createTileNbPerBoxField = new javax.swing.JTextField();
+        createTileColorButton = new javax.swing.JButton();
+        createTileCancelButton = new javax.swing.JButton();
         createWindowWidthLabel = new javax.swing.JLabel();
         createWindowHeightLabel = new javax.swing.JLabel();
         xPixelCoordsLabel = new javax.swing.JLabel();
@@ -396,6 +511,8 @@ public class MainWindow extends javax.swing.JFrame
         metricButton = new javax.swing.JToggleButton();
         imperialButton = new javax.swing.JToggleButton();
         tileState = new javax.swing.JLabel();
+        tileInfoWidth = new javax.swing.JLabel();
+        tileInfoHeight = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         rightPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -465,10 +582,10 @@ public class MainWindow extends javax.swing.JFrame
         createTileButton = new javax.swing.JButton();
         topMenuBar = new javax.swing.JMenuBar();
         menuFichier = new javax.swing.JMenu();
-        menuFichierNouveauProjet = new javax.swing.JMenuItem();
-        menuFichierOuvrirProjet = new javax.swing.JMenuItem();
-        menuFichierFermerProjet = new javax.swing.JMenuItem();
-        menuFichierEnregistrerProjet = new javax.swing.JMenuItem();
+        newProjectButton = new javax.swing.JMenuItem();
+        openProjectButton = new javax.swing.JMenuItem();
+        closeProjectButton = new javax.swing.JMenuItem();
+        saveProjectButton = new javax.swing.JMenuItem();
         menuFichierQuitter = new javax.swing.JMenuItem();
         menuEdition = new javax.swing.JMenu();
         menuEditionAnnuler = new javax.swing.JMenuItem();
@@ -1101,12 +1218,12 @@ public class MainWindow extends javax.swing.JFrame
 
         jLabel21.setText("Créer une nouvelle tuile");
 
-        createWindowOKButton.setText("OK");
-        createWindowOKButton.addActionListener(new java.awt.event.ActionListener()
+        createTileOKButton.setText("OK");
+        createTileOKButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                createWindowOKButtonActionPerformed(evt);
+                createTileOKButtonActionPerformed(evt);
             }
         });
 
@@ -1120,28 +1237,28 @@ public class MainWindow extends javax.swing.JFrame
 
         jLabel27.setText("Couleur :");
 
-        createWindowWidthField.addActionListener(new java.awt.event.ActionListener()
+        createTileWidthField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                createWindowWidthFieldActionPerformed(evt);
+                createTileWidthFieldActionPerformed(evt);
             }
         });
 
-        createWindowColorButton.addActionListener(new java.awt.event.ActionListener()
+        createTileColorButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                createWindowColorButtonActionPerformed(evt);
+                createTileColorButtonActionPerformed(evt);
             }
         });
 
-        createWindowCancelButton.setText("Annuler");
-        createWindowCancelButton.addActionListener(new java.awt.event.ActionListener()
+        createTileCancelButton.setText("Annuler");
+        createTileCancelButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                createWindowCancelButtonActionPerformed(evt);
+                createTileCancelButtonActionPerformed(evt);
             }
         });
 
@@ -1169,22 +1286,22 @@ public class MainWindow extends javax.swing.JFrame
                                         .addComponent(jLabel24))
                                     .addGap(23, 23, 23)
                                     .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(createWindowNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(createTileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addGroup(createTileWindowLayout.createSequentialGroup()
-                                            .addComponent(createWindowWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(createTileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                             .addComponent(createWindowWidthLabel))
                                         .addGroup(createTileWindowLayout.createSequentialGroup()
-                                            .addComponent(createWindowHeightField)
+                                            .addComponent(createTileHeightField)
                                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                             .addComponent(createWindowHeightLabel))
-                                        .addComponent(createWindowColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                                        .addComponent(createWindowNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                                        .addComponent(createTileColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+                                        .addComponent(createTileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))))))
                     .addGroup(createTileWindowLayout.createSequentialGroup()
                         .addGap(87, 87, 87)
-                        .addComponent(createWindowOKButton)
+                        .addComponent(createTileOKButton)
                         .addGap(18, 18, 18)
-                        .addComponent(createWindowCancelButton)))
+                        .addComponent(createTileCancelButton)))
                 .addContainerGap(52, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, createTileWindowLayout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
@@ -1192,7 +1309,7 @@ public class MainWindow extends javax.swing.JFrame
                 .addGap(89, 89, 89))
         );
 
-        createTileWindowLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {createWindowColorButton, createWindowHeightField, createWindowNbPerBoxField, createWindowWidthField});
+        createTileWindowLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {createTileColorButton, createTileHeightField, createTileNbPerBoxField, createTileWidthField});
 
         createTileWindowLayout.setVerticalGroup(
             createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1201,51 +1318,51 @@ public class MainWindow extends javax.swing.JFrame
                 .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26)
                 .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createWindowNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(createTileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel22))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createWindowWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(createTileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel23)
                     .addComponent(createWindowWidthLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(createWindowHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(createTileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel24)
                     .addComponent(createWindowHeightLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(createTileWindowLayout.createSequentialGroup()
-                        .addComponent(createWindowColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(createTileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(createWindowNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(createTileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jLabel25))
                         .addGap(18, 18, 18)
                         .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(createWindowOKButton)
-                            .addComponent(createWindowCancelButton)))
+                            .addComponent(createTileOKButton)
+                            .addComponent(createTileCancelButton)))
                     .addComponent(jLabel27))
                 .addGap(14, 14, 14))
         );
 
-        createTileWindowLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {createWindowColorButton, createWindowHeightField, createWindowNameField, createWindowNbPerBoxField, createWindowWidthField});
+        createTileWindowLayout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {createTileColorButton, createTileHeightField, createTileNameField, createTileNbPerBoxField, createTileWidthField});
 
         javax.swing.GroupLayout canvasPanelLayout = new javax.swing.GroupLayout(canvasPanel);
         canvasPanel.setLayout(canvasPanelLayout);
         canvasPanelLayout.setHorizontalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, canvasPanelLayout.createSequentialGroup()
-                .addContainerGap(172, Short.MAX_VALUE)
+                .addContainerGap(165, Short.MAX_VALUE)
                 .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(157, 157, 157))
+                .addContainerGap(165, Short.MAX_VALUE))
         );
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(canvasPanelLayout.createSequentialGroup()
-                .addGap(198, 198, 198)
+                .addContainerGap(212, Short.MAX_VALUE)
                 .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(212, Short.MAX_VALUE))
         );
 
         xPixelCoordsLabel.setText("X: 0 pixels");
@@ -1300,7 +1417,13 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
-        tileState.setText("Info Tuile : ");
+        tileState.setText("Dimensions Tuile : ");
+        tileState.setToolTipText("");
+        tileState.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+
+        tileInfoWidth.setText("Largeur :");
+
+        tileInfoHeight.setText("Hauteur :");
 
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
@@ -1308,39 +1431,40 @@ public class MainWindow extends javax.swing.JFrame
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(leftPanelLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
-                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(yMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(68, 68, 68)
-                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(yPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(leftPanelLayout.createSequentialGroup()
+                        .addComponent(zoomOutButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(zoomLabel)
+                        .addGap(0, 0, 0)
+                        .addComponent(percentLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(zoomInButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(tileState)
-                        .addGap(283, 283, 283))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, leftPanelLayout.createSequentialGroup()
+                        .addComponent(metricButton)
+                        .addGap(18, 18, 18)
+                        .addComponent(imperialButton))
+                    .addGroup(leftPanelLayout.createSequentialGroup()
                         .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(leftPanelLayout.createSequentialGroup()
-                                .addComponent(zoomOutButton)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(zoomLabel)
-                                .addGap(0, 0, 0)
-                                .addComponent(percentLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(zoomInButton)
+                                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                                    .addComponent(yMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(40, 40, 40)
+                                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(yPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(metricButton)
-                                .addGap(18, 18, 18)
-                                .addComponent(imperialButton))
-                            .addGroup(leftPanelLayout.createSequentialGroup()
-                                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(horizontalScrollBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(canvasPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(0, 0, 0)
-                                .addComponent(verticalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(20, 20, 20))))
+                                .addComponent(tileState, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(tileInfoHeight, javax.swing.GroupLayout.DEFAULT_SIZE, 154, Short.MAX_VALUE)
+                                    .addComponent(tileInfoWidth, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(horizontalScrollBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(canvasPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, 0)
+                        .addComponent(verticalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(20, 20, 20))
         );
         leftPanelLayout.setVerticalGroup(
             leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1359,15 +1483,19 @@ public class MainWindow extends javax.swing.JFrame
                     .addComponent(canvasPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(0, 0, 0)
                 .addComponent(horizontalScrollBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(3, 3, 3)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(xMeasureCoordsLabel)
-                    .addComponent(xPixelCoordsLabel)
-                    .addComponent(tileState))
-                .addGap(3, 3, 3)
-                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(yPixelCoordsLabel)
-                    .addComponent(yMeasureCoordsLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(leftPanelLayout.createSequentialGroup()
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(xMeasureCoordsLabel)
+                            .addComponent(xPixelCoordsLabel))
+                        .addGap(3, 3, 3)
+                        .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(yPixelCoordsLabel)
+                            .addComponent(yMeasureCoordsLabel)
+                            .addComponent(tileInfoHeight)))
+                    .addComponent(tileInfoWidth)
+                    .addComponent(tileState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(5, 5, 5))
         );
 
@@ -1576,7 +1704,7 @@ public class MainWindow extends javax.swing.JFrame
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1626,7 +1754,7 @@ public class MainWindow extends javax.swing.JFrame
 
         largeurJointText.setText("mm");
 
-        patternComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
+        patternComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Quadrillé", "L-shape", "Deux-par-deux", "Diagonal" }));
         patternComboBox.setSelectedItem(null);
         patternComboBox.setEnabled(false);
         patternComboBox.setFocusable(false);
@@ -1696,6 +1824,7 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
+        tileWidthField.setEnabled(false);
         tileWidthField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1704,6 +1833,7 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
+        tileHeightField.setEnabled(false);
         tileHeightField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1724,6 +1854,7 @@ public class MainWindow extends javax.swing.JFrame
 
         tileNameLabel.setText("Nom :");
 
+        tileNameField.setEnabled(false);
         tileNameField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1734,6 +1865,7 @@ public class MainWindow extends javax.swing.JFrame
 
         jLabel19.setText("Nb/boîte :");
 
+        tileNbPerBoxField.setEnabled(false);
         tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1742,6 +1874,7 @@ public class MainWindow extends javax.swing.JFrame
             }
         });
 
+        tileColorButton.setEnabled(false);
         tileColorButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1763,7 +1896,8 @@ public class MainWindow extends javax.swing.JFrame
 
         rowOffsetLabel.setText("%");
 
-        createTileButton.setText("Créer");
+        createTileButton.setText("Créer nouveau");
+        createTileButton.setEnabled(false);
         createTileButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1781,133 +1915,129 @@ public class MainWindow extends javax.swing.JFrame
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addGap(10, 10, 10)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel15)
-                        .addGap(5, 5, 5)
-                        .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
+                        .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(largeurJointText, javax.swing.GroupLayout.DEFAULT_SIZE, 50, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel16)
-                            .addComponent(jLabel17)
-                            .addComponent(jLabel18))
+                        .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(5, 5, 5)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jointColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(patternComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(rightPanelLayout.createSequentialGroup()
-                                            .addComponent(zeroOrientationRadioButton)
-                                            .addGap(0, 0, Short.MAX_VALUE))
-                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
-                                            .addGap(0, 0, Short.MAX_VALUE)
-                                            .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(offsetXText)
-                                    .addComponent(ninetyOrientationRadioButton)
-                                    .addComponent(offsetYText)))))))
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(offsetYText)
+                            .addComponent(rowOffsetLabel)
+                            .addComponent(offsetXText)))
+                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
+                            .addComponent(jLabel15)
+                            .addGap(5, 5, 5)
+                            .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(largeurJointText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGroup(rightPanelLayout.createSequentialGroup()
+                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jLabel16)
+                                .addComponent(jLabel17)
+                                .addComponent(jLabel18))
+                            .addGap(5, 5, 5)
+                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(rightPanelLayout.createSequentialGroup()
+                                    .addGap(1, 1, 1)
+                                    .addComponent(zeroOrientationRadioButton)
+                                    .addGap(18, 18, 18)
+                                    .addComponent(ninetyOrientationRadioButton))
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(patternComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jointColorButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
             .addGroup(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel12)
+                    .addComponent(jLabel13)
+                    .addComponent(tileNameLabel))
+                .addGap(13, 13, 13)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel12)
-                            .addComponent(jLabel13)
-                            .addComponent(tileNameLabel))
-                        .addGap(13, 13, 13)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(tileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(hauteurTuileText))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(tileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(largeurTuileText))
-                            .addComponent(tileNameField)))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel11)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel6))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(coverRadioButton)
-                                        .addGap(30, 30, 30)
-                                        .addComponent(doNotCoverRadioButton))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                                            .addComponent(surfaceWidthField)
-                                            .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(yFtLabel)
-                                                    .addComponent(xFtLabel))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(xInLabel))
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(yInLabel))))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(widthFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(widthInLabel))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(heightFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(heightInLabel))))
-                                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
-                                .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel19)
-                            .addComponent(jLabel26))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(createTileButton)))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jLabel20)
+                        .addComponent(tileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addComponent(rowOffsetLabel)))
-                .addContainerGap())
+                        .addComponent(hauteurTuileText))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addComponent(tileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(largeurTuileText))
+                    .addComponent(tileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addGap(10, 10, 10)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel14)
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel6))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(coverRadioButton)
+                                .addGap(30, 30, 30)
+                                .addComponent(doNotCoverRadioButton))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
+                                    .addComponent(surfaceWidthField)
+                                    .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(yFtLabel)
+                                            .addComponent(xFtLabel))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(xInLabel))
+                                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(yInLabel))))
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addComponent(widthFtLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(widthInLabel))
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addComponent(heightFtLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(heightInLabel))))
+                            .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel19)
+                    .addComponent(jLabel26))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(createTileButton)))
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1960,7 +2090,7 @@ public class MainWindow extends javax.swing.JFrame
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel15)
                     .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(largeurJointText))
+                    .addComponent(largeurJointText, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
                         .addGap(12, 12, 12)
@@ -1977,21 +2107,24 @@ public class MainWindow extends javax.swing.JFrame
                     .addComponent(zeroOrientationRadioButton)
                     .addComponent(ninetyOrientationRadioButton)
                     .addComponent(jLabel18))
-                .addGap(10, 10, 10)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGap(11, 11, 11)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel9)
-                    .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(offsetXText))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(offsetXText)))
+                .addGap(5, 5, 5)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel10)
-                    .addComponent(offsetYText)
-                    .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel20)
-                    .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(rowOffsetLabel))
+                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(offsetYText)
+                        .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(5, 5, 5)
+                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(rowOffsetLabel))
+                    .addComponent(jLabel20))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2018,7 +2151,7 @@ public class MainWindow extends javax.swing.JFrame
                     .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(createTileButton)
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addGap(5, 5, 5))
         );
 
         jScrollPane1.setViewportView(rightPanel);
@@ -2028,7 +2161,7 @@ public class MainWindow extends javax.swing.JFrame
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 691, Short.MAX_VALUE)
+                .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0))
@@ -2041,49 +2174,49 @@ public class MainWindow extends javax.swing.JFrame
 
         menuFichier.setText("Fichier");
 
-        menuFichierNouveauProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        menuFichierNouveauProjet.setText("Nouveau Projet");
-        menuFichierNouveauProjet.addActionListener(new java.awt.event.ActionListener()
+        newProjectButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
+        newProjectButton.setText("Nouveau Projet");
+        newProjectButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                menuFichierNouveauProjetActionPerformed(evt);
+                newProjectButtonActionPerformed(evt);
             }
         });
-        menuFichier.add(menuFichierNouveauProjet);
+        menuFichier.add(newProjectButton);
 
-        menuFichierOuvrirProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
-        menuFichierOuvrirProjet.setText("Ouvrir Projet");
-        menuFichierOuvrirProjet.addActionListener(new java.awt.event.ActionListener()
+        openProjectButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.CTRL_DOWN_MASK));
+        openProjectButton.setText("Ouvrir Projet");
+        openProjectButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                menuFichierOuvrirProjetActionPerformed(evt);
+                openProjectButtonActionPerformed(evt);
             }
         });
-        menuFichier.add(menuFichierOuvrirProjet);
+        menuFichier.add(openProjectButton);
 
-        menuFichierFermerProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
-        menuFichierFermerProjet.setText("Fermer Projet");
-        menuFichierFermerProjet.addActionListener(new java.awt.event.ActionListener()
+        closeProjectButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyEvent.CTRL_DOWN_MASK));
+        closeProjectButton.setText("Fermer Projet");
+        closeProjectButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                menuFichierFermerProjetActionPerformed(evt);
+                closeProjectButtonActionPerformed(evt);
             }
         });
-        menuFichier.add(menuFichierFermerProjet);
+        menuFichier.add(closeProjectButton);
 
-        menuFichierEnregistrerProjet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
-        menuFichierEnregistrerProjet.setText("Enregistrer Projet");
-        menuFichierEnregistrerProjet.addActionListener(new java.awt.event.ActionListener()
+        saveProjectButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK));
+        saveProjectButton.setText("Enregistrer Projet");
+        saveProjectButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                menuFichierEnregistrerProjetActionPerformed(evt);
+                saveProjectButtonActionPerformed(evt);
             }
         });
-        menuFichier.add(menuFichierEnregistrerProjet);
+        menuFichier.add(saveProjectButton);
 
         menuFichierQuitter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
         menuFichierQuitter.setText("Quitter");
@@ -2181,19 +2314,12 @@ public class MainWindow extends javax.swing.JFrame
      */
     
     private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
-        //showTileInfo(evt);
-        
-        // Update les coordonnées en pixels
-        int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
-        int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
-        xPixelCoordsLabel.setText("X: " + posXPixels + " pixels");
-        yPixelCoordsLabel.setText("Y: " + posYPixels + " pixels");
-
-        // Conversion en mesure métrique.
+        updateMouseCoordinates(evt);
         Point2D.Double metricPoint = pointToMetric(evt.getPoint());
-        double posXMetric = metricPoint.x;
-        double posYMetric = metricPoint.y;
-
+        if (controller.projectExists())
+        {
+            showTileInfo(controller.getTileAtPoint(metricPoint));
+        }
         // Dessine un rectangle temporaire lors de la création d'un rectangle.
         if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
@@ -2205,8 +2331,17 @@ public class MainWindow extends javax.swing.JFrame
                     metricPoint));
             canvasPanel.repaint();
         }
+    }//GEN-LAST:event_canvasPanelMouseMoved
 
-        // Update les coordonnées métriques
+    private void updateMouseCoordinates(MouseEvent evt)
+    {
+        int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
+        int posYPixels = evt.getY() + canvasPanel.getVerticalOffset();
+        xPixelCoordsLabel.setText("X: " + posXPixels + " pixels");
+        yPixelCoordsLabel.setText("Y: " + posYPixels + " pixels");
+        Point2D.Double metricPoint = pointToMetric(evt.getPoint());
+        double posXMetric = metricPoint.x;
+        double posYMetric = metricPoint.y;     
         if (isMetric)
         {
             xMeasureCoordsLabel.setText("X: " + String.format("%.03f", posXMetric / 1000.)
@@ -2214,8 +2349,6 @@ public class MainWindow extends javax.swing.JFrame
             yMeasureCoordsLabel.setText("Y: " + String.format("%.03f", posYMetric / 1000.)
                     + " mètres");            
         }
-        
-        // Update les coordonnées impériales
         else
         {
             int posXFeet = Utilities.mmToFeet(posXMetric);
@@ -2227,8 +2360,8 @@ public class MainWindow extends javax.swing.JFrame
             yMeasureCoordsLabel.setText("Y: " + posYFeet + "ft "
                     + String.format("%.02f", posYInches) + "in");
         }
-    }//GEN-LAST:event_canvasPanelMouseMoved
-
+    }
+    
     /**
      * Décrémente le zoom.
      *
@@ -2288,16 +2421,16 @@ public class MainWindow extends javax.swing.JFrame
 
     private void menuAideProposActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuAideProposActionPerformed
     {//GEN-HEADEREND:event_menuAideProposActionPerformed
-        javax.swing.JOptionPane.showMessageDialog(null, "VirtuTuile 2019\n"
+        JOptionPane.showMessageDialog(null, "VirtuTuile 2019\n"
                 + "vous est présenté par\n"
                 + "Équipe 8:\n"
                 + "Petros Fytilis\n" + "Gabriel Chevrette-Parrot\n"
-                + "Martin Sasseville", "A propos de",
+                + "Martin Sasseville", "À propos de",
                 JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_menuAideProposActionPerformed
 
-    private void menuFichierEnregistrerProjetActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierEnregistrerProjetActionPerformed
-    {//GEN-HEADEREND:event_menuFichierEnregistrerProjetActionPerformed
+    private void saveProjectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_saveProjectButtonActionPerformed
+    {//GEN-HEADEREND:event_saveProjectButtonActionPerformed
         if (toolBar.isVisible())
         {
             JFileChooser fileChooser = new JFileChooser();
@@ -2306,7 +2439,7 @@ public class MainWindow extends javax.swing.JFrame
                 controller.saveProject(fileChooser.getSelectedFile());
             }
         }
-    }//GEN-LAST:event_menuFichierEnregistrerProjetActionPerformed
+    }//GEN-LAST:event_saveProjectButtonActionPerformed
 
     /**
      * Déplace le zoom par la roue de la souris.
@@ -2359,7 +2492,7 @@ public class MainWindow extends javax.swing.JFrame
     {//GEN-HEADEREND:event_canvasPanelMousePressed
         if (!toolBar.isVisible()) return;
         // LEFT CLICK
-        if (evt.getButton() == java.awt.event.MouseEvent.BUTTON1)
+        if (evt.getButton() == MouseEvent.BUTTON1)
         {
             if (contextMode != ContextMenuModes.NONE)
             {
@@ -2369,13 +2502,13 @@ public class MainWindow extends javax.swing.JFrame
                 leftClickActionHandler(evt);
             }
         } // RIGHT CLICK
-        else if (evt.getButton() == java.awt.event.MouseEvent.BUTTON3)
+        else if (evt.getButton() == MouseEvent.BUTTON3)
         {
             rightClickActionHandler(evt);
         }
     }//GEN-LAST:event_canvasPanelMousePressed
 
-    private void leftClickActionHandler(java.awt.event.MouseEvent evt)
+    private void leftClickActionHandler(MouseEvent evt)
     {
         switch (selectedMode)
         {
@@ -2419,7 +2552,7 @@ public class MainWindow extends javax.swing.JFrame
         }
     }
 
-    private void rightClickActionHandler(java.awt.event.MouseEvent evt)
+    private void rightClickActionHandler(MouseEvent evt)
     {
         // Annule la création en cours d'une surface rectangulaire.
         if (this.selectedMode == ApplicationModes.RECTANGLE)
@@ -2465,7 +2598,7 @@ public class MainWindow extends javax.swing.JFrame
         surfacePopupMenu.show(canvasPanel, evt.getX(), evt.getY());
     }
 
-    private void contextMenuActionHandler(java.awt.event.MouseEvent evt)
+    private void contextMenuActionHandler(MouseEvent evt)
     {
         switch (contextMode)
         {
@@ -2525,7 +2658,8 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     unselect();
                     JOptionPane.showMessageDialog(this,
-                            "Erreur: la combinaison ne peut pas être effectuée.");
+                            "La combinaison ne peut pas être effectuée.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else
@@ -2544,8 +2678,8 @@ public class MainWindow extends javax.swing.JFrame
         controller.selectSurface(point);
         if (controller.surfaceIsSelected())
         {
-            updatePanelInformation();
             enablePanelButtons();
+            updatePanelInformation();
             canvasPanel.repaint();
         } else
         {
@@ -2562,7 +2696,7 @@ public class MainWindow extends javax.swing.JFrame
     {
         if (canvasPanel.getZoom() * 100 < 5)
         {
-            javax.swing.JOptionPane.showMessageDialog(null, 
+            JOptionPane.showMessageDialog(this, 
                     "Impossible de créer une surface avec un zoom inférieur à 5%.\nVeuillez augmenter le zoom, puis réessayer", 
                     "Action interdite", JOptionPane.ERROR_MESSAGE);
         }
@@ -2587,8 +2721,8 @@ public class MainWindow extends javax.swing.JFrame
                 if (rectangle.width < 100 || rectangle.height < 100)
                 {
                     canvasPanel.repaint();
-                    JOptionPane.showMessageDialog(this,
-                            "Erreur: surface trop petite.");
+                    JOptionPane.showMessageDialog(this, "Surface trop petite.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 } else
                 {
                     // Fait une requête pour la création du rectangle.
@@ -2600,8 +2734,8 @@ public class MainWindow extends javax.swing.JFrame
                     } else
                     {
                         canvasPanel.repaint();
-                        JOptionPane.showMessageDialog(this,
-                                "Erreur: création de la surface entraîne un conflit.");
+                        JOptionPane.showMessageDialog(this, "Création de la surface entraîne un conflit.",
+                                "Opération interdite", JOptionPane.ERROR_MESSAGE);
                     }
                 }
             }
@@ -2628,7 +2762,7 @@ public class MainWindow extends javax.swing.JFrame
 
     private void surfaceColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_surfaceColorButtonActionPerformed
     {//GEN-HEADEREND:event_surfaceColorButtonActionPerformed
-        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
+        Color c = JColorChooser.showDialog(null, "Sélectionnez une couleur",
                 controller.getColor());
         if (c != null)
         {
@@ -2659,52 +2793,67 @@ public class MainWindow extends javax.swing.JFrame
     private void canvasPanelMouseDragged(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMouseDragged
     {//GEN-HEADEREND:event_canvasPanelMouseDragged
         canvasPanelMouseMoved(evt);
-        if (selectedMode == ApplicationModes.SURFACEMOVE && controller.surfaceIsSelected() && originPoint != null)
+        if (selectedMode == ApplicationModes.SURFACEMOVE && controller.surfaceIsSelected()
+                && originPoint != null)
         {
-            Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
-            double x = currentCursorPosition.x - originPoint.x;
-            double y = currentCursorPosition.y - originPoint.y;
-            Point2D.Double newPos = new Point2D.Double(x, y);
-            if (gridIsMagnetic)
-            {
-                Utilities.movePointToGrid(newPos, canvasPanel.getGridDistance());
-            }
-            controller.moveSurfaceToPoint(newPos);
-            updatePanelInformation();
-            canvasPanel.repaint();
-
+            mouseDraggedSurfaceMove(evt);
         }
         else if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
-            Point2D.Double point = pointToMetric(evt.getPoint());
-            if (gridIsMagnetic)
-            {
-                Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
-            }
-            canvasPanel.setTemporaryRectangle(Utilities.cornersToRectangle(firstRectangleCorner,
-                    point));
-            canvasPanel.repaint();
+            mouseDraggedRectangle(evt);
         }
-        else if (selectedMode == ApplicationModes.TILEMOVE && controller.surfaceIsSelected() && originPoint != null)
+        else if (selectedMode == ApplicationModes.TILEMOVE && controller.surfaceIsSelected()
+                && originPoint != null && controller.hasTileType())
         {
-            Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
-            double deltaX = currentCursorPosition.x - originPoint.x;
-            double deltaY = currentCursorPosition.y - originPoint.y;
-            double tileTypeWidth = controller.getTileWidth();
-            double tileTypeHeight = controller.getTileHeight();
-            double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
-            double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
-            double jointWidth = controller.getJointWidth();
-            
-            double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
-            double offsetY = (controller.getOffsetY() + deltaY) % (2 * (tileHeight + jointWidth));
-            controller.setOffsetXY(offsetX, offsetY);
-            originPoint = currentCursorPosition;
-            updatePanelInformation();
-            canvasPanel.repaint();
+            mouseDraggedTileMove(evt);
         }
     }//GEN-LAST:event_canvasPanelMouseDragged
 
+    private void mouseDraggedSurfaceMove(MouseEvent evt)
+    {
+        Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
+        double x = currentCursorPosition.x - originPoint.x;
+        double y = currentCursorPosition.y - originPoint.y;
+        Point2D.Double newPos = new Point2D.Double(x, y);
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(newPos, canvasPanel.getGridDistance());
+        }
+        controller.moveSurfaceToPoint(newPos);
+        updatePanelInformation();
+        canvasPanel.repaint();
+    }
+    
+    private void mouseDraggedRectangle(MouseEvent evt)
+    {
+        Point2D.Double point = pointToMetric(evt.getPoint());
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
+        }
+        canvasPanel.setTemporaryRectangle(Utilities.cornersToRectangle(firstRectangleCorner,
+                point));
+        canvasPanel.repaint();
+    }
+    
+    private void mouseDraggedTileMove(MouseEvent evt)
+    {
+        Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
+        double deltaX = currentCursorPosition.x - originPoint.x;
+        double deltaY = currentCursorPosition.y - originPoint.y;
+        double tileTypeWidth = controller.getTileWidth();
+        double tileTypeHeight = controller.getTileHeight();
+        double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
+        double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
+        double jointWidth = controller.getJointWidth();
+        double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
+        double offsetY = (controller.getOffsetY() + deltaY) % (2 * (tileHeight + jointWidth));
+        controller.setOffsetXY(offsetX, offsetY);
+        originPoint = currentCursorPosition;
+        updatePanelInformation();
+        canvasPanel.repaint();
+    }
+    
     private void canvasPanelMouseReleased(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMouseReleased
     {//GEN-HEADEREND:event_canvasPanelMouseReleased
         if (originPoint != null)
@@ -2721,7 +2870,7 @@ public class MainWindow extends javax.swing.JFrame
      */
     private void menuGridDistanceActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuGridDistanceActionPerformed
     {//GEN-HEADEREND:event_menuGridDistanceActionPerformed
-        javax.swing.JDialog dialog;
+        JDialog dialog;
         if (isMetric)
         {
             dialog = gridDistanceDialog;
@@ -2836,9 +2985,10 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
                 surfaceWidthField.setText(String.format("%.03f",
                         controller.getBounds2D().getWidth() / 1000.));
@@ -2850,12 +3000,6 @@ public class MainWindow extends javax.swing.JFrame
                 double feet = Utilities.parseDoubleLocale(surfaceWidthField.getText());
                 
                 double dblInchesField = Utilities.getInchesFromField(surfaceWidthFieldInches.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceWidth(mm);
@@ -2866,9 +3010,10 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
                 surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getWidth())));
                 surfaceWidthFieldInches.setText(String.format("%.02f",
@@ -2889,10 +3034,11 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceXField.setText(String.format("%.03f", controller.getBounds2D().getX() / 1000.));
             }
@@ -2904,12 +3050,6 @@ public class MainWindow extends javax.swing.JFrame
                 double feet = Utilities.parseDoubleLocale(surfaceXField.getText());
                 
                 double dblInchesField = Utilities.getInchesFromField(surfaceXFieldInches.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceX(mm);
@@ -2920,10 +3060,11 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
                 surfaceXFieldInches.setText(String.format("%.02f",
@@ -2944,10 +3085,11 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceYField.setText(String.format("%.03f", controller.getBounds2D().getY() / 1000.));
             }
@@ -2959,12 +3101,6 @@ public class MainWindow extends javax.swing.JFrame
                 double feet = Utilities.parseDoubleLocale(surfaceYField.getText());
                 
                 double dblInchesField = Utilities.getInchesFromField(surfaceYFieldInches.getText());
-
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceY(mm);
@@ -2976,10 +3112,11 @@ public class MainWindow extends javax.swing.JFrame
                 
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 } 
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceYField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getY())));
                 surfaceYFieldInches.setText(String.format("%.02f",
@@ -3001,10 +3138,11 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceHeightField.setText(String.format("%.03f",
                         controller.getBounds2D().getHeight() / 1000.));
@@ -3017,12 +3155,6 @@ public class MainWindow extends javax.swing.JFrame
                 double feet = Utilities.parseDoubleLocale(surfaceHeightField.getText());
                 
                 double dblInchesField = Utilities.getInchesFromField(surfaceHeightFieldInches.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double totalInches = feet * 12 + dblInchesField;
                 double mm = Utilities.inchesToMm(totalInches);
                 boolean status = controller.setSurfaceHeight(mm);
@@ -3033,10 +3165,11 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
                 if (!status)
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             } 
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
                 surfaceHeightFieldInches.setText(String.format("%.02f",
@@ -3069,7 +3202,6 @@ public class MainWindow extends javax.swing.JFrame
     private void zeroOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_zeroOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_zeroOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(false);
-        updatePanelInformation();
         canvasPanel.repaint();
     }//GEN-LAST:event_zeroOrientationRadioButtonActionPerformed
 
@@ -3080,54 +3212,48 @@ public class MainWindow extends javax.swing.JFrame
             try
             {
                 double newTileWidth = Utilities.parseDoubleLocale(tileWidthField.getText()) * 10;
-                
-                if(newTileWidth < 20)
+                if (newTileWidth < 20)
                 {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de "
-                            + "largeur", "Erreur", JOptionPane.ERROR_MESSAGE);
-                    throw new java.text.ParseException("Une tuile doit avoir au moins 2cm ou 1 pouce de largeur", 0);
+                    JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de largeur",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
                 }
-                controller.setTileWidth(newTileWidth);
-                tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
-                updatePanelInformation();
-                controller.refreshSurfaces();
-                canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+                else
+                {
+                    controller.setTileWidth(newTileWidth);
+                    tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
+                }
+            } 
+            catch (ParseException e)
             {
                 tileWidthField.setText(String.format("%.03f", controller.getTileWidth() / 10));
             }
-        } else
+        } 
+        else
         {
             try
             {
                 double dblInchesField = Utilities.getInchesFromField(tileWidthField.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double newTileWidth = Utilities.inchesToMm(dblInchesField);
-                
                 if(newTileWidth < 20)
                 {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de "
-                            + "largeur", "Erreur", JOptionPane.ERROR_MESSAGE);
-                    throw new java.text.ParseException("Une tuile doit avoir au moins 2cm ou 1 pouce de largeur", 0);
+                    JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de largeur",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    tileWidthField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileWidth())));
                 }
-                
-                controller.setTileWidth(newTileWidth);
-                tileWidthField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getTileWidth())));
-                updatePanelInformation();
-                controller.refreshSurfaces();
-                canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+                else
+                {
+                    controller.setTileWidth(newTileWidth);
+                    tileWidthField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileWidth())));
+                }
+            } 
+            catch (ParseException e)
             {
-                tileWidthField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getTileWidth())));
-            }
-        }
+                tileWidthField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileWidth())));
+            } // fin else imperial
+        } // fin if isMetric
+        controller.refreshSurfaces();
+        canvasPanel.repaint();
     }//GEN-LAST:event_tileWidthFieldActionPerformed
 
     private void offsetXFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_offsetXFieldActionPerformed
@@ -3139,9 +3265,8 @@ public class MainWindow extends javax.swing.JFrame
                 double offset = Utilities.parseDoubleLocale(offsetXField.getText()) * 10;
                 controller.setOffsetX(offset);
                 offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
-                updatePanelInformation();
                 canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
                 offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
             }
@@ -3150,52 +3275,55 @@ public class MainWindow extends javax.swing.JFrame
             try
             {
                 double dblInchesField = Utilities.getInchesFromField(offsetXField.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double offsetX = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetX(offsetX);
-                offsetXField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getOffsetX())));
-                updatePanelInformation();
+                offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
                 canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
-                offsetXField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getOffsetX())));
+                offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
             }
         }
     }//GEN-LAST:event_offsetXFieldActionPerformed
 
-    private void tileNbPerBoxFieldActionPerformed(java.awt.event.ActionEvent evt)
+    private void tileNbPerBoxFieldActionPerformed(ActionEvent evt)
        {
            try
            {
                 int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
-                controller.setTileNbPerBox(newTileNbPerBox);
-                tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-           } catch (java.lang.NumberFormatException e)
+                if (newTileNbPerBox >= 1)
+                {
+                    controller.setTileNbPerBox(newTileNbPerBox);
+                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile", 
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+                }
+           } catch (NumberFormatException e)
            {
                tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-           } 
+           }
        }
 
-    private void tileNameFieldActionPerformed(java.awt.event.ActionEvent evt)
+    private void tileNameFieldActionPerformed(ActionEvent evt)
        {
-           String newTileName = tileNameField.getText();
+            String newTileName = tileNameField.getText();
            
-           if(newTileName.length() <= 5)
+            if(newTileName.length() < 5)
             {
-                javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", 
-                        "Erreur", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Le nom de la tuile doit avoir au moins 5 lettres", 
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                tileNameField.setText(controller.getTileName());
             }
-           
-           controller.setTileName(newTileName);
-           tileNameField.setText(controller.getTileName());
-           updatePanelInformation();
+            else
+            {
+                controller.setTileName(newTileName);
+                tileNameField.setText(controller.getTileName());
+                updatePanelInformation();
+            }
        }
     
     private void metricButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_metricButtonActionPerformed
@@ -3339,8 +3467,8 @@ public class MainWindow extends javax.swing.JFrame
         redoButton.setToolTipText(controller.getRedoPresentationName());
     }//GEN-LAST:event_redoButtonMouseEntered
 
-    private void menuFichierFermerProjetActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierFermerProjetActionPerformed
-    {//GEN-HEADEREND:event_menuFichierFermerProjetActionPerformed
+    private void closeProjectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_closeProjectButtonActionPerformed
+    {//GEN-HEADEREND:event_closeProjectButtonActionPerformed
         if (toolBar.isVisible() && JOptionPane.showConfirmDialog(null,
                 "Voulez-vous fermer le projet en cours?",
                 "Fermer projet",
@@ -3351,13 +3479,15 @@ public class MainWindow extends javax.swing.JFrame
             toggleGroup.clearSelection();
             controller.closeProject();
             toolBar.setVisible(false);
+            createTileButton.setEnabled(false);
+            createTileWindow.setVisible(false);
             menuEditionAnnuler.setEnabled(false);
             menuEditionRepeter.setEnabled(false);
         }
-    }//GEN-LAST:event_menuFichierFermerProjetActionPerformed
+    }//GEN-LAST:event_closeProjectButtonActionPerformed
 
-    private void menuFichierNouveauProjetActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierNouveauProjetActionPerformed
-    {//GEN-HEADEREND:event_menuFichierNouveauProjetActionPerformed
+    private void newProjectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_newProjectButtonActionPerformed
+    {//GEN-HEADEREND:event_newProjectButtonActionPerformed
         if (!toolBar.isVisible() || JOptionPane.showConfirmDialog(null,
                 "Pour ouvrir un nouveau projet, le projet en cours doit être fermé. Voulez-vous continuer?",
                 "Nouveau projet",
@@ -3365,14 +3495,15 @@ public class MainWindow extends javax.swing.JFrame
         {
             controller.createNewProject();
             toolBar.setVisible(true);
+            createTileButton.setEnabled(true);
             menuEditionAnnuler.setEnabled(true);
             menuEditionRepeter.setEnabled(true);
             unselect();
         }
-    }//GEN-LAST:event_menuFichierNouveauProjetActionPerformed
+    }//GEN-LAST:event_newProjectButtonActionPerformed
 
-    private void menuFichierOuvrirProjetActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierOuvrirProjetActionPerformed
-    {//GEN-HEADEREND:event_menuFichierOuvrirProjetActionPerformed
+    private void openProjectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openProjectButtonActionPerformed
+    {//GEN-HEADEREND:event_openProjectButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser();
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
@@ -3387,6 +3518,7 @@ public class MainWindow extends javax.swing.JFrame
             {
                 controller.createNewProject();
                 toolBar.setVisible(true);
+                createTileButton.setEnabled(true);
                 menuEditionAnnuler.setEnabled(true);
                 menuEditionRepeter.setEnabled(true);
                 unselect();
@@ -3394,7 +3526,7 @@ public class MainWindow extends javax.swing.JFrame
             controller.loadProject(fileChooser.getSelectedFile());
             canvasPanel.repaint();
         }
-    }//GEN-LAST:event_menuFichierOuvrirProjetActionPerformed
+    }//GEN-LAST:event_openProjectButtonActionPerformed
 
     private void alignTopMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_alignTopMenuItemActionPerformed
     {//GEN-HEADEREND:event_alignTopMenuItemActionPerformed
@@ -3414,11 +3546,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3441,11 +3575,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3467,11 +3603,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3494,11 +3632,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3522,11 +3662,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3550,11 +3692,13 @@ public class MainWindow extends javax.swing.JFrame
                 canvasPanel.repaint();
             } else
             {
-                JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3572,7 +3716,8 @@ public class MainWindow extends javax.swing.JFrame
         {
             if (bounds.equals(boundsSelected))
             {
-                JOptionPane.showMessageDialog(this, "Erreur: sélection de la même surface.");
+                JOptionPane.showMessageDialog(this, "Sélection de la même surface.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             } else
             {
                 double newX;
@@ -3589,12 +3734,14 @@ public class MainWindow extends javax.swing.JFrame
                     canvasPanel.repaint();
                 } else
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                    JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3612,7 +3759,8 @@ public class MainWindow extends javax.swing.JFrame
         {
             if (bounds.equals(boundsSelected))
             {
-                JOptionPane.showMessageDialog(this, "Erreur: sélection de la même surface.");
+                JOptionPane.showMessageDialog(this, "Sélection de la même surface.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
             } else
             {
                 double newY;
@@ -3629,12 +3777,14 @@ public class MainWindow extends javax.swing.JFrame
                     canvasPanel.repaint();
                 } else
                 {
-                    JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                    JOptionPane.showMessageDialog(this, "Déplacement illégal.", "Opération interdite",
+                            JOptionPane.ERROR_MESSAGE);
                 }
             }
         } else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: aucune surface n'a été sélectionnée.");
+            JOptionPane.showMessageDialog(this, "Aucune surface n'a été sélectionnée.",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -3659,9 +3809,8 @@ public class MainWindow extends javax.swing.JFrame
                 double width = Utilities.parseDoubleLocale(jointWidthField.getText());
                 controller.setJointWidth(width);
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
-                updatePanelInformation();
                 canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
             }
@@ -3671,18 +3820,12 @@ public class MainWindow extends javax.swing.JFrame
             {
                 double dblInchesField = Utilities.getInchesFromField(jointWidthField.getText());
                 
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double jointWidth = Utilities.inchesToMm(dblInchesField);
                 controller.setJointWidth(jointWidth);
                 jointWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getJointWidth())));
-                updatePanelInformation();
                 canvasPanel.repaint();
-            } catch (java.text.ParseException e)
+            } catch (ParseException e)
             {
                 jointWidthField.setText(String.format("%.03f",
                         Utilities.mmToInches(controller.getJointWidth())));
@@ -3692,13 +3835,12 @@ public class MainWindow extends javax.swing.JFrame
 
     private void jointColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jointColorButtonActionPerformed
     {//GEN-HEADEREND:event_jointColorButtonActionPerformed
-        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
+        Color c = JColorChooser.showDialog(null, "Sélectionnez une couleur",
                 controller.getJointColor());
         if (c != null)
         {
             jointColorButton.setBackground(c);
             controller.setJointColor(c);
-            updatePanelInformation();
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_jointColorButtonActionPerformed
@@ -3707,8 +3849,19 @@ public class MainWindow extends javax.swing.JFrame
     {//GEN-HEADEREND:event_patternComboBoxActionPerformed
         if ((String) patternComboBox.getSelectedItem() != null)
         {
-            controller.setPattern(Pattern.valueOf((String) patternComboBox.getSelectedItem()));
-            updatePanelInformation();
+            Pattern pattern;
+            switch ((String) patternComboBox.getSelectedItem())
+            {
+                case patternA:
+                    pattern = Pattern.CHECKERED; break;
+                case patternB:
+                    pattern = Pattern.LSHAPE; break;
+                case patternC:
+                    pattern = Pattern.TWOBYTWO; break;
+                default:
+                    pattern = Pattern.DIAGONAL;
+            }
+            controller.setPattern(pattern);
             enablePanelButtons();
             canvasPanel.repaint();
         }
@@ -3717,81 +3870,70 @@ public class MainWindow extends javax.swing.JFrame
     private void ninetyOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ninetyOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_ninetyOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(true);
-        updatePanelInformation();
         canvasPanel.repaint();
     }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
 
     private void tileColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileColorButtonActionPerformed
     {//GEN-HEADEREND:event_tileColorButtonActionPerformed
-        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
+        Color c = JColorChooser.showDialog(null, "Sélectionnez une couleur",
                 controller.getTileColor());
         if (c != null)
         {
             tileColorButton.setBackground(c);
             controller.setTileColor(c);
-            updatePanelInformation();
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_tileColorButtonActionPerformed
-    private void tileHeightFieldActionPerformed(java.awt.event.ActionEvent evt)
+    private void tileHeightFieldActionPerformed(ActionEvent evt)
    {
-       if (isMetric)
-       {
-           try
-           {
-                double newTileHeight = Utilities.parseDoubleLocale(tileHeightField.getText()) * 10;
-                
-                if(newTileHeight < 20)
-                {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
-                        JOptionPane.ERROR_MESSAGE);
-                    throw new java.text.ParseException("Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", 0);
-                }
-                
-                controller.setTileHeight(newTileHeight);
-                tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
-                updatePanelInformation();
-                controller.refreshSurfaces();
-                canvasPanel.repaint();
-           }
-           catch (java.text.ParseException e)
-           {
-               tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
-           }
-       }
-       else
-       {
-           try
-           {
-                double dblInchesField = Utilities.getInchesFromField(tileWidthField.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
-                double newTileHeight = Utilities.inchesToMm(dblInchesField);
-                
-                if(newTileHeight < 20)
-                {
-                    javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
-                        JOptionPane.ERROR_MESSAGE);
-                    throw new java.text.ParseException("Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", 0);
-                }
-                
-                controller.setTileHeight(newTileHeight);
-                tileHeightField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getTileHeight())));
-                controller.refreshSurfaces();
-                updatePanelInformation();
-                canvasPanel.repaint();
-            }
-            catch (java.text.ParseException e)
+        double newTileHeight;
+        if (isMetric)
+        {
+            try
             {
-                tileHeightField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getTileHeight())));
+                newTileHeight = Utilities.parseDoubleLocale(tileHeightField.getText()) * 10;
+                if(newTileHeight < 20)
+                {
+                    JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
+                }
+                else
+                {
+                    controller.setTileHeight(newTileHeight);
+                    tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
+                }
+            } 
+            catch (ParseException e)
+            {
+                tileHeightField.setText(String.format("%.03f", controller.getTileHeight() / 10));
             }
-       }
+        } 
+        else
+        {
+            try
+            {
+                double dblInchesField = Utilities.getInchesFromField(tileHeightField.getText());
+                newTileHeight = Utilities.inchesToMm(dblInchesField);
+                if(newTileHeight < 20)
+                {
+                    JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    tileHeightField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileHeight())));
+                }
+                else
+                {
+                    controller.setTileHeight(newTileHeight);
+                    tileHeightField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileHeight())));
+                }
+            } 
+            catch (ParseException e)
+            {
+                tileHeightField.setText(String.format("%.03f", Utilities.mmToInches(controller.getTileHeight())));
+            } // fin else imperial
+        } // fin if isMetric
+        controller.refreshSurfaces();
+        canvasPanel.repaint();
    }
     
     private void offsetYFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_offsetYFieldActionPerformed
@@ -3803,10 +3945,9 @@ public class MainWindow extends javax.swing.JFrame
                 double offset = Utilities.parseDoubleLocale(offsetYField.getText()) * 10;
                 controller.setOffsetY(offset);
                 offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
-                updatePanelInformation();
                 canvasPanel.repaint();
             }
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
                 offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
             }
@@ -3816,23 +3957,14 @@ public class MainWindow extends javax.swing.JFrame
             try
             {
                 double dblInchesField = Utilities.getInchesFromField(offsetYField.getText());
-                
-                if (dblInchesField == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
                 double offsetY = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetY(offsetY);
-                offsetYField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getOffsetY())));
-                updatePanelInformation();
+                offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
                 canvasPanel.repaint();
             }
-            catch (java.text.ParseException e)
+            catch (ParseException e)
             {
-                offsetYField.setText(String.format("%.03f",
-                        Utilities.mmToInches(controller.getOffsetY())));
+                offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
             }
         }
     }//GEN-LAST:event_offsetYFieldActionPerformed
@@ -3850,7 +3982,6 @@ public class MainWindow extends javax.swing.JFrame
         }
         controller.setRowOffset(Math.max(0, Math.min(100, offset)));
         rowOffsetField.setText("" + controller.getRowOffset());
-        updatePanelInformation();
         canvasPanel.repaint();
     }//GEN-LAST:event_rowOffsetFieldActionPerformed
 
@@ -3861,113 +3992,100 @@ public class MainWindow extends javax.swing.JFrame
 
     private void createTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileButtonActionPerformed
     {//GEN-HEADEREND:event_createTileButtonActionPerformed
-        createTileWindow.setVisible(true);     
+        createTileWindow.setVisible(true);
     }//GEN-LAST:event_createTileButtonActionPerformed
 
-    private void createWindowColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowColorButtonActionPerformed
-    {//GEN-HEADEREND:event_createWindowColorButtonActionPerformed
-        java.awt.Color c = javax.swing.JColorChooser.showDialog(null, "Sélectionnez une couleur",
-                createWindowColorButton.getBackground());
+    private void createTileColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileColorButtonActionPerformed
+    {//GEN-HEADEREND:event_createTileColorButtonActionPerformed
+        Color c = JColorChooser.showDialog(null, "Sélectionnez une couleur",
+                createTileColorButton.getBackground());
         if (c != null)
         {
-            createWindowColorButton.setBackground(c);
+            createTileColorButton.setBackground(c);
         }
-    }//GEN-LAST:event_createWindowColorButtonActionPerformed
+    }//GEN-LAST:event_createTileColorButtonActionPerformed
 
-    private void createWindowOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowOKButtonActionPerformed
-    {//GEN-HEADEREND:event_createWindowOKButtonActionPerformed
-        String newTileName = createWindowNameField.getText();
-        Color newTileColor = createWindowColorButton.getBackground();
-        int newTileNbPerBox = Integer.parseInt(createWindowNbPerBoxField.getText());
-        double newTileWidth = 0;
-        double newTileHeight = 0;
-        
-        // Hauteur et largeur
-        if(isMetric)
+    private void createTileOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileOKButtonActionPerformed
+    {//GEN-HEADEREND:event_createTileOKButtonActionPerformed
+        String newTileName = createTileNameField.getText().strip();
+        Color newTileColor = createTileColorButton.getBackground();
+        int newTileNbPerBox;
+        double newTileWidth;
+        double newTileHeight;
+        try
         {
-            try
+            newTileNbPerBox = Integer.parseInt(createTileNbPerBoxField.getText());
+            if (isMetric)
             {
-                newTileWidth = Utilities.parseDoubleLocale(createWindowWidthField.getText()) * 10;
-                newTileHeight = Utilities.parseDoubleLocale(createWindowHeightField.getText()) * 10;
+                newTileWidth = Utilities.parseDoubleLocale(createTileWidthField.getText()) * 10;
+                newTileHeight = Utilities.parseDoubleLocale(createTileHeightField.getText()) * 10;
             }
-            catch (java.text.ParseException e)
+            else
             {
-                createWindowCancelButtonActionPerformed(evt);
-                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-            }
-        }
-        else
-        {            
-            try
-            {
-                newTileWidth = Utilities.getInchesFromField(createWindowWidthField.getText());
-                newTileHeight = Utilities.getInchesFromField(createWindowHeightField.getText());
-                
-                if (newTileWidth == -1 || newTileHeight == -1)
-                {
-                    throw new java.text.ParseException("Valeur invalide", 0);
-                }
-                
+                newTileWidth = Utilities.getInchesFromField(createTileWidthField.getText());
                 newTileWidth = Utilities.inchesToMm(newTileWidth);
+                newTileHeight = Utilities.getInchesFromField(createTileHeightField.getText());
                 newTileHeight = Utilities.inchesToMm(newTileHeight);
             }
-            catch (java.text.ParseException e)
-            {
-                createWindowCancelButtonActionPerformed(evt);
-                JOptionPane.showMessageDialog(this, "Erreur: modification illégale.");
-            }
         }
-        
-        if(newTileHeight < 20)
+        catch (ParseException | NumberFormatException e)
         {
-            javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Données invalides",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        
-        if(newTileHeight < 20)
+        if (newTileWidth < 20)
         {
-            javax.swing.JOptionPane.showMessageDialog(null, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de largeur",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        
-        // Nom
-        if(newTileName.length() <= 5)
+        if (newTileHeight < 20)
         {
-            javax.swing.JOptionPane.showMessageDialog(null, "Le nom de la tuile doit avoir plus de 5 lettres", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Une tuile doit avoir au moins 2 cm ou 1 pouce de hauteur",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            return;
         }
+        if (newTileName.length() < 5)
+        {
+            JOptionPane.showMessageDialog(this, "Le nom de la tuile doit avoir au moins 5 lettres",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (newTileNbPerBox < 1)
+        {
+            JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        controller.addTileType(newTileWidth, newTileHeight, newTileName, newTileNbPerBox, newTileColor);
+        createTileCancelButtonActionPerformed(evt);
+        updateTileTypeComboBox();
+    }//GEN-LAST:event_createTileOKButtonActionPerformed
 
-        if(newTileNbPerBox < 10)
+    private void updateTileTypeComboBox()
+    {
+        DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileTypeStrings());
+        tileTypeComboBox.setModel(model);
+        if (controller.surfaceIsSelected() && controller.hasTileType())
         {
-            javax.swing.JOptionPane.showMessageDialog(null, "Une boîte doit contenir au moins 10 tuiles", "Erreur",
-                JOptionPane.ERROR_MESSAGE);
+            tileTypeComboBox.setSelectedItem(controller.getTileName());
         }
-        
-        if(newTileName.length() > 5 && newTileWidth >= 20 && newTileHeight >= 20 && newTileNbPerBox >= 10)
+        else
         {
-            
-            controller.addTileType(newTileWidth, newTileHeight, newTileName, newTileNbPerBox, newTileColor);
-            
-            createWindowNameField.setText("");
-            createWindowWidthField.setText("");
-            createWindowHeightField.setText("");
-            createWindowColorButton.setBackground(new Color(240, 240, 240));
-            createWindowNbPerBoxField.setText("");
-            createTileWindow.setVisible(false);
-        
-            updatePanelInformation();
-        }                            
-    }//GEN-LAST:event_createWindowOKButtonActionPerformed
-
-    private void createWindowCancelButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowCancelButtonActionPerformed
-    {//GEN-HEADEREND:event_createWindowCancelButtonActionPerformed
-        createWindowNameField.setText("");
-        createWindowWidthField.setText("");
-        createWindowHeightField.setText("");
-        createWindowColorButton.setBackground(new Color(240, 240, 240));
-        createWindowNbPerBoxField.setText("");
+            tileTypeComboBox.setSelectedItem(null);
+        }
+    }
+    
+    private void createTileCancelButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileCancelButtonActionPerformed
+    {//GEN-HEADEREND:event_createTileCancelButtonActionPerformed
+        createTileNameField.setText("");
+        createTileWidthField.setText("");
+        createTileHeightField.setText("");
+        createTileColorButton.setBackground(disabledColor);
+        createTileNbPerBoxField.setText("");
         createTileWindow.setVisible(false);
-    }//GEN-LAST:event_createWindowCancelButtonActionPerformed
+    }//GEN-LAST:event_createTileCancelButtonActionPerformed
 
     private void centerPatternHMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_centerPatternHMenuItemActionPerformed
     {//GEN-HEADEREND:event_centerPatternHMenuItemActionPerformed
@@ -4007,10 +4125,10 @@ public class MainWindow extends javax.swing.JFrame
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_relativeMoveMenuItemActionPerformed
 
-    private void createWindowWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createWindowWidthFieldActionPerformed
-    {//GEN-HEADEREND:event_createWindowWidthFieldActionPerformed
+    private void createTileWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileWidthFieldActionPerformed
+    {//GEN-HEADEREND:event_createTileWidthFieldActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_createWindowWidthFieldActionPerformed
+    }//GEN-LAST:event_createTileWidthFieldActionPerformed
     
     private void moveRelatively(Point2D.Double point) 
     {
@@ -4019,14 +4137,14 @@ public class MainWindow extends javax.swing.JFrame
 
         if (bounds != null && boundsSelected != null) 
         {
-            if (bounds.equals(boundsSelected)) 
+            if (bounds.equals(boundsSelected))
             {
-                JOptionPane.showMessageDialog(this, "Erreur: sélection de la même surface.");
-            } 
+                JOptionPane.showMessageDialog(this, "Sélection de la même surface.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+            }
             else
             {
                 String strMeasureUnit;
-                
                 if (isMetric)
                 {
                     strMeasureUnit = "(en mètres): ";
@@ -4035,18 +4153,18 @@ public class MainWindow extends javax.swing.JFrame
                 {
                     strMeasureUnit = "(en pouces): ";
                 }
-                
+
                 // Prendre input utilisateur
-                javax.swing.JTextField xField = new javax.swing.JTextField(5);
-                javax.swing.JTextField yField = new javax.swing.JTextField(5);
+                JTextField xField = new JTextField(5);
+                JTextField yField = new JTextField(5);
 
-                javax.swing.JPanel relativePosBox = new javax.swing.JPanel();
+                JPanel relativePosBox = new JPanel();
 
-                relativePosBox.setLayout(new javax.swing.BoxLayout(relativePosBox, javax.swing.BoxLayout.PAGE_AXIS));
-                relativePosBox.add(new javax.swing.JLabel("Position horizontale " + strMeasureUnit));
+                relativePosBox.setLayout(new BoxLayout(relativePosBox, BoxLayout.PAGE_AXIS));
+                relativePosBox.add(new JLabel("Position horizontale " + strMeasureUnit));
                 relativePosBox.add(xField);
 
-                relativePosBox.add(new javax.swing.JLabel("Position verticale " + strMeasureUnit));
+                relativePosBox.add(new JLabel("Position verticale " + strMeasureUnit));
                 relativePosBox.add(yField);
 
                 int result = JOptionPane.showConfirmDialog(null, relativePosBox,
@@ -4056,8 +4174,8 @@ public class MainWindow extends javax.swing.JFrame
 
                 if (result == JOptionPane.OK_OPTION)
                 {
-                    double requestedXPos = 0;
-                    double requestedYPos = 0;
+                    double requestedXPos;
+                    double requestedYPos;
                     // Créer le point à partir de l'input
                     if (isMetric)
                     {
@@ -4066,9 +4184,11 @@ public class MainWindow extends javax.swing.JFrame
                             requestedXPos = Utilities.parseDoubleLocale(xField.getText()) * 1000;
                             requestedYPos = Utilities.parseDoubleLocale(yField.getText()) * 1000;
                         }
-                        catch(java.text.ParseException e)
+                        catch(ParseException e)
                         {
-                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides");
+                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides",
+                                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                            return;
                         }
                     }
                     else
@@ -4077,16 +4197,16 @@ public class MainWindow extends javax.swing.JFrame
                         {
                             requestedXPos = Utilities.getInchesFromField(xField.getText());
                             requestedYPos = Utilities.getInchesFromField(yField.getText());
-                            
                             requestedXPos = Utilities.inchesToMm(requestedXPos);
                             requestedYPos = Utilities.inchesToMm(requestedYPos);
                         }
-                        catch(java.text.ParseException e)
+                        catch(ParseException e)
                         {
-                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides");
+                            JOptionPane.showMessageDialog(this, "Coordonnées entrées invalides",
+                                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                            return;
                         }
                     }
-                        
                     double relativeXPos = bounds.getX() + requestedXPos;
                     double relativeYPos = bounds.getY() + requestedYPos;
 
@@ -4098,7 +4218,8 @@ public class MainWindow extends javax.swing.JFrame
                     if (controller.getBounds2D().getX() == oldPoint.getX() && 
                             controller.getBounds2D().getY() == oldPoint.getY()) 
                     {
-                        JOptionPane.showMessageDialog(this, "Erreur: déplacement illégal.");
+                        JOptionPane.showMessageDialog(this, "Déplacement illégal.",
+                                "Opération interdite", JOptionPane.ERROR_MESSAGE);
                     }
                     updatePanelInformation();
                     canvasPanel.repaint();
@@ -4107,7 +4228,8 @@ public class MainWindow extends javax.swing.JFrame
         }
         else
         {
-            JOptionPane.showMessageDialog(this, "Erreur: Surface sélectionnée invalide"); 
+            JOptionPane.showMessageDialog(this, "Surface sélectionnée invalide",
+                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -4165,18 +4287,19 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem centerPatternVMenuItem;
     private javax.swing.JMenu centerSubMenu;
     private javax.swing.JMenuItem centerVMenuItem;
+    private javax.swing.JMenuItem closeProjectButton;
     private javax.swing.ButtonGroup coverButtonGroup;
     private javax.swing.JRadioButton coverRadioButton;
     private javax.swing.JButton createTileButton;
+    private javax.swing.JButton createTileCancelButton;
+    private javax.swing.JButton createTileColorButton;
+    private javax.swing.JTextField createTileHeightField;
+    private javax.swing.JTextField createTileNameField;
+    private javax.swing.JTextField createTileNbPerBoxField;
+    private javax.swing.JButton createTileOKButton;
+    private javax.swing.JTextField createTileWidthField;
     private javax.swing.JPanel createTileWindow;
-    private javax.swing.JButton createWindowCancelButton;
-    private javax.swing.JButton createWindowColorButton;
-    private javax.swing.JTextField createWindowHeightField;
     private javax.swing.JLabel createWindowHeightLabel;
-    private javax.swing.JTextField createWindowNameField;
-    private javax.swing.JTextField createWindowNbPerBoxField;
-    private javax.swing.JButton createWindowOKButton;
-    private javax.swing.JTextField createWindowWidthField;
     private javax.swing.JLabel createWindowWidthLabel;
     private javax.swing.JToggleButton debugToggleButton;
     private javax.swing.JMenuItem deleteSurfaceMenuItem;
@@ -4251,19 +4374,17 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JMenuItem menuEditionAnnuler;
     private javax.swing.JMenuItem menuEditionRepeter;
     private javax.swing.JMenu menuFichier;
-    private javax.swing.JMenuItem menuFichierEnregistrerProjet;
-    private javax.swing.JMenuItem menuFichierFermerProjet;
-    private javax.swing.JMenuItem menuFichierNouveauProjet;
-    private javax.swing.JMenuItem menuFichierOuvrirProjet;
     private javax.swing.JMenuItem menuFichierQuitter;
     private javax.swing.JMenuItem menuGridDistance;
     private javax.swing.JToggleButton mergeToggle;
     private javax.swing.JToggleButton metricButton;
+    private javax.swing.JMenuItem newProjectButton;
     private javax.swing.JRadioButton ninetyOrientationRadioButton;
     private javax.swing.JTextField offsetXField;
     private javax.swing.JLabel offsetXText;
     private javax.swing.JTextField offsetYField;
     private javax.swing.JLabel offsetYText;
+    private javax.swing.JMenuItem openProjectButton;
     private javax.swing.ButtonGroup orientationGroup;
     private javax.swing.JComboBox<String> patternComboBox;
     private javax.swing.JLabel percentLabel;
@@ -4280,6 +4401,7 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;
+    private javax.swing.JMenuItem saveProjectButton;
     private javax.swing.JToggleButton selectionToggle;
     private javax.swing.JMenuItem startColumnFullTileMenuItem;
     private javax.swing.JMenuItem startPatternFullTileMenuItem;
@@ -4301,6 +4423,8 @@ public class MainWindow extends javax.swing.JFrame
     private javax.swing.JTextField surfaceYFieldInches;
     private javax.swing.JButton tileColorButton;
     private javax.swing.JTextField tileHeightField;
+    private javax.swing.JLabel tileInfoHeight;
+    private javax.swing.JLabel tileInfoWidth;
     private javax.swing.JToggleButton tileMoveToggle;
     private javax.swing.JTextField tileNameField;
     private javax.swing.JLabel tileNameLabel;
