@@ -36,7 +36,7 @@ public class CanvasDrawer
         
         // Mise en place de la texture pour les trous:
         BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
-        ImageIcon icon = new ImageIcon("src/main/resources/dots.png");
+        ImageIcon icon = new ImageIcon(getClass().getResource("/dots.png"));
         Graphics g = bi.createGraphics();
         icon.paintIcon(null, g, 0, 0);
         g.dispose();
@@ -117,15 +117,16 @@ public class CanvasDrawer
      */
     private void drawSurfaces(Graphics2D g2d, ArrayList<Surface> surfaces,
                               AffineTransform transform)
-    {
+    {   
         // Dessine chaque surface du projet.
         for (Surface surface : surfaces)
         {   
+            boolean hasTiles = !surface.getCovering().getTiles().isEmpty();
             Area copy = new Area(surface);
             copy.transform(transform);
             
             // Dessine l'interieur de la surface.
-            if (surface.isHole())
+            if (surface.isHole() || !hasTiles)
             {
                 g2d.setColor(surface.getColor());
             }
@@ -154,7 +155,7 @@ public class CanvasDrawer
             }
             
             // Dessine les tuiles.
-            if (!surface.isHole())
+            if (hasTiles)
             {
                 drawTiles(g2d, surface, transform);
             }

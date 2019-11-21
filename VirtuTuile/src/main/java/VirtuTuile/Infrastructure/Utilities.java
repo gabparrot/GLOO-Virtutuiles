@@ -1,7 +1,5 @@
 package VirtuTuile.Infrastructure;
 
-import VirtuTuile.Domain.TileType;
-import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
@@ -16,13 +14,7 @@ public final class Utilities
 {
     // Nombre de millimètres par pixel lorsque le zoom est à 100%.
     public static final int MM_PER_PIXEL = 5;
-    
-    // TO-DO: delete default tiles.
-    public static final TileType DEFAULT_TILE_1 = new TileType(200, 300, "Céramique 20x30cm",
-                                                               40, new Color(240, 168, 96));
-    public static final TileType DEFAULT_TILE_2 = new TileType(100, 100, "Verre 10x10cm",
-                                                               25, new Color(168, 204, 215));
-    
+
     private final static NumberFormat FORMAT = NumberFormat.getInstance(Locale.getDefault());
     
     /**

@@ -24,9 +24,9 @@ public class Covering implements Serializable, Cloneable
     private Color jointColor = Color.GRAY;
     private double jointWidth = 5;
     private boolean isNinetyDegree = false;
-    private Pattern pattern = Pattern.A;
+    private Pattern pattern = Pattern.CHECKERED;
     private transient ArrayList<Area> tiles = new java.util.ArrayList<>();
-    private TileType tileType = Utilities.DEFAULT_TILE_1;
+    private TileType tileType = null;
     private Surface parent;
     
     /**
@@ -65,25 +65,25 @@ public class Covering implements Serializable, Cloneable
     public final void cover()
     {
         tiles.clear();
-        if (parent.isHole())
+        if (parent.isHole() || tileType == null)
         {
             return;
         }
         switch (pattern)
         {
-            case A:
+            case CHECKERED:
                 coverSurfaceA();
                 break;
                 
-            case B:
+            case LSHAPE:
                 coverSurfaceB();
                 break;
             
-            case C:
+            case TWOBYTWO:
                 coverSurfaceC();
                 break;
             
-            case D:
+            case DIAGONAL:
                 coverSurfaceD();
                 break;     
         }
@@ -164,8 +164,6 @@ public class Covering implements Serializable, Cloneable
      */
     private void coverSurfaceB()
     {
-        //TODO
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -175,8 +173,6 @@ public class Covering implements Serializable, Cloneable
      */
     private void coverSurfaceC()
     {
-        //TODO
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     /**
@@ -185,8 +181,6 @@ public class Covering implements Serializable, Cloneable
      */
     private void coverSurfaceD()
     {
-        //TODO
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
     private boolean shouldInvertRow(double tileHeight)

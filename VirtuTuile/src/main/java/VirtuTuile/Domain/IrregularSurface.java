@@ -11,7 +11,7 @@ import java.util.ArrayList;
  * @class Définissant une surface irrégulière définie par une série de points.
  * @author gabparrot
  */
-public class IrregularSurface extends Path2D.Double implements ElementarySurface
+public class IrregularSurface extends Path2D.Double implements Surface
 {
     private boolean isHole;
     private Color color;
@@ -149,7 +149,7 @@ public class IrregularSurface extends Path2D.Double implements ElementarySurface
     /**
      * Tente de déplacer la surface horizontalement vers la coordonnée X reçue, en préservant sa valeur en Y. Arrête au
      * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
-     * @param y La destination en X, en mm
+     * @param x La destination en X, en mm
      * @param project le projet en cours
      * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
      */

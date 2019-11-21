@@ -1,6 +1,5 @@
 package VirtuTuile.Domain;
 
-import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Shape;
 import java.util.ArrayList;
@@ -23,15 +22,8 @@ public class Project
 {
     private ArrayList<Surface> surfaces = new ArrayList<>();
     private Surface selectedSurface = null;
-    private final ArrayList<TileType> tileTypes = new ArrayList<>();
+    private ArrayList<TileType> tileTypes = new ArrayList<>();
     private final double[][] TRANSLATION_DIRECTIONS = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
-    
-    // TO-DO: delete constructor
-    public Project()
-    {
-        tileTypes.add(Utilities.DEFAULT_TILE_1);
-        tileTypes.add(Utilities.DEFAULT_TILE_2);
-    }
     
     /**
      * Désélectionne la surface sélectionnée.
@@ -89,11 +81,24 @@ public class Project
             Area area = new Area(surface);
             area.intersect(new Area(shape));
             
+            // Premier check:
             Rectangle2D intersection = area.getBounds2D();
-            
             if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
             {
-                return false;
+                // Approximation:
+                AffineTransform translation = new AffineTransform();
+                translation.translate(10000, 10000);
+                area.transform(translation);
+                translation = new AffineTransform();
+                translation.translate(-10000, -10000);
+                area.transform(translation);
+                
+                // Deuxième check, après approximation:
+                intersection = area.getBounds2D();
+                if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
+                {
+                    return false;
+                }
             }
         }
         return true;
@@ -159,7 +164,6 @@ public class Project
         selectedSurface = getSurfaceAtPoint(point);
     }
     
-
     public Surface getSurfaceAtPoint(Point2D.Double point)
     {
         for (Surface surface : surfaces)
@@ -172,154 +176,26 @@ public class Project
         return null;
     }
     
-    //=== Déplacement de surface ===//
-    
-    //TODO work in progress
-    public boolean moveSurfaceToPoint(Point2D.Double newPos)
-    {
-        boolean success = false;
-        
-        /**
-         * Faire pushHoriz
-         * Faire pushVert
-         * Faire setX
-         * Faire setY
-         * Finir moveSurfaceToPoint
-         */
-        
-        
-        return success;
-        
-    }
-    
-    //TODO WORK IN PROGRESS
-    private void pushHorizontally(double newX, double oldX)
-    {
-        double surroundingBounds[] = getSurroundingBounds();
-        
-        setX(newX);
-        
-        if (!conflictCheck(selectedSurface))
-        {
-            // Déplacement à droite
-            if (newX > oldX)
-            {
-                setX(Math.min(newX, surroundingBounds[2] - selectedSurface.getWidth()));
-            }
-            // Déplacement à gauche
-            else
-            {
-                setX(Math.max(newX, surroundingBounds[0]));
-            }
-        }
-    }
-    
-    //TODO WORK IN PROGRESS
-    private void setX(double newX)
-    {
-        
-    }
-    
-    //TODO WORK IN PROGRESS
-    public double[] getSurroundingBounds()
-    {
-        double surroundingBounds[] = {0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE};
-        Area totalArea = new Area();
-        Rectangle2D selectedSurfaceBounds = selectedSurface.getBounds2D();
-        
-        for (Surface surface : surfaces)
-        {
-            if (surface != selectedSurface) totalArea.add(new Area(surface));
-        }
-        
-        
-        // LEFT
-        Area leftArea = new Area(totalArea);
-        leftArea.intersect(new Area(new Rectangle2D.Double(0, selectedSurfaceBounds.getY(), 
-                selectedSurfaceBounds.getX(), selectedSurfaceBounds.getHeight())));
-        Rectangle2D leftRect = leftArea.getBounds2D();
-        
-        if (leftRect.getX() + leftRect.getWidth() > 0)
-        {
-            surroundingBounds[0] = leftRect.getX() + leftRect.getWidth();
-        }
-        
-        // UP
-        Area upArea = new Area(totalArea);
-        upArea.intersect(new Area(new Rectangle2D.Double(selectedSurfaceBounds.getX(), 0, 
-                selectedSurfaceBounds.getWidth(), selectedSurfaceBounds.getY())));
-        Rectangle2D upRect = upArea.getBounds2D();
-        
-        if (upRect.getY() + upRect.getHeight() > 0)
-        {
-            surroundingBounds[1] = upRect.getY() + upRect.getHeight();
-        }
-        
-        // RIGHT
-        Area rightArea = new Area(totalArea);
-        rightArea.intersect(new Area(new Rectangle2D.Double(
-                selectedSurfaceBounds.getX() + selectedSurfaceBounds.getWidth(), selectedSurfaceBounds.getY(), 
-                Integer.MAX_VALUE, selectedSurfaceBounds.getHeight())));
-        Rectangle2D rightRect = rightArea.getBounds2D();
-        
-        if (!rightArea.isEmpty())
-        {
-            surroundingBounds[2] = rightRect.getX();
-        }
-        
-        // DOWN
-        Area downArea = new Area(totalArea);
-        downArea.intersect(new Area(new Rectangle2D.Double(
-                selectedSurfaceBounds.getX(), selectedSurfaceBounds.getY() + selectedSurfaceBounds.getHeight(), 
-                selectedSurfaceBounds.getWidth(), Integer.MAX_VALUE)));
-        Rectangle2D downRect = downArea.getBounds2D();
-        
-        if (!downArea.isEmpty())
-        {
-            surroundingBounds[3] = downRect.getY();
-        }
-        return surroundingBounds;
-    }
-    
-    public String[] getTileAtPoint(Point2D.Double point)
-    {
-        String tileName = "";
-        Double tileWidth = 0.0;
-        Double tileHeight = 0.0;
-        Double tileXPos = 0.0;
-        Double tileYPos = 0.0;
-        
-        String[] tileInfos = new String[5];
-        
+    /**
+     * Retourne la largeur et la hauteur d'une tuile.
+     * @param point : le point qui se situe à l'intérieur de la tuile.
+     * @return la largeur et la hauteur d'une tuile.
+     */
+    public Point2D.Double getTileAtPoint(Point2D.Double point)
+    {        
         Surface surface = getSurfaceAtPoint(point);
-        
         if (surface != null && !surface.isHole())
         {
-            Covering covering = surface.getCovering();
-            for (Area tile : covering.getTiles())
+            for (Area tile : surface.getCovering().getTiles())
             {
                 if (tile.contains(point))
                 {
                     Rectangle2D tileBounds = tile.getBounds2D();
-                    TileType tileType = covering.getTileType();
-                    
-                    tileName = tileType.getName();
-                    tileWidth = tileBounds.getWidth();
-                    tileHeight = tileBounds.getHeight();
-                    tileXPos = tileBounds.getX();
-                    tileYPos = tileBounds.getY();
-                    break;
+                    return new Point2D.Double(tileBounds.getWidth(), tileBounds.getHeight());
                 }
             }
         }
-        
-        tileInfos[0] = tileName;
-        tileInfos[1] = tileWidth.toString();
-        tileInfos[2] = tileHeight.toString();
-        tileInfos[3] = tileXPos.toString();
-        tileInfos[4] = tileYPos.toString();
-        
-        return tileInfos;
+        return new Point2D.Double(0, 0);
     }
             
     
@@ -414,6 +290,16 @@ public class Project
     }
     
     /**
+     * Retourne l'index d'un type de tuile.
+     * @param tileType : le type de tuile.
+     * @return l'index du type de tuile dans la liste des types de tuiles du projet.
+     */
+    public int getTileTypeIndex(TileType tileType)
+    {
+        return tileTypes.indexOf(tileType);
+    }
+    
+    /**
      * Trouve le point le plus à droite et en-bas de toutes les surfaces.
      * @return le point le plus à droite et en-bas de toutes les surfaces. 
      */
@@ -447,6 +333,7 @@ public class Project
                     ObjectOutputStream out = new ObjectOutputStream(fileOut))
             {
                 out.writeObject(surfaces);
+                out.writeObject(tileTypes);
             }
         }
         catch(IOException i) { i.printStackTrace(System.out); }
@@ -464,6 +351,7 @@ public class Project
                     ObjectInputStream in = new ObjectInputStream(fileIn))
             {
                 surfaces = (ArrayList<Surface>) in.readObject();
+                tileTypes = (ArrayList<TileType>) in.readObject();
             }
         }
         catch (IOException | ClassNotFoundException i) { i.printStackTrace(System.out); }
