@@ -2447,7 +2447,11 @@ public class MainWindow extends JFrame
 
     private void menuFichierQuitterActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuFichierQuitterActionPerformed
     {//GEN-HEADEREND:event_menuFichierQuitterActionPerformed
-        System.exit(0);
+        if (JOptionPane.showConfirmDialog(null, "Voulez-vous quitter?", "Quitter",
+                JOptionPane.YES_NO_OPTION) == 0)
+        {
+            System.exit(0);
+        }
     }//GEN-LAST:event_menuFichierQuitterActionPerformed
 
     private void menuAideProposActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuAideProposActionPerformed
@@ -4175,7 +4179,7 @@ public class MainWindow extends JFrame
 
     private void menuCustomZoomActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuCustomZoomActionPerformed
     {//GEN-HEADEREND:event_menuCustomZoomActionPerformed
-                double newZoom = 1;
+        double newZoom = 1;
         JFrame frameCustomZoom = new JFrame();
         String newZoomStr = JOptionPane.showInputDialog(frameCustomZoom, "Entrez le % de zoom désiré, un entier "
                                                         + "ou nombre décimal", "Zoom personnalisé", JOptionPane.OK_CANCEL_OPTION);
@@ -4194,6 +4198,10 @@ public class MainWindow extends JFrame
             {
                 return;
             }
+        }
+        else
+        {
+            return;
         }
 
         if (newZoom * 100 > 5)

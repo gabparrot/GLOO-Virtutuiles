@@ -90,7 +90,7 @@ public class CanvasDrawer
     private void drawGrid(Graphics2D g2d)
     {
         g2d.setColor(Color.DARK_GRAY);
-        if (parent.getZoom() > 0.10)
+        if (parent.getGridDistanceZoomed() > 5)
         {
             double gridDistance = parent.getGridDistanceZoomed();
 
@@ -166,24 +166,19 @@ public class CanvasDrawer
                 }
                 else
                 {
-                    if (surface instanceof CombinedSurface)
-                    {
-                        g2d.setColor(surface.getCovering().getTileType().getColor());
-                        g2d.fill(copy);
-                        
-                        Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
-                        uncoveredArea.transform(transform);
-                        g2d.setColor(surface.getColor());
-                        g2d.fill(uncoveredArea);
-                        g2d.setPaint(holeTexture);
-                        g2d.fill(uncoveredArea);
-                    }
-                    else
-                    {
-                        g2d.setColor(surface.getCovering().getTileType().getColor());
-                        g2d.fill(copy);
-                    }
+                    g2d.setColor(surface.getCovering().getTileType().getColor());
+                    g2d.fill(copy);
                 }
+                if (surface instanceof CombinedSurface)
+                {
+                    Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
+                    uncoveredArea.transform(transform);
+                    g2d.setColor(surface.getColor());
+                    g2d.fill(uncoveredArea);
+                    g2d.setPaint(holeTexture);
+                    g2d.fill(uncoveredArea);
+                }
+                
             }
             
             // Dessine le contour de la surface.
