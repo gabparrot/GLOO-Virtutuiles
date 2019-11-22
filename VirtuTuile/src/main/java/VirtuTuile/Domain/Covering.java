@@ -7,6 +7,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
 import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import static java.lang.Math.abs;
@@ -58,6 +60,33 @@ public class Covering implements Serializable, Cloneable
     { 
         return super.clone(); 
     } 
+    
+    public ArrayList<Area> divideTile(Area tile)
+    {
+        PathIterator iter = tile.getPathIterator(null);
+        ArrayList<Area> areas = new ArrayList<>();
+        Path2D.Double poly = new Path2D.Double();
+        while(!iter.isDone())
+        {
+            double point[] = new double[2];
+            int type = iter.currentSegment(point); 
+            switch (type)
+            {
+                case PathIterator.SEG_MOVETO:
+                    poly.moveTo(point[0], point[1]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    areas.add(new Area(poly));
+                    poly.reset(); 
+                    break;
+                default:
+                    poly.lineTo(point[0],point[1]);
+                    break;
+            }
+            iter.next();
+        }
+        return areas;
+    }
     
     /**
      * Cette fonction est appelée chaque fois que le Covering doit être modifié.
@@ -133,7 +162,22 @@ public class Covering implements Serializable, Cloneable
             tile.intersect(innerArea);
             if (!tile.isEmpty())
             {
-                tiles.add(tile);
+                if (tile.isSingular())
+                {
+                    tiles.add(tile);
+                }
+                else
+                {
+                    ArrayList<Area> subTiles = divideTile(tile);
+                    for (Area subTile : subTiles)
+                    {
+                        subTile.intersect(innerArea);
+                        if (!subTile.isEmpty())
+                        {
+                            tiles.add(subTile);
+                        }
+                    }
+                }
             }
             
             if (currentPoint.x + tileWidth + jointWidth < bounds.getMaxX())
