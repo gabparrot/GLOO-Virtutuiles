@@ -90,25 +90,28 @@ public class CanvasDrawer
     private void drawGrid(Graphics2D g2d)
     {
         g2d.setColor(Color.DARK_GRAY);
-        double gridDistance = parent.getGridDistanceZoomed();
-        
-        double verticalOffset = parent.getVerticalOffset() % gridDistance;
-        double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
-
-        int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
-        int nbRows = (int) (parent.getHeight() / gridDistance + 2);
-
-        for (int column = 0; column < nbColumns; column++)
+        if (parent.getZoom() > 0.10)
         {
-            g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
-                         (int) Math.round(column * gridDistance - horizontalOffset),
-                         parent.getHeight());
-        }
-        
-        for (int row = 0; row < nbRows; row++)
-        {
-            g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
-                    parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
+            double gridDistance = parent.getGridDistanceZoomed();
+
+            double verticalOffset = parent.getVerticalOffset() % gridDistance;
+            double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
+
+            int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
+            int nbRows = (int) (parent.getHeight() / gridDistance + 2);
+
+            for (int column = 0; column < nbColumns; column++)
+            {
+                g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
+                             (int) Math.round(column * gridDistance - horizontalOffset),
+                             parent.getHeight());
+            }
+
+            for (int row = 0; row < nbRows; row++)
+            {
+                g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
+                        parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
+            }
         }
     }
     
@@ -144,7 +147,7 @@ public class CanvasDrawer
             }
             
             // Dessine le uncoveredArea d'une surface combinée.
-            else if (surface instanceof CombinedSurface)
+            else if (surface instanceof CombinedSurface && !hasTiles)
             {
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
                 uncoveredArea.transform(transform);
@@ -157,7 +160,30 @@ public class CanvasDrawer
             // Dessine les tuiles.
             if (hasTiles)
             {
-                drawTiles(g2d, surface, transform);
+                if (parent.getZoom() > 0.1)
+                {
+                    drawTiles(g2d, surface, transform);
+                }
+                else
+                {
+                    if (surface instanceof CombinedSurface)
+                    {
+                        g2d.setColor(surface.getCovering().getTileType().getColor());
+                        g2d.fill(copy);
+                        
+                        Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
+                        uncoveredArea.transform(transform);
+                        g2d.setColor(surface.getColor());
+                        g2d.fill(uncoveredArea);
+                        g2d.setPaint(holeTexture);
+                        g2d.fill(uncoveredArea);
+                    }
+                    else
+                    {
+                        g2d.setColor(surface.getCovering().getTileType().getColor());
+                        g2d.fill(copy);
+                    }
+                }
             }
             
             // Dessine le contour de la surface.

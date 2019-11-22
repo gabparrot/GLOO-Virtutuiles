@@ -107,7 +107,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
      * de superposition, l'opération est annulée.
      * @param x la nouvelle coordonnée X, en mm
      * @param project le projet possédant cette surface
-     * @return 
+     * @return booléen représentant si l'opération s'est effectuée (true) ou annulée (false)
      */
     @Override
     public boolean setX(double x, Project project)

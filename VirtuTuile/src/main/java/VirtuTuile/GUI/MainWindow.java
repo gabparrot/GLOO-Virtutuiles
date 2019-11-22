@@ -592,6 +592,8 @@ public class MainWindow extends JFrame
         menuEditionRepeter = new javax.swing.JMenuItem();
         menuAffichage = new javax.swing.JMenu();
         menuGridDistance = new javax.swing.JMenuItem();
+        menuCustomZoom = new javax.swing.JMenuItem();
+        menuResetZoom = new javax.swing.JMenuItem();
         menuAide = new javax.swing.JMenu();
         menuAidePropos = new javax.swing.JMenuItem();
 
@@ -1360,9 +1362,9 @@ public class MainWindow extends JFrame
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(canvasPanelLayout.createSequentialGroup()
-                .addContainerGap(212, Short.MAX_VALUE)
+                .addContainerGap(201, Short.MAX_VALUE)
                 .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(212, Short.MAX_VALUE))
+                .addContainerGap(200, Short.MAX_VALUE))
         );
 
         xPixelCoordsLabel.setText("X: 0 pixels");
@@ -1370,6 +1372,7 @@ public class MainWindow extends JFrame
         xMeasureCoordsLabel.setText("X: 0.000 mètres");
 
         zoomLabel.setText("100");
+        zoomLabel.setIconTextGap(7);
 
         percentLabel.setText("%");
 
@@ -2271,6 +2274,26 @@ public class MainWindow extends JFrame
         });
         menuAffichage.add(menuGridDistance);
 
+        menuCustomZoom.setText("Zoom personnalisé");
+        menuCustomZoom.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuCustomZoomActionPerformed(evt);
+            }
+        });
+        menuAffichage.add(menuCustomZoom);
+
+        menuResetZoom.setText("Réinitialiser le zoom");
+        menuResetZoom.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                menuResetZoomActionPerformed(evt);
+            }
+        });
+        menuAffichage.add(menuResetZoom);
+
         topMenuBar.add(menuAffichage);
 
         menuAide.setText("Aide");
@@ -2373,7 +2396,7 @@ public class MainWindow extends JFrame
         {
             zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         }
-        else
+        else if(newZoom * 100 > 0.001)
         {
             if (String.valueOf(newZoom * 100).length() > 6)
             {
@@ -2383,6 +2406,10 @@ public class MainWindow extends JFrame
             {
                 zoomLabel.setText(String.valueOf(newZoom * 100)); 
             }
+        }
+        else
+        {
+            zoomLabel.setText("(" + String.format("%6.3e", newZoom * 100) + ")");
         }
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomOutButtonActionPerformed
@@ -2399,7 +2426,7 @@ public class MainWindow extends JFrame
         {
             zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         }
-        else
+        else if(newZoom * 100 > 0.001)
         {
             if (String.valueOf(newZoom * 100).length() > 6)
             {
@@ -2409,6 +2436,10 @@ public class MainWindow extends JFrame
             {
                 zoomLabel.setText(String.valueOf(newZoom * 100)); 
             }
+        }
+        else
+        {
+            zoomLabel.setText("(" + String.format("%6.3e", newZoom * 100) + ")");
         }
         
         canvasPanel.repaint();
@@ -2452,9 +2483,9 @@ public class MainWindow extends JFrame
                 horizontalScrollBar.getMaximum(), verticalScrollBar.getMaximum());
         if (newZoom * 100 > 5)
         {
-                    zoomLabel.setText(String.valueOf(Math.round(newZoom * 100)));
+            zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
         }
-        else
+        else if(newZoom * 100 > 0.001)
         {
             if (String.valueOf(newZoom * 100).length() > 6)
             {
@@ -2465,6 +2496,11 @@ public class MainWindow extends JFrame
                 zoomLabel.setText(String.valueOf(newZoom * 100)); 
             }
         }
+        else
+        {
+            zoomLabel.setText("(" + String.format("%6.3e", newZoom * 100) + ")");
+        }
+          
 
         canvasPanel.repaint();
         horizontalScrollBar.setValue(canvasPanel.getHorizontalOffset());
@@ -4127,8 +4163,57 @@ public class MainWindow extends JFrame
 
     private void createTileWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileWidthFieldActionPerformed
     {//GEN-HEADEREND:event_createTileWidthFieldActionPerformed
-        // TODO add your handling code here:
+
     }//GEN-LAST:event_createTileWidthFieldActionPerformed
+
+    private void menuResetZoomActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuResetZoomActionPerformed
+    {//GEN-HEADEREND:event_menuResetZoomActionPerformed
+        double newZoom = canvasPanel.setZoom(1);
+        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        canvasPanel.repaint();
+    }//GEN-LAST:event_menuResetZoomActionPerformed
+
+    private void menuCustomZoomActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuCustomZoomActionPerformed
+    {//GEN-HEADEREND:event_menuCustomZoomActionPerformed
+                double newZoom = 1;
+        JFrame frameCustomZoom = new JFrame();
+        String newZoomStr = JOptionPane.showInputDialog(frameCustomZoom, "Entrez le % de zoom désiré, un entier "
+                                                        + "ou nombre décimal", "Zoom personnalisé", JOptionPane.OK_CANCEL_OPTION);
+        if (newZoomStr != null && !newZoomStr.isBlank())
+        {
+            try
+            {
+                Double newZoomDbl = Utilities.parseDoubleLocale(newZoomStr);
+                if (newZoomDbl.isNaN() || newZoomDbl.isInfinite() || newZoomDbl < 0)
+                {
+                    throw new ParseException("Nombre invalide", 0);
+                }
+                newZoom = canvasPanel.setZoom(newZoomDbl/100);
+            }
+            catch(java.text.ParseException e)
+            {
+                return;
+            }
+        }
+
+        if (newZoom * 100 > 5)
+        {
+            zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        }
+        else
+        {
+            if (String.valueOf(newZoom * 100).length() > 6)
+            {
+                zoomLabel.setText(String.valueOf(newZoom * 100).substring(0, 5));   
+            }
+            else
+            {
+                zoomLabel.setText(String.valueOf(newZoom * 100)); 
+            }
+        }
+        
+        canvasPanel.repaint();
+    }//GEN-LAST:event_menuCustomZoomActionPerformed
     
     private void moveRelatively(Point2D.Double point) 
     {
@@ -4370,12 +4455,14 @@ public class MainWindow extends JFrame
     private javax.swing.JMenu menuAide;
     private javax.swing.JMenuItem menuAidePropos;
     private javax.swing.JMenu menuBar;
+    private javax.swing.JMenuItem menuCustomZoom;
     private javax.swing.JMenu menuEdition;
     private javax.swing.JMenuItem menuEditionAnnuler;
     private javax.swing.JMenuItem menuEditionRepeter;
     private javax.swing.JMenu menuFichier;
     private javax.swing.JMenuItem menuFichierQuitter;
     private javax.swing.JMenuItem menuGridDistance;
+    private javax.swing.JMenuItem menuResetZoom;
     private javax.swing.JToggleButton mergeToggle;
     private javax.swing.JToggleButton metricButton;
     private javax.swing.JMenuItem newProjectButton;

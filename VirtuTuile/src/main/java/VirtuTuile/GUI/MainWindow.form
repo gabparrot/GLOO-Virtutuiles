@@ -518,6 +518,22 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuGridDistanceActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="menuCustomZoom">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Zoom personnalis&#xe9;"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuCustomZoomActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="menuResetZoom">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="R&#xe9;initialiser le zoom"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="menuResetZoomActionPerformed"/>
+              </Events>
+            </MenuItem>
           </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="menuAide">
@@ -1008,9 +1024,9 @@
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace pref="212" max="32767" attributes="0"/>
+                          <EmptySpace pref="201" max="32767" attributes="0"/>
                           <Component id="createTileWindow" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="212" max="32767" attributes="0"/>
+                          <EmptySpace pref="200" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1218,6 +1234,7 @@
             <Component class="javax.swing.JLabel" name="zoomLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="100"/>
+                <Property name="iconTextGap" type="int" value="7"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="percentLabel">

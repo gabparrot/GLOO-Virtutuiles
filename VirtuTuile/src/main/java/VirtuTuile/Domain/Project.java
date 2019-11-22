@@ -15,7 +15,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * @class définissant le projet en cours
+ * Classe définissant le projet en cours
  * @author gabparrot
  */
 public class Project

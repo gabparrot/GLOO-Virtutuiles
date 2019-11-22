@@ -9,8 +9,7 @@ import java.io.File;
 import javax.swing.undo.UndoManager;
 
 /**
- * @class definissant le controlleur de Larman, faisant le pont entre le GUI et le logiciel
- * @author 
+ * Classe definissant le controlleur de Larman, faisant le pont entre le GUI et le logiciel
  */
 public class Controller
 {

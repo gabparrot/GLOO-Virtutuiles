@@ -29,7 +29,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
      * @param s2: la deuxième surface fusionnée.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
-     * @param covering
+     * @param covering : le covering de la surface.
      */
     public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color, Covering covering)
     {

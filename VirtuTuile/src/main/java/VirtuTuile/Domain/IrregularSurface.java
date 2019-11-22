@@ -8,7 +8,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
 /**
- * @class Définissant une surface irrégulière définie par une série de points.
+ * Classe définissant une surface irrégulière définie par une série de points.
  * @author gabparrot
  */
 public class IrregularSurface extends Path2D.Double implements Surface

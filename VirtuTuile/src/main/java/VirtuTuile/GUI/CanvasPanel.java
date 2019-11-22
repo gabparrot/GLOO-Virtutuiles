@@ -113,17 +113,24 @@ public class CanvasPanel extends javax.swing.JPanel
     public double zoomInIncrement()
     {
         if (zoom < 10)
-        {
+        {   
             double newZoom = .01;
-            for (int i = ZOOM_LEVELS.length - 1; i > 0; i--)
+            if (zoom > 0.005)
             {
-                if (ZOOM_LEVELS[i] <= zoom)
+                for (int i = ZOOM_LEVELS.length - 1; i > 0; i--)
                 {
-                    newZoom = ZOOM_LEVELS[i + 1];
-                    break;
+                    if (ZOOM_LEVELS[i] <= zoom)
+                    {
+                        newZoom = ZOOM_LEVELS[i + 1];
+                        break;
+                    }
                 }
+                zoom = newZoom;
             }
-            zoom = newZoom;
+            else
+            {
+                zoom *= 4;
+            }
         }
         else
         {
@@ -151,6 +158,16 @@ public class CanvasPanel extends javax.swing.JPanel
             }
             zoom = newZoom;
         }
+        else
+        {
+            this.zoom /= 2 ;
+        }
+        return zoom;
+    }
+    
+    public double setZoom(double newZoom)
+    {
+        this.zoom = newZoom;
         return zoom;
     }
     
@@ -177,9 +194,9 @@ public class CanvasPanel extends javax.swing.JPanel
         else
         {
             if (increment > 0)
-                zoom = Math.max(0.005, .9 * zoom);
+                zoom = 0.9 * zoom;
             else
-                zoom = Math.max(0.005, 1.5 * zoom);
+                zoom = 1.5 * zoom;
         }
         
         double zoomFactor = zoom / oldZoom;

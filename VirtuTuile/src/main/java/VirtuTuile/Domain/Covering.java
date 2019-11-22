@@ -13,7 +13,7 @@ import static java.lang.Math.abs;
 import java.util.ArrayList;
 
 /**
- * @class definissant les tuiles et leur dispositions sur une surface
+ * Classe definissant les tuiles et leur dispositions sur une surface
  * @author gabparrot
  */
 public class Covering implements Serializable, Cloneable
@@ -51,7 +51,7 @@ public class Covering implements Serializable, Cloneable
     /**
      * Contructeur clone de Covering
      * @return Objet Covering clôné
-     * @throws CloneNotSupportedException 
+     * @throws CloneNotSupportedException explique que clone impossible 
      */
     @Override
     public Object clone() throws CloneNotSupportedException 
@@ -401,10 +401,10 @@ public class Covering implements Serializable, Cloneable
     }
     
     /**
-     * 
-     * @param in 
-     * @throws IOException
-     * @throws ClassNotFoundException 
+     * Permet le chargement d'un covering à partir d'une sauvegarde
+     * @param in L'inputStream à lire
+     * @throws IOException Erreur de lecture du fichier
+     * @throws ClassNotFoundException Classe inconnue trouvée dans le fichier
      */
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
     {
