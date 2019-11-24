@@ -11,7 +11,6 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import static java.lang.Math.abs;
 import java.util.ArrayList;
 
 /**
@@ -61,31 +60,36 @@ public class Covering implements Serializable, Cloneable
         return super.clone(); 
     } 
     
+    /**
+     * Prend une tuile qui n'est pas singulière et la divise en des tuiles singulières.
+     * @param tile : une tuile non-singulière.
+     * @return une liste de tuiles singulières.
+     */
     public ArrayList<Area> divideTile(Area tile)
     {
-        PathIterator iter = tile.getPathIterator(null);
-        ArrayList<Area> areas = new ArrayList<>();
-        Path2D.Double poly = new Path2D.Double();
-        while(!iter.isDone())
+        PathIterator iterator = tile.getPathIterator(null);
+        ArrayList<Area> subTiles = new ArrayList<>();
+        Path2D.Double path = new Path2D.Double();
+        while(!iterator.isDone())
         {
-            double point[] = new double[2];
-            int type = iter.currentSegment(point); 
-            switch (type)
+            double[] vertex = new double[2];
+            int segmentType = iterator.currentSegment(vertex); 
+            switch (segmentType)
             {
                 case PathIterator.SEG_MOVETO:
-                    poly.moveTo(point[0], point[1]);
+                    path.moveTo(vertex[0], vertex[1]);
                     break;
                 case PathIterator.SEG_CLOSE:
-                    areas.add(new Area(poly));
-                    poly.reset(); 
+                    subTiles.add(new Area(path));
+                    path.reset(); 
                     break;
                 default:
-                    poly.lineTo(point[0],point[1]);
+                    path.lineTo(vertex[0], vertex[1]);
                     break;
             }
-            iter.next();
+            iterator.next();
         }
-        return areas;
+        return subTiles;
     }
     
     /**
@@ -232,7 +236,7 @@ public class Covering implements Serializable, Cloneable
         double x = offsetY;
         if (x < 0)
         {
-            x = abs(x) + 2 * tileHeight + 2* jointWidth;
+            x = Math.abs(x) + 2 * tileHeight + 2* jointWidth;
         }
         return x % ((tileHeight + jointWidth) * 2) < tileHeight + jointWidth;
     }
@@ -398,8 +402,8 @@ public class Covering implements Serializable, Cloneable
     }
     
     /**
-     * Retourne le type de tuile du couvrement.
-     * @return le type de tuile du couvrement.
+     * Retourne le segmentType de tuile du couvrement.
+     * @return le segmentType de tuile du couvrement.
      */
     public TileType getTileType()
     {
@@ -407,8 +411,8 @@ public class Covering implements Serializable, Cloneable
     }
     
     /**
-     * Change le type de tuile du couvrement.
-     * @param tileType : le nouveau type de tuile.
+     * Change le segmentType de tuile du couvrement.
+     * @param tileType : le nouveau segmentType de tuile.
      */
     public void setTileType(TileType tileType)
     {

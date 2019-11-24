@@ -2398,14 +2398,7 @@ public class MainWindow extends JFrame
         }
         else if(newZoom * 100 > 0.001)
         {
-            if (String.valueOf(newZoom * 100).length() > 6)
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100).substring(0, 5));   
-            }
-            else
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100)); 
-            }
+            zoomLabel.setText(String.format("%.03f", newZoom * 100));
         }
         else
         {
@@ -2428,14 +2421,7 @@ public class MainWindow extends JFrame
         }
         else if(newZoom * 100 > 0.001)
         {
-            if (String.valueOf(newZoom * 100).length() > 6)
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100).substring(0, 5));   
-            }
-            else
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100)); 
-            }
+            zoomLabel.setText(String.format("%.03f", newZoom * 100));
         }
         else
         {
@@ -4210,16 +4196,8 @@ public class MainWindow extends JFrame
         }
         else
         {
-            if (String.valueOf(newZoom * 100).length() > 6)
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100).substring(0, 5));   
-            }
-            else
-            {
-                zoomLabel.setText(String.valueOf(newZoom * 100)); 
-            }
+            zoomLabel.setText(String.format("%.03f", newZoom * 100));
         }
-        
         canvasPanel.repaint();
     }//GEN-LAST:event_menuCustomZoomActionPerformed
     

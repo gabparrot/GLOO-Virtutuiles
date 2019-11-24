@@ -2,7 +2,10 @@ package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
 import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Domain.Controller;
+import VirtuTuile.Domain.Covering;
 import VirtuTuile.Domain.RectangularSurface;
+import VirtuTuile.GUI.CanvasPanel;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -22,19 +25,25 @@ import javax.swing.ImageIcon;
  */
 public class CanvasDrawer
 {
-    private final VirtuTuile.GUI.CanvasPanel parent;
-    private VirtuTuile.Domain.Controller controller;
-    private final TexturePaint holeTexture;
+    private final CanvasPanel parent;
+    private Controller controller;
+    private TexturePaint holeTexture;
     
     /**
      * Constructeur.
      * @param parent : le canevas qui contient l'afficheur.
      */
-    public CanvasDrawer(VirtuTuile.GUI.CanvasPanel parent)
+    public CanvasDrawer(CanvasPanel parent)
     {
         this.parent = parent;
-        
-        // Mise en place de la texture pour les trous:
+        holeTextureSetup();
+    }
+    
+    /**
+     * Mise en place de la texture pour les trous.
+     */
+    private void holeTextureSetup()
+    {
         BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         ImageIcon icon = new ImageIcon(getClass().getResource("/dots.png"));
         Graphics g = bi.createGraphics();
@@ -47,7 +56,7 @@ public class CanvasDrawer
      * Setter pour le controller.
      * @param controller : le controller de l'application.
      */
-    public void setController(VirtuTuile.Domain.Controller controller)
+    public void setController(Controller controller)
     {
         this.controller = controller;
     }
@@ -78,7 +87,7 @@ public class CanvasDrawer
     private AffineTransform getTransform()
     {
         AffineTransform transform = new AffineTransform();
-        transform.translate(-parent.getHorizontalOffset(), - parent.getVerticalOffset());
+        transform.translate(-parent.getHorizontalOffset(), -parent.getVerticalOffset());
         transform.scale(1. / Utilities.MM_PER_PIXEL, 1. / Utilities.MM_PER_PIXEL);
         transform.scale(parent.getZoom(), parent.getZoom());
         return transform;
@@ -129,7 +138,7 @@ public class CanvasDrawer
             copy.transform(transform);
             
             // Dessine l'interieur de la surface.
-            if (surface.isHole() || !hasTiles)
+            if (surface.isHole() || !hasTiles || parent.getGridDistanceZoomed() <= 5)
             {
                 g2d.setColor(surface.getColor());
             }
@@ -147,7 +156,7 @@ public class CanvasDrawer
             }
             
             // Dessine le uncoveredArea d'une surface combinée.
-            else if (surface instanceof CombinedSurface && !hasTiles)
+            else if (surface instanceof CombinedSurface)
             {
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
                 uncoveredArea.transform(transform);
@@ -158,27 +167,9 @@ public class CanvasDrawer
             }
             
             // Dessine les tuiles.
-            if (hasTiles)
+            if (hasTiles && parent.getGridDistanceZoomed() > 5)
             {
-                if (parent.getZoom() > 0.1)
-                {
-                    drawTiles(g2d, surface, transform);
-                }
-                else
-                {
-                    g2d.setColor(surface.getCovering().getTileType().getColor());
-                    g2d.fill(copy);
-                }
-                if (surface instanceof CombinedSurface)
-                {
-                    Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
-                    uncoveredArea.transform(transform);
-                    g2d.setColor(surface.getColor());
-                    g2d.fill(uncoveredArea);
-                    g2d.setPaint(holeTexture);
-                    g2d.fill(uncoveredArea);
-                }
-                
+                drawTiles(g2d, surface, transform);
             }
             
             // Dessine le contour de la surface.
@@ -206,9 +197,10 @@ public class CanvasDrawer
     
     private void drawTiles(Graphics2D g2d, Surface surface, AffineTransform transform)
     {
-        ArrayList<Area> tiles = surface.getCovering().getTiles();
-        Color tileColor = surface.getCovering().getTileType().getColor();
-        Color jointColor = surface.getCovering().getJointColor();
+        Covering covering = surface.getCovering();
+        ArrayList<Area> tiles = covering.getTiles();
+        Color tileColor = covering.getTileType().getColor();
+        Color jointColor = covering.getJointColor();
 
         for (Area tile : tiles)
         {
