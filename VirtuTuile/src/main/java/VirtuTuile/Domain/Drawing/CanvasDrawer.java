@@ -138,11 +138,15 @@ public class CanvasDrawer
             copy.transform(transform);
             
             // Dessine l'interieur de la surface.
-            if (surface.isHole() || !hasTiles || parent.getGridDistanceZoomed() <= 5)
+            if (surface.isHole() || !hasTiles)
             {
                 g2d.setColor(surface.getColor());
             }
-            else
+            else if (parent.getGridDistanceZoomed() <= 5)
+            {
+                g2d.setColor(surface.getCovering().getTileType().getColor());
+            }
+            else 
             {
                 g2d.setColor(surface.getCovering().getJointColor());
             }
