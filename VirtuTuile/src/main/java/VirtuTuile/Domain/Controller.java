@@ -376,17 +376,17 @@ public class Controller
         covering.setJointWidth(Math.max(0, width));
         undoManager.addEdit(new UndoSetJointWidth(oldWidth, width, covering));
     }
-    
+
     /**
      * Change la rotation du recouvrement de la surface sélectionnée
-     * @param newRotation Un entier représentant les degrés de la rotation souhaitée
+     * @param pNewRotation Un entier représentant les degrés de la rotation souhaitée
      */
-    public void setRotation(int newRotation)
+    public void setRotation(int pNewRotation)
     {
         Covering covering = project.getSelectedSurface().getCovering();
         int oldRotation = covering.getRotation();
-        covering.setRotation(newRotation);
-        undoManager.addEdit(new UndoSetRotation(oldRotation, newRotation, covering));
+        covering.setRotation(pNewRotation);
+        undoManager.addEdit(new UndoSetRotation(oldRotation, pNewRotation, covering));
     }
 
     /**
@@ -650,6 +650,16 @@ public class Controller
     {
         return project.getSelectedSurface().getCovering().getRowOffset();
     }
+    
+    /**
+     * Retourne la rotation du recouvrement de la surface sélectionnée
+     * @return La rotation, en degrés
+     */
+    public int getRotation()
+    {
+        return project.getSelectedSurface().getCovering().getRotation();
+    }
+    
     
     /**
      * Retourne les informations d'une tuile.
