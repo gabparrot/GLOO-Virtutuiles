@@ -88,6 +88,7 @@ public class MainWindow extends JFrame
         createTileWindow.setVisible(false);
         tileInfoWidth.setText("Largeur : ");
         tileInfoHeight.setText("Hauteur : ");
+        debugToggleButton.setVisible(false);
     }
 
     /**
