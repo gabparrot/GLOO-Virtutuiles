@@ -376,6 +376,18 @@ public class Controller
         covering.setJointWidth(Math.max(0, width));
         undoManager.addEdit(new UndoSetJointWidth(oldWidth, width, covering));
     }
+    
+    /**
+     * Change la rotation du recouvrement de la surface sélectionnée
+     * @param newRotation Un entier représentant les degrés de la rotation souhaitée
+     */
+    public void setRotation(int newRotation)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        int oldRotation = covering.getRotation();
+        covering.setRotation(newRotation);
+        undoManager.addEdit(new UndoSetRotation(oldRotation, newRotation, covering));
+    }
 
     /**
      * Change le décalage horizontal de la surface sélectionnée.

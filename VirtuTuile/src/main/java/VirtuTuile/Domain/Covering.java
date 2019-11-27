@@ -25,6 +25,7 @@ public class Covering implements Serializable, Cloneable
     private Color jointColor = Color.GRAY;
     private double jointWidth = 5;
     private boolean isNinetyDegree = false;
+    private int rotation = 0;
     private Pattern pattern = Pattern.CHECKERED;
     private transient ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = null;
@@ -122,11 +123,112 @@ public class Covering implements Serializable, Cloneable
         }
     }
     
+    /*
+    Plan rotation
+    - Retirer  option de 90', isNinetyDegree des attributs
+    - Ajouter attributs rotation
+    - Si rotation est entre 0' et 45', ou entre 315' et 360', largeur est hauteur same, sinon on flip la valeur
+    - Appliquer un AffineTransform de rotation
+    - Dans le GUI, le mouseover doit aussi considérer les degrés pour switch width/height
+    - ajouter getter setter de rotation
+    */
+    
+    private void coverSurfaceA()
+    {
+        // Position et orientation
+        double tileWidth =  rotation == 90 ? tileType.getHeight() : tileType.getWidth();
+        double tileHeight = rotation == 90 ? tileType.getWidth() : tileType.getHeight();
+        double offsetXMod = this.offsetX % (tileWidth + jointWidth);
+        double offsetYMod = this.offsetY % (tileHeight + jointWidth);
+        double rowOffsetMod = tileWidth - rowOffset / 100. * tileWidth -  jointWidth * rowOffset / 100;
+        
+        // Définition de l'aire à couvrir
+        Area fullArea = new Area(parent);
+        Rectangle2D bounds = fullArea.getBounds2D();
+        if (parent instanceof CombinedSurface)
+        {
+            fullArea.subtract(((CombinedSurface) parent).getUncoveredArea());
+        }
+        Area innerArea = getInnerArea(fullArea);
+        
+        Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth + offsetXMod,
+                                                         bounds.getY() - tileHeight + offsetYMod);
+        
+        // Détermine si on devrait commencer par une rangée paire ou impaire
+        int rowCount = 0;
+        boolean shouldInvertRow = shouldInvertRow(tileHeight);
+        if (shouldInvertRow)
+        {
+            rowCount++;
+            currentPoint.x -= rowOffsetMod + jointWidth;
+        }
+        
+        // Créer les tuiles et les ajouter à la liste
+        while (currentPoint.getX() < bounds.getMaxX() && currentPoint.y < bounds.getMaxY())
+        {
+            Point2D.Double tileTopLeft = currentPoint;
+            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.x + tileWidth,
+                                                             currentPoint.y + tileHeight);
+            
+            Area tile = new Area(Utilities.cornersToRectangle(tileTopLeft, tileBotRight));
+            // INSERER ROTATION ICI
+            
+            if (rotation != 0 && rotation != 90)
+            {
+                rotateTile(tile);
+            }
+            
+            // FIN ROTATION
+            
+            tile.intersect(innerArea);
+            if (!tile.isEmpty())
+            {
+                if (tile.isSingular())
+                {
+                    tiles.add(tile);
+                }
+                else
+                {
+                    ArrayList<Area> subTiles = divideTile(tile);
+                    for (Area subTile : subTiles)
+                    {
+                        subTile.intersect(innerArea);
+                        if (!subTile.isEmpty())
+                        {
+                            tiles.add(subTile);
+                        }
+                    }
+                }
+            }
+            
+            if (currentPoint.x + tileWidth + jointWidth < bounds.getMaxX())
+            {
+                currentPoint.x += tileWidth + jointWidth;
+            }
+            else // Si on dépasse en X, on descend et on repart a gauche.
+            {
+                if (rowCount % 2 == 1)
+                {
+                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod, 
+                                             currentPoint.y + tileHeight + jointWidth);
+                }
+                // Décaler les rangées paires (celle du haut est #1)
+                else
+                {
+                    currentPoint.setLocation(bounds.getX() - tileWidth + offsetXMod - rowOffsetMod - jointWidth,
+                                             currentPoint.y + tileHeight + jointWidth);                    
+                }
+                rowCount++;
+            }
+        }
+    }
+    
+    
     /**
      * Permet de placer les tuiles sur le covering, en rangées traditionnelles. Les tuiles suivent le modèle du type de 
      * tuile du covering, l'orientation, le décalage. Ce motif prend en compte le décalage de rangée
      */
-    private void coverSurfaceA()
+    private void coverSurfaceAOLD()
     {
         // Position et orientation
         double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
@@ -276,6 +378,20 @@ public class Covering implements Serializable, Cloneable
         innerArea.intersect(botRightCopy);
         
         return innerArea;
+    }
+    
+    /**
+     * Performe une rotation sur une Area reçue, selon la valeur de l'attribut this.rotation
+     * @param tileToRotate La tuile (Area) à pivoter
+     * @return La tuile pivotée
+     */
+    private Area rotateTile(Area tileToRotate)
+    {
+        AffineTransform rotateAT = new AffineTransform();
+        rotateAT.rotate(java.lang.Math.toRadians(rotation));
+        tileToRotate.transform(rotateAT);
+        
+        return tileToRotate;
     }
     
     /**
@@ -446,6 +562,39 @@ public class Covering implements Serializable, Cloneable
     public int getRowOffset()
     {
         return rowOffset;
+    }
+    
+    /**
+     * Retourne la rotation des tuiles, un entier représentant les degrés
+     * @return rotation des tuiles en degrés
+     */
+    public int getRotation()
+    {
+        return rotation;
+    }
+    
+    /**
+     * Change la rotation pour le degré entier demandé. Si entre 180 et 360, ramene entre 0 et 180 car même effet
+     * @param degreesOfRotation Rotation à appliquer en degrés
+     */
+    public void setRotation(int degreesOfRotation)
+    {
+        if (degreesOfRotation > 360) 
+        {
+            degreesOfRotation = degreesOfRotation % 360;
+        }
+        if (degreesOfRotation < 0) // si négative, rotation positive direction inverse
+        {
+            degreesOfRotation = 360 + degreesOfRotation;
+        }
+        if (degreesOfRotation == 360 || degreesOfRotation == 180)
+        {
+            this.rotation = 0;
+        }
+        else if (degreesOfRotation > 180)
+        {
+            this.rotation = degreesOfRotation - 180;
+        }
     }
     
     /**

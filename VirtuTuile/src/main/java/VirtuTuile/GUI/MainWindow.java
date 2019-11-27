@@ -154,9 +154,10 @@ public class MainWindow extends JFrame
         jointWidthField.setText("");
         jointWidthField.setEnabled(false);
         
-        orientationGroup.clearSelection();
-        ninetyOrientationRadioButton.setEnabled(false);
-        zeroOrientationRadioButton.setEnabled(false);
+        //orientationGroup.clearSelection();
+        //TEST
+        //ninetyOrientationRadioButton.setEnabled(false);
+        //zeroOrientationRadioButton.setEnabled(false);
         
         offsetXField.setText("");
         offsetXField.setEnabled(false);
@@ -249,11 +250,13 @@ public class MainWindow extends JFrame
         rowOffsetField.setText(String.format("" + controller.getRowOffset()));
         if (controller.isNinetyDegree())
         {
-            ninetyOrientationRadioButton.setSelected(true);
+            //TEST
+            //ninetyOrientationRadioButton.setSelected(true);
         }
         else
         {
-            zeroOrientationRadioButton.setSelected(true);
+            //TEST
+            //zeroOrientationRadioButton.setSelected(true);
         }
         String patternString;
         switch (controller.getPattern())
@@ -333,8 +336,9 @@ public class MainWindow extends JFrame
         jointWidthField.setEnabled(true);
         jointColorButton.setEnabled(true);
         patternComboBox.setEnabled(true);
-        zeroOrientationRadioButton.setEnabled(true);
-        ninetyOrientationRadioButton.setEnabled(true);
+        //TEST
+        //zeroOrientationRadioButton.setEnabled(true);
+        //ninetyOrientationRadioButton.setEnabled(true);
         offsetXField.setEnabled(true);
         offsetYField.setEnabled(true);
         if (controller.getPattern() == Pattern.CHECKERED)
@@ -553,13 +557,10 @@ public class MainWindow extends JFrame
         jLabel15 = new javax.swing.JLabel();
         jLabel16 = new javax.swing.JLabel();
         jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
         jointColorButton = new javax.swing.JButton();
         jointWidthField = new javax.swing.JTextField();
         largeurJointText = new javax.swing.JLabel();
         patternComboBox = new javax.swing.JComboBox<>();
-        zeroOrientationRadioButton = new javax.swing.JRadioButton();
-        ninetyOrientationRadioButton = new javax.swing.JRadioButton();
         offsetXField = new javax.swing.JTextField();
         offsetXText = new javax.swing.JLabel();
         offsetYText = new javax.swing.JLabel();
@@ -581,6 +582,9 @@ public class MainWindow extends JFrame
         rowOffsetField = new javax.swing.JTextField();
         rowOffsetLabel = new javax.swing.JLabel();
         createTileButton = new javax.swing.JButton();
+        rotationLabel = new javax.swing.JLabel();
+        rotationSlider = new javax.swing.JSlider();
+        rotationValueLabel = new javax.swing.JLabel();
         topMenuBar = new javax.swing.JMenuBar();
         menuFichier = new javax.swing.JMenu();
         newProjectButton = new javax.swing.JMenuItem();
@@ -1458,7 +1462,7 @@ public class MainWindow extends JFrame
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(yPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 147, Short.MAX_VALUE)
                                 .addComponent(tileState, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1730,8 +1734,6 @@ public class MainWindow extends JFrame
 
         jLabel17.setText("Motif :");
 
-        jLabel18.setText("Orientation :");
-
         jointColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         jointColorButton.setBorderPainted(false);
         jointColorButton.setEnabled(false);
@@ -1768,30 +1770,6 @@ public class MainWindow extends JFrame
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
                 patternComboBoxActionPerformed(evt);
-            }
-        });
-
-        zeroOrientationRadioButton.setBackground(new java.awt.Color(0, 153, 153));
-        orientationGroup.add(zeroOrientationRadioButton);
-        zeroOrientationRadioButton.setText("0°");
-        zeroOrientationRadioButton.setEnabled(false);
-        zeroOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                zeroOrientationRadioButtonActionPerformed(evt);
-            }
-        });
-
-        ninetyOrientationRadioButton.setBackground(new java.awt.Color(0, 153, 153));
-        orientationGroup.add(ninetyOrientationRadioButton);
-        ninetyOrientationRadioButton.setText("90°");
-        ninetyOrientationRadioButton.setEnabled(false);
-        ninetyOrientationRadioButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                ninetyOrientationRadioButtonActionPerformed(evt);
             }
         });
 
@@ -1901,7 +1879,6 @@ public class MainWindow extends JFrame
         rowOffsetLabel.setText("%");
 
         createTileButton.setText("Créer nouveau");
-        createTileButton.setEnabled(false);
         createTileButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1909,6 +1886,28 @@ public class MainWindow extends JFrame
                 createTileButtonActionPerformed(evt);
             }
         });
+
+        rotationLabel.setText("Rotation:");
+
+        rotationSlider.setBackground(new java.awt.Color(0, 153, 153));
+        rotationSlider.setFont(new java.awt.Font("Dialog", 1, 10)); // NOI18N
+        rotationSlider.setMajorTickSpacing(45);
+        rotationSlider.setMaximum(360);
+        rotationSlider.setMinorTickSpacing(1);
+        rotationSlider.setPaintLabels(true);
+        rotationSlider.setSnapToTicks(true);
+        rotationSlider.setToolTipText("Rotation des tuiles en degrés");
+        rotationSlider.setValue(0);
+        rotationSlider.setDoubleBuffered(true);
+        rotationSlider.addChangeListener(new javax.swing.event.ChangeListener()
+        {
+            public void stateChanged(javax.swing.event.ChangeEvent evt)
+            {
+                rotationSliderStateChanged(evt);
+            }
+        });
+
+        rotationValueLabel.setText("0°");
 
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
@@ -1918,130 +1917,134 @@ public class MainWindow extends JFrame
             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(5, 5, 5)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(offsetYText)
-                            .addComponent(rowOffsetLabel)
-                            .addComponent(offsetXText)))
-                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                            .addComponent(jLabel15)
-                            .addGap(5, 5, 5)
-                            .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(largeurJointText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGroup(rightPanelLayout.createSequentialGroup()
-                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel16)
-                                .addComponent(jLabel17)
-                                .addComponent(jLabel18))
-                            .addGap(5, 5, 5)
-                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addGroup(rightPanelLayout.createSequentialGroup()
-                                    .addGap(1, 1, 1)
-                                    .addComponent(zeroOrientationRadioButton)
-                                    .addGap(18, 18, 18)
-                                    .addComponent(ninetyOrientationRadioButton))
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(patternComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(jointColorButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))))
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel12)
-                    .addComponent(jLabel13)
-                    .addComponent(tileNameLabel))
-                .addGap(13, 13, 13)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(tileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(hauteurTuileText))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addComponent(tileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(largeurTuileText))
-                    .addComponent(tileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGap(10, 10, 10)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel14)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel5)
-                            .addComponent(jLabel11)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel6))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(coverRadioButton)
-                                .addGap(30, 30, 30)
-                                .addComponent(doNotCoverRadioButton))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                                    .addComponent(surfaceWidthField)
-                                    .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, rightPanelLayout.createSequentialGroup()
+                                .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(yFtLabel)
-                                            .addComponent(xFtLabel))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(xInLabel))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(yInLabel))))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(widthFtLabel)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(widthInLabel))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(heightFtLabel)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(heightInLabel))))
-                            .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(5, 5, 5)
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(offsetYText)
+                                    .addComponent(rowOffsetLabel)
+                                    .addComponent(offsetXText)))
+                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addGroup(rightPanelLayout.createSequentialGroup()
+                                    .addComponent(jLabel15)
+                                    .addGap(5, 5, 5)
+                                    .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(largeurJointText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGroup(rightPanelLayout.createSequentialGroup()
+                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addComponent(jLabel16)
+                                        .addComponent(jLabel17)
+                                        .addComponent(rotationLabel))
+                                    .addGap(5, 5, 5)
+                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(patternComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                            .addComponent(jointColorButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(rotationValueLabel))
+                                    .addGap(14, 14, 14)))))
                     .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addContainerGap()
                         .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                            .addComponent(jLabel12)
+                            .addComponent(jLabel13)
+                            .addComponent(tileNameLabel))
+                        .addGap(13, 13, 13)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(tileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(hauteurTuileText))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addComponent(tileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(largeurTuileText))
+                            .addComponent(tileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel19)
+                            .addComponent(jLabel26))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(createTileButton)))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(rightPanelLayout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel14)
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel5)
+                                    .addComponent(jLabel11)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel6))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addComponent(coverRadioButton)
+                                        .addGap(30, 30, 30)
+                                        .addComponent(doNotCoverRadioButton))
+                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                            .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
+                                            .addComponent(surfaceWidthField)
+                                            .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(yFtLabel)
+                                                    .addComponent(xFtLabel))
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                                        .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addComponent(xInLabel))
+                                                    .addGroup(rightPanelLayout.createSequentialGroup()
+                                                        .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                        .addComponent(yInLabel))))
+                                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addComponent(widthFtLabel)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(widthInLabel))
+                                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                                .addComponent(heightFtLabel)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                                .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(heightInLabel))))
+                                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addGroup(rightPanelLayout.createSequentialGroup()
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel9, javax.swing.GroupLayout.Alignment.LEADING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(rightPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel19)
-                    .addComponent(jLabel26))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(createTileButton)))
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 189, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(rotationSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                .addGap(59, 59, 59))
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -2106,12 +2109,13 @@ public class MainWindow extends JFrame
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel17)
                     .addComponent(patternComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(1, 1, 1)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(zeroOrientationRadioButton)
-                    .addComponent(ninetyOrientationRadioButton)
-                    .addComponent(jLabel18))
-                .addGap(11, 11, 11)
+                    .addComponent(rotationLabel)
+                    .addComponent(rotationValueLabel))
+                .addGap(6, 6, 6)
+                .addComponent(rotationSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel9)
                     .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -2870,8 +2874,11 @@ public class MainWindow extends JFrame
         double deltaY = currentCursorPosition.y - originPoint.y;
         double tileTypeWidth = controller.getTileWidth();
         double tileTypeHeight = controller.getTileHeight();
-        double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
-        double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
+        //TEST
+        //double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
+        //double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
+        double tileWidth = tileTypeWidth;
+        double tileHeight = tileTypeHeight;
         double jointWidth = controller.getJointWidth();
         double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
         double offsetY = (controller.getOffsetY() + deltaY) % (2 * (tileHeight + jointWidth));
@@ -3225,12 +3232,6 @@ public class MainWindow extends JFrame
         surfaceHeightFieldActionPerformed(evt);
 
     }//GEN-LAST:event_surfaceHeightFieldInchesActionPerformed
-
-    private void zeroOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_zeroOrientationRadioButtonActionPerformed
-    {//GEN-HEADEREND:event_zeroOrientationRadioButtonActionPerformed
-        controller.setIsNinetyDegree(false);
-        canvasPanel.repaint();
-    }//GEN-LAST:event_zeroOrientationRadioButtonActionPerformed
 
     private void tileWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileWidthFieldActionPerformed
     {//GEN-HEADEREND:event_tileWidthFieldActionPerformed
@@ -3894,12 +3895,6 @@ public class MainWindow extends JFrame
         }
     }//GEN-LAST:event_patternComboBoxActionPerformed
 
-    private void ninetyOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ninetyOrientationRadioButtonActionPerformed
-    {//GEN-HEADEREND:event_ninetyOrientationRadioButtonActionPerformed
-        controller.setIsNinetyDegree(true);
-        canvasPanel.repaint();
-    }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
-
     private void tileColorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileColorButtonActionPerformed
     {//GEN-HEADEREND:event_tileColorButtonActionPerformed
         Color c = JColorChooser.showDialog(null, "Sélectionnez une couleur",
@@ -4201,6 +4196,12 @@ public class MainWindow extends JFrame
         }
         canvasPanel.repaint();
     }//GEN-LAST:event_menuCustomZoomActionPerformed
+
+    private void rotationSliderStateChanged(javax.swing.event.ChangeEvent evt)//GEN-FIRST:event_rotationSliderStateChanged
+    {//GEN-HEADEREND:event_rotationSliderStateChanged
+        controller.setRotation(rotationSlider.getValue());
+        rotationValueLabel.setText(rotationSlider.getValue() + "°");
+    }//GEN-LAST:event_rotationSliderStateChanged
     
     private void moveRelatively(Point2D.Double point) 
     {
@@ -4401,7 +4402,6 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
@@ -4453,7 +4453,6 @@ public class MainWindow extends JFrame
     private javax.swing.JToggleButton mergeToggle;
     private javax.swing.JToggleButton metricButton;
     private javax.swing.JMenuItem newProjectButton;
-    private javax.swing.JRadioButton ninetyOrientationRadioButton;
     private javax.swing.JTextField offsetXField;
     private javax.swing.JLabel offsetXText;
     private javax.swing.JTextField offsetYField;
@@ -4473,6 +4472,9 @@ public class MainWindow extends JFrame
     private javax.swing.JButton redoButton;
     private javax.swing.JMenuItem relativeMoveMenuItem;
     private javax.swing.JPanel rightPanel;
+    private javax.swing.JLabel rotationLabel;
+    private javax.swing.JSlider rotationSlider;
+    private javax.swing.JLabel rotationValueLabel;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;
     private javax.swing.JMenuItem saveProjectButton;
@@ -4521,7 +4523,6 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel yInLabel;
     private javax.swing.JLabel yMeasureCoordsLabel;
     private javax.swing.JLabel yPixelCoordsLabel;
-    private javax.swing.JRadioButton zeroOrientationRadioButton;
     private javax.swing.JButton zoomInButton;
     private javax.swing.JLabel zoomLabel;
     private javax.swing.JButton zoomOutButton;
