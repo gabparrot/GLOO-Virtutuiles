@@ -106,197 +106,28 @@ public class Covering implements Serializable, Cloneable
         switch (pattern)
         {
             case CHECKERED:
-                coverSurfaceA();
+                coverCheckered();
                 break;
                 
             case LSHAPE:
-                coverSurfaceB();
+                coverLShape();
                 break;
             
             case TWOBYTWO:
-                coverSurfaceC();
+                coverTwoByTwo();
                 break;
             
             case DIAGONAL:
-                coverSurfaceD();
+                coverDiagonal();
                 break;     
         }
     }
     
-    /*
-    Plan rotation
-    - Retirer  option de 90', isNinetyDegree des attributs
-    - Ajouter attributs rotation
-    - Si rotation est entre 0' et 45', ou entre 315' et 360', largeur est hauteur same, sinon on flip la valeur
-    - Appliquer un AffineTransform de rotation
-    - Dans le GUI, le mouseover doit aussi considérer les degrés pour switch width/height
-    - ajouter getter setter de rotation
-    */
-    
-    private void coverSurfaceA()
-    {
-        // Position
-        double tileWidth =  rotation >= 90 ? tileType.getHeight() : tileType.getWidth();
-        double tileHeight = rotation >= 90 ? tileType.getWidth() : tileType.getHeight();
-        double offsetXMod = this.offsetX % (tileWidth + jointWidth);
-        double offsetYMod = this.offsetY % (tileHeight + jointWidth);
-        double rowOffsetMod = tileWidth - rowOffset / 100. * tileWidth -  jointWidth * rowOffset / 100;
-        
-        // Définition de l'aire à couvrir
-        Area fullArea = new Area(parent);
-        Rectangle2D bounds = fullArea.getBounds2D();
-        
-
-
-        if (parent instanceof CombinedSurface)
-        {
-            fullArea.subtract(((CombinedSurface) parent).getUncoveredArea());
-        }
-        Area innerArea = getInnerArea(fullArea);
-        
-        // Ancrages de rotation
-        double anchorX = innerArea.getBounds2D().getCenterX();
-        double anchorY = innerArea.getBounds2D().getCenterY();
-        
-        
-        // Détermine si on devrait commencer par une rangée paire ou impaire
-        int rowCount = 0;
-        boolean shouldInvertRow = shouldInvertRow(tileHeight);
-        
-        
-        boolean allCovered = false;
-        //int newTileCounter = 0;
-        int columnCounter = 0;
-        int rowCounter = 0;
-        
-        // Translation causée par la rotation
-        double rotationXOffset = 0;
-        double rotationYOffset = 0;
-        if (rotation != 90 && rotation != 90)
-        {
-        rotationXOffset = Math.abs(Math.sin(Math.toRadians(rotation)) * tileHeight);
-        rotationYOffset = Math.abs(Math.cos(Math.toRadians(rotation)) * tileHeight);
-        }
-        
-        // Nombre de rangées/colonnes maximum qui rentre dans une surface
-        int normalColumns = (int) Math.ceil(bounds.getWidth() / (tileWidth + jointWidth));
-        double normalRows = (int) Math.ceil(bounds.getHeight() / (tileHeight + jointWidth));
-        
-        // Ajuster le maximum de rangées/colonnes en fonction de la translation de rotation s'il y a lieu
-        int maxColumns = normalColumns;
-        if (rotation > 0 && rotation != 90)
-        {
-        maxColumns = (int) Math.ceil(bounds.getWidth() / rotationXOffset);
-        }
-        
-        int maxRows = (int) normalRows;
-        if (rotation > 0 && rotation != 90)
-        {
-        maxRows = (int) Math.ceil(bounds.getHeight() / rotationYOffset);
-        }
-        
-        // Nombre de rangées/colonnes additionnelles maximum causées par la rotation
-        int bonusColumns = (int) Math.ceil(maxColumns - normalColumns);
-        int bonusRows = (int) Math.ceil(maxRows - normalColumns);
-        
-        // Départ du recouvrement
-        Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - tileWidth  - tileWidth * (bonusColumns + jointWidth) + offsetXMod,
-                                                         bounds.getY() - tileHeight - tileHeight * (bonusRows + jointWidth) + offsetYMod);
-        
-        // Double l'écart pour l'appliquer avant et après les rangées/colonnes normales
-        maxColumns = maxColumns + bonusColumns; 
-        maxRows = maxRows + bonusRows;
-        
-        //TEST
-        System.out.println("rotationYOffset: " + rotationYOffset + ", rotationXOffset: " + rotationXOffset + ", maxColumns: " + maxColumns + ", maxRows: " + maxRows);
-        
-        if (shouldInvertRow)
-        {
-            rowCount++;
-            currentPoint.x -= rowOffsetMod + jointWidth;
-        }
-        // Créer les tuiles et les ajouter à la liste
-        while (!(allCovered))
-        {
-            Point2D.Double tileTopLeft = currentPoint;
-            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.x + tileWidth,
-                                                             currentPoint.y + tileHeight);
-            
-            Area tile = new Area(Utilities.cornersToRectangle(tileTopLeft, tileBotRight));
-            
-
-            if (rotation != 0 && rotation != 90)
-            {
-                rotateTile(tile, anchorX, anchorY);
-            }
-            
-            tile.intersect(innerArea);
-            if (!tile.isEmpty())
-            {
-                if (tile.isSingular())
-                {
-                    tiles.add(tile);
-                    //newTileCounter += 1;
-                }
-                else
-                {
-                    ArrayList<Area> subTiles = divideTile(tile);
-                    for (Area subTile : subTiles)
-                    {
-                        subTile.intersect(innerArea);
-                        if (!subTile.isEmpty())
-                        {
-                            tiles.add(subTile);
-                            //newTileCounter += 1;
-                        }
-                    }
-                }
-            }
-            
-            if (columnCounter <= maxColumns)
-            {
-                currentPoint.x += tileWidth + jointWidth;
-                columnCounter++;
-            }
-            else // Si on dépasse en X, on descend et on repart a gauche.
-            {
-                columnCounter = 0;
-                rowCounter ++;
-                
-                /*
-                bounds.getX() - tileWidth + tileWidth * (bonusColumns + jointWidth) + offsetXMod,
-                                                         bounds.getY() - tileHeight - tileHeight * (bonusRows + jointWidth) + offsetYMod
-                */
-                if (rowCount % 2 == 1)
-                {
-                    currentPoint.setLocation(bounds.getX() - tileWidth  - tileWidth * (bonusColumns + jointWidth) + offsetXMod, 
-                                             currentPoint.y + tileHeight + jointWidth);
-                }
-                else  // Décaler les rangées paires (celle du haut est #1)
-                {
-                    currentPoint.setLocation(bounds.getX() - tileWidth  - tileWidth * (bonusColumns + jointWidth) - rowOffsetMod - jointWidth,
-                                             currentPoint.y + tileHeight + jointWidth);
-
-                }
-                
-                if (rowCounter > maxRows)
-                {
-                    System.out.println("rowCounter: " + rowCounter);
-                    allCovered = true;
-                }
-                
-                //newTileCounter = 0;
-                rowCount++;
-            }
-        }
-    }
-    
-    
     /**
      * Permet de placer les tuiles sur le covering, en rangées traditionnelles. Les tuiles suivent le modèle du type de 
      * tuile du covering, l'orientation, le décalage. Ce motif prend en compte le décalage de rangée
-     *//*
-    private void coverSurfaceAOLD()
+     */
+    private void coverCheckered()
     {
         // Position et orientation
         double tileWidth = isNinetyDegree ? tileType.getHeight() : tileType.getWidth();
@@ -374,13 +205,13 @@ public class Covering implements Serializable, Cloneable
                 rowCount++;
             }
         }
-    }*/
+    }
     
     /**
      * Crée et place les tuiles sur le covering, selon un motif croisé en L, pour chaque tuile. Le décalage de rangée
      * est ignoré. Le tuiles suivent le modèle du tileType, l'orientation et le décalage en attribut dans le covering
      */
-    private void coverSurfaceB()
+    private void coverLShape()
     {
     }
     
@@ -389,16 +220,156 @@ public class Covering implements Serializable, Cloneable
      * est considéré, par bloc de 2x2 tuiles. Le tuiles suivent le modèle du tileType, l'orientation et le décalage 
      * en attribut dans le covering
      */
-    private void coverSurfaceC()
+    private void coverTwoByTwo()
     {
     }
     
     /**
      * Crée et place les tuiles sur le covering, selon des rangées en diagonale. Le décalage de rangée
      * est considéré. Le tuiles suivent le modèle du tileType, l'orientation et le décalage en attribut dans le covering
-     */
-    private void coverSurfaceD()
+     * Plan rotation
+     * - Retirer  option de 90', isNinetyDegree des attributs
+     * - Ajouter attributs rotation
+     * - Si rotation est entre 0' et 45', ou entre 315' et 360', largeur est hauteur same, sinon on flip la valeur
+     * - Appliquer un AffineTransform de rotation
+     * - Dans le GUI, le mouseover doit aussi considérer les degrés pour switch width/height
+     * - ajouter getter setter de rotation
+    */
+    private void coverDiagonal()
     {
+        // Position
+        double tileWidth = tileType.getWidth();
+        double tileHeight = tileType.getHeight();
+        double offsetXMod = this.offsetX % (tileWidth + jointWidth);
+        double offsetYMod = this.offsetY % (tileHeight + jointWidth);
+        double rowOffsetMod = tileWidth - rowOffset / 100. * tileWidth -  jointWidth * rowOffset / 100;
+        
+        // Définition de l'aire à couvrir
+        Area fullArea = new Area(parent);
+        Rectangle2D bounds = fullArea.getBounds2D();
+        
+        if (parent instanceof CombinedSurface)
+        {
+            fullArea.subtract(((CombinedSurface) parent).getUncoveredArea());
+        }
+        Area innerArea = getInnerArea(fullArea);
+        
+        // Ancrages de rotation
+        double anchorX = innerArea.getBounds2D().getCenterX();
+        double anchorY = innerArea.getBounds2D().getCenterY();
+        //TEST
+        
+        
+        
+        // Détermine si on devrait commencer par une rangée paire ou impaire
+        int rowCount = 0;
+        boolean shouldInvertRow = shouldInvertRow(tileHeight);
+        
+        //int newTileCounter = 0;
+        int columnCounter = 0;
+        int rowCounter = 0;
+        double surfaceHypothenuse = Math.sqrt(bounds.getHeight() * bounds.getHeight() + bounds.getWidth() * bounds.getWidth());
+        //int maxColsOrRows = (int) Math.ceil(tileHeight < tileWidth ? surfaceHypothenuse / tileHeight : surfaceHypothenuse / tileWidth) * 3;
+        
+        int maxColsOrRows = 0;
+        
+
+        maxColsOrRows = (int) Math.ceil(tileHeight < tileWidth ? surfaceHypothenuse / tileHeight : surfaceHypothenuse / tileWidth) * 10;
+        
+        
+        // Départ du recouvrement
+        Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - (Math.floor(maxColsOrRows/5) * (tileWidth + jointWidth)) + offsetXMod,
+                                                         bounds.getY() - (Math.floor(maxColsOrRows/5) * (tileWidth + jointWidth)) + offsetYMod);
+        
+        if (shouldInvertRow)
+        {
+            rowCount++;
+            currentPoint.x -= rowOffsetMod + jointWidth;
+        }
+        
+        // Créer les tuiles et les ajouter à la liste
+        boolean allCovered = false;
+        boolean translationCalculated = false;
+        double[] translation = new double[2];
+        translation[0] = 0;
+        translation[0] = 0;
+        while (!(allCovered))
+        {
+            Point2D.Double tileTopLeft = currentPoint;
+            Point2D.Double tileBotRight = new Point2D.Double(currentPoint.x + tileWidth,
+                                                             currentPoint.y + tileHeight);
+            
+            Area tile = new Area(Utilities.cornersToRectangle(tileTopLeft, tileBotRight));
+            
+
+            if (rotation != 0)
+            {   
+                if (!translationCalculated)
+                {
+                    translation = calculateTranslation(tile, anchorX, anchorY, bounds);
+                }
+                rotateTile(tile, anchorX, anchorY, translation);
+            }
+            
+            tile.intersect(innerArea);
+            if (!tile.isEmpty())
+            {
+                if (tile.isSingular())
+                {
+                    tiles.add(tile);
+                    //newTileCounter += 1;
+                }
+                else
+                {
+                    ArrayList<Area> subTiles = divideTile(tile);
+                    for (Area subTile : subTiles)
+                    {
+                        subTile.intersect(innerArea);
+                        if (!subTile.isEmpty())
+                        {
+                            tiles.add(subTile);
+                            //newTileCounter += 1;
+                        }
+                    }
+                }
+            }
+           
+            if (columnCounter < maxColsOrRows)
+            {
+                currentPoint.x += tileWidth + jointWidth;
+                columnCounter += 1;
+            }
+            else // Si on dépasse en X, on descend et on repart a gauche.
+            {
+                columnCounter = 0;
+                rowCounter ++;
+                
+                /*
+                bounds.getX() - tileWidth + tileWidth * (bonusColumns + jointWidth) + offsetXMod,
+                                                         bounds.getY() - tileHeight - tileHeight * (bonusRows + jointWidth) + offsetYMod
+                */
+                if (rowCount % 2 == 1)
+                {
+                    currentPoint.setLocation(bounds.getX() - (tileWidth + jointWidth) * 3 + offsetXMod, 
+                                             currentPoint.y + tileHeight + jointWidth);
+                }
+                else  // Décaler les rangées paires (celle du haut est #1)
+                {
+                    currentPoint.setLocation(bounds.getX() - (tileWidth + jointWidth) * 3 + offsetXMod - rowOffsetMod - jointWidth,
+                                             currentPoint.y + tileHeight + jointWidth);
+
+                }
+                
+                if (rowCount > maxColsOrRows)
+                {
+                    System.out.println("rowCounter: " + rowCounter);
+                    allCovered = true;
+                }
+                
+                //newTileCounter = 0;
+                rowCount++;
+            }
+        }
     }
     
     private boolean shouldInvertRow(double tileHeight)
@@ -455,13 +426,62 @@ public class Covering implements Serializable, Cloneable
      * @param anchorY La position verticale du point pivot
      * @return La tuile pivotée
      */
-    private Area rotateTile(Area tileToRotate, double anchorX, double anchorY)
+    private Area rotateTile(Area tileToRotate, double anchorX, double anchorY, double[] translation)
     {
+        //TEST
+        //System.out.println("anchorX: " + anchorX + ", anchorY: " + anchorY);
+       // System.out.println("départ, X: " + tileToRotate.getBounds2D().getCenterX() + ", Y: " + tileToRotate.getBounds2D().getCenterY());
+        
+        // Turn
+        double startX = tileToRotate.getBounds2D().getCenterX();
+        double startY = tileToRotate.getBounds2D().getCenterY();
         AffineTransform rotateAT = new AffineTransform();
         rotateAT.rotate(java.lang.Math.toRadians(rotation), anchorX, anchorY);
+        
         tileToRotate.transform(rotateAT);
         
+        // Translate back to position
+        double endX = tileToRotate.getBounds2D().getCenterX();
+        double endY = tileToRotate.getBounds2D().getCenterY();
+        AffineTransform translateAT = new AffineTransform();
+        translateAT.translate(translation[0], translation[1]);
+        tileToRotate.transform(translateAT);
+        
+        //TEST
+       // System.out.println("Arrivée, X: " + tileToRotate.getBounds2D().getCenterX() + ", Y: " + tileToRotate.getBounds2D().getCenterY());
+        
         return tileToRotate;
+    }
+    
+    private double[] calculateTranslation(Area tileToRotate, double anchorX, double anchorY, Rectangle2D bounds)
+    {
+        double startX = tileToRotate.getBounds2D().getCenterX();
+        double startY = tileToRotate.getBounds2D().getCenterY();
+        Area tileCopy = new Area(tileToRotate);
+        AffineTransform rotateAT = new AffineTransform();
+        rotateAT.rotate(java.lang.Math.toRadians(rotation), anchorX, anchorY);
+        tileCopy.transform(rotateAT);
+        
+        double endX = tileToRotate.getBounds2D().getCenterX();
+        double endY = tileToRotate.getBounds2D().getCenterY();
+        double transX = 0;
+        double transY = 0;
+        
+        if (rotation < 90)
+        {
+            transX = -(endX - startX) - bounds.getWidth();
+            transY = -(endY - startY) - bounds.getHeight()/2;
+        }
+        else
+        {
+            transX = -(endX - startX) + bounds.getWidth()/2;
+            transY = -(endY - startY) - bounds.getHeight()/3;
+        }
+        double[] translation = new double[2];
+        translation[0] = transX;
+        translation[1] = transY;
+        
+        return translation;
     }
     
     /**
@@ -649,28 +669,7 @@ public class Covering implements Serializable, Cloneable
      */
     public void setRotation(int degreesOfRotation)
     {
-        //TEST
-        System.out.println("Setter de rotation reçoit en param: " + degreesOfRotation);
-        if (degreesOfRotation > 360) 
-        {
-            degreesOfRotation = degreesOfRotation % 360;
-        }
-        if (degreesOfRotation < 0) // si négative, rotation positive direction inverse
-        {
-            degreesOfRotation = 360 + degreesOfRotation;
-        }
-        if (degreesOfRotation == 360 || degreesOfRotation == 180)
-        {
-            this.rotation = 0;
-        }
-        else if (degreesOfRotation > 180)
-        {
-            this.rotation = degreesOfRotation - 180;
-        }
-        else
-        {
-            this.rotation = degreesOfRotation;
-        }
+        this.rotation = Math.abs(degreesOfRotation) % 180;
     }
     
     /**

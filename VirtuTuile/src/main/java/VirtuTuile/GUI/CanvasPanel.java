@@ -5,6 +5,9 @@ import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import VirtuTuile.Domain.Drawing.CanvasDrawer;
 import VirtuTuile.Infrastructure.Utilities;
+import java.awt.RenderingHints;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 
 /**
  * Le panneau dans lequel les surfaces sont dessinées.
@@ -31,9 +34,14 @@ public class CanvasPanel extends javax.swing.JPanel
     
     // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
     private Rectangle2D.Double temporaryRectangle = null;
+    private Path2D.Double temporaryPolygon = null;
+    private Line2D.Double temporaryLine = null;
     
     // Si la fenêtre est en mode debug.
     private boolean isDebug = false;
+    
+    private boolean isInspector = true;
+    private int inspectorLength = 20;
 
     /**
      * Retourne si la fenêtre est en mode debug ou pas.
@@ -50,6 +58,26 @@ public class CanvasPanel extends javax.swing.JPanel
     public void toggleIsDebug()
     {
         isDebug = !isDebug;
+    }
+    
+    public boolean isInspector()
+    {
+        return isInspector;
+    }
+    
+    public void toggleIsInspector()
+    {
+        isInspector = !isInspector;
+    }
+    
+    public int getInspectorLength()
+    {
+        return inspectorLength;
+    }
+    
+    public void setInspectorLength(int newDistance)
+    {
+        inspectorLength = newDistance;
     }
     
     /**
@@ -81,7 +109,7 @@ public class CanvasPanel extends javax.swing.JPanel
     
     /**
      * Setter pour le rectangle temporaire qui sert de user feedback lors de la création de surface.
-     * @param rectangle : le rectangle
+     * @param rectangle : le rectangle temporaire.
      */
     public void setTemporaryRectangle(Rectangle2D.Double rectangle)
     {
@@ -95,6 +123,34 @@ public class CanvasPanel extends javax.swing.JPanel
     public Rectangle2D.Double getTemporaryRectangle()
     {
         return temporaryRectangle;
+    }
+    
+    /**
+     * Setter pour le polygon temporaire qui sert de user feedback lors de la création de surface.
+     * @param polygon : le polygon temporaire.
+     */
+    public void setTemporaryPolygon(Path2D.Double polygon)
+    {
+        temporaryPolygon = polygon;
+    }   
+    
+    /**
+     * Getter pour le polygon temporaire qui sert de user feedback lors de la création de surface.
+     * @return le polygon temporaire.
+     */
+    public Path2D.Double getTemporaryPolygon()
+    {
+        return temporaryPolygon;
+    }
+    
+    public void setTemporaryLine(Line2D.Double line)
+    {
+        temporaryLine = line;
+    }
+    
+    public Line2D.Double getTemporaryLine()
+    {
+        return temporaryLine;
     }
     
     /**
@@ -269,6 +325,8 @@ public class CanvasPanel extends javax.swing.JPanel
         catch (Exception e) {}
             
         Graphics2D g2d = (Graphics2D) g.create();
+        
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         
         drawer.draw(g2d);
         

@@ -2,6 +2,7 @@ package VirtuTuile.Domain;
 
 import VirtuTuile.Domain.UndoableEdits.*;
 import java.awt.Color;
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -51,6 +52,11 @@ public class Controller
     public void selectSurface(Point2D.Double point)
     {
         project.selectSurface(point);
+    }
+    
+    public void selectLastSurfaceAdded()
+    {
+        project.selectLastSurfaceAdded();
     }
     
     /**
@@ -136,11 +142,20 @@ public class Controller
     
     /**
      * Crée une nouvelle surface irrégulière.
+     * [UNDOABLE]
+     * @param polygon la forme de la surface irrégulière.
+     * @return true si la création à réussie, false sinon.
      */
-    public void addIrregularSurface()
+    public boolean addIrregularSurface(Path2D.Double polygon)
     {
-        // TODO
-        throw new UnsupportedOperationException("Not supported yet.");
+        boolean status = project.addIrregularSurface(polygon);
+        if (status)
+        {
+            IrregularSurface surface = (IrregularSurface)
+                    (project.getSurfaces().get(project.getSurfaces().size() - 1));
+            undoManager.addEdit(new UndoAddIrregularSurface(project, surface));
+        }
+        return status;
     }
     
     /**
@@ -213,7 +228,11 @@ public class Controller
         Surface surface = project.getSelectedSurface();
         Color oldColor = surface.getColor();
         surface.setColor(color);
-        undoManager.addEdit(new UndoSetSurfaceColor(project, oldColor, color, surface));
+        Color newColor = surface.getColor();
+        if (!oldColor.equals(newColor))
+        {
+            undoManager.addEdit(new UndoSetSurfaceColor(project, oldColor, newColor, surface));
+        }
     }
 
     /**
@@ -226,7 +245,11 @@ public class Controller
         Surface surface = project.getSelectedSurface();
         boolean oldIsHole = surface.isHole();
         surface.setIsHole(isHole);
-        undoManager.addEdit(new UndoSetSurfaceIsHole(project, oldIsHole, isHole, surface));
+        boolean newIsHole = surface.isHole();
+        if (oldIsHole != newIsHole)
+        {
+            undoManager.addEdit(new UndoSetSurfaceIsHole(project, oldIsHole, newIsHole, surface));
+        }
     }
 
     /**
@@ -243,7 +266,10 @@ public class Controller
         if (status)
         {
             double newX = surface.getBounds2D().getX();
-            undoManager.addEdit(new UndoSetSurfaceX(project, oldX, newX, surface));
+            if (oldX != newX)
+            {
+                undoManager.addEdit(new UndoSetSurfaceX(project, oldX, newX, surface));
+            }
         }
         return status;
     }
@@ -262,7 +288,10 @@ public class Controller
         if (status)
         {
             double newY = surface.getBounds2D().getY();
-            undoManager.addEdit(new UndoSetSurfaceY(project, oldY, newY, surface));
+            if (oldY != newY)
+            {
+                undoManager.addEdit(new UndoSetSurfaceY(project, oldY, newY, surface));
+            }
         }
         return status;
     }
@@ -281,7 +310,10 @@ public class Controller
         if (status)
         {
             double newWidth = surface.getBounds2D().getWidth();
-            undoManager.addEdit(new UndoSetSurfaceWidth(project, oldWidth, newWidth, surface));
+            if (oldWidth != newWidth)
+            {
+                undoManager.addEdit(new UndoSetSurfaceWidth(project, oldWidth, newWidth, surface));
+            }
         }
         return status;
     }
@@ -300,7 +332,10 @@ public class Controller
         if (status)
         {
             double newHeight = surface.getBounds2D().getHeight();
-            undoManager.addEdit(new UndoSetSurfaceHeight(project, oldHeight, newHeight, surface));
+            if (oldHeight != newHeight)
+            {
+                undoManager.addEdit(new UndoSetSurfaceHeight(project, oldHeight, newHeight, surface));
+            }
         }
         return status;
     }
@@ -315,7 +350,11 @@ public class Controller
         Covering covering = project.getSelectedSurface().getCovering();
         Color oldColor =  covering.getJointColor();
         covering.setJointColor(c);
-        undoManager.addEdit(new UndoSetJointColor(oldColor, c, covering));
+        Color newColor = covering.getJointColor();
+        if (!oldColor.equals(newColor))
+        {
+            undoManager.addEdit(new UndoSetJointColor(oldColor, newColor, covering));
+        }
     }
 
     /**
@@ -374,19 +413,11 @@ public class Controller
         Covering covering = project.getSelectedSurface().getCovering();
         double oldWidth = covering.getJointWidth();
         covering.setJointWidth(Math.max(0, width));
-        undoManager.addEdit(new UndoSetJointWidth(oldWidth, width, covering));
-    }
-
-    /**
-     * Change la rotation du recouvrement de la surface sélectionnée
-     * @param pNewRotation Un entier représentant les degrés de la rotation souhaitée
-     */
-    public void setRotation(int pNewRotation)
-    {
-        Covering covering = project.getSelectedSurface().getCovering();
-        int oldRotation = covering.getRotation();
-        covering.setRotation(pNewRotation);
-        undoManager.addEdit(new UndoSetRotation(oldRotation, pNewRotation, covering));
+        double newWidth = covering.getJointWidth();
+        if (oldWidth != newWidth)
+        {
+            undoManager.addEdit(new UndoSetJointWidth(oldWidth, newWidth, covering));
+        }
     }
 
     /**
@@ -399,7 +430,11 @@ public class Controller
         Covering covering = project.getSelectedSurface().getCovering();
         double oldOffsetX = covering.getOffsetX();
         covering.setOffsetX(offset);
-        undoManager.addEdit(new UndoSetOffsetX(oldOffsetX, offset, covering));
+        double newOffsetX = covering.getOffsetX();
+        if (oldOffsetX != newOffsetX)
+        {
+            undoManager.addEdit(new UndoSetOffsetX(oldOffsetX, newOffsetX, covering));
+        }
     }
 
     /**
@@ -412,7 +447,11 @@ public class Controller
         Covering covering = project.getSelectedSurface().getCovering();
         double oldOffsetY = covering.getOffsetY();
         covering.setOffsetY(offset);
-        undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, offset, covering));   
+        double newOffsetY = covering.getOffsetY();
+        if (oldOffsetY != newOffsetY)
+        {
+            undoManager.addEdit(new UndoSetOffsetY(oldOffsetY, newOffsetY, covering));
+        }   
     }
 
     /**
@@ -428,8 +467,13 @@ public class Controller
         double oldOffsetY = covering.getOffsetY();
         covering.setOffsetX(offsetX);
         covering.setOffsetY(offsetY);
-        undoManager.addEdit(new UndoSetOffsetXY(oldOffsetX, offsetX,
+        double newOffsetX = covering.getOffsetX();
+        double newOffsetY = covering.getOffsetY();
+        if (oldOffsetX != newOffsetX || oldOffsetY != newOffsetY)
+        {
+            undoManager.addEdit(new UndoSetOffsetXY(oldOffsetX, offsetX,
                 oldOffsetY, offsetY, covering));
+        }
     }
 
     /**
@@ -442,57 +486,113 @@ public class Controller
         Covering covering = project.getSelectedSurface().getCovering();
         int oldRowOffset = covering.getRowOffset();
         covering.setRowOffset(rowOffset);
-        undoManager.addEdit(new UndoSetRowOffset(oldRowOffset, rowOffset, covering));
+        int newRowOffset = covering.getRowOffset();
+        if (oldRowOffset != newRowOffset)
+        {
+            undoManager.addEdit(new UndoSetRowOffset(oldRowOffset, newRowOffset, covering));
+        }
+    }
+    
+    /**
+     * Change la rotation du recouvrement de la surface sélectionnée
+     * [UNDOABLE]
+     * @param pNewRotation Un entier représentant les degrés de la rotation souhaitée
+     */
+    public void setRotation(int pNewRotation)
+    {
+        Covering covering = project.getSelectedSurface().getCovering();
+        int oldRotation = covering.getRotation();
+        covering.setRotation(pNewRotation);
+        int newRotation = covering.getRotation();
+        if (oldRotation != newRotation)
+        {
+            undoManager.addEdit(new UndoSetRotation(oldRotation, newRotation, covering));
+        }
     }
 
     /**
      * Change le nom de la tuile du recouvrement de la surface sélectionnée.
+     * [UNDOABLE]
      * @param name : le nouveau nom.
      */
     public void setTileName(String name)
     {
         TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        String oldName = tileType.getName();
         tileType.setName(name);
+        String newName = tileType.getName();
+        if (!oldName.equals(newName))
+        {
+            undoManager.addEdit(new UndoSetTileName(tileType, oldName, newName));
+        }
     }
 
     /**
      * Change la quantité par boîte de la tuile du recouvrement de la surface sélectionnée.
+     * [UNDOABLE]
      * @param nbPerBox : la nouvelle quantité.
      */
     public void setTileNbPerBox(int nbPerBox)
     {
         TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        int oldQty = tileType.getNbPerBox();
         tileType.setNbPerBox(nbPerBox);
+        int newQty = tileType.getNbPerBox();
+        if (oldQty != newQty)
+        {
+            undoManager.addEdit(new UndoSetTileNbPerBox(tileType, oldQty, newQty));
+        }
     }
 
     /**
      * Change la couleur de la tuile du recouvrement de la surface sélectionnée.
+     * [UNDOABLE]
      * @param color : la nouvelle couleur.
      */
     public void setTileColor(Color color)
     {
         TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        Color oldColor = tileType.getColor();
         tileType.setColor(color);
+        Color newColor = tileType.getColor();
+        if (!oldColor.equals(newColor))
+        {
+            undoManager.addEdit(new UndoSetTileColor(tileType, oldColor, newColor));
+        }
     }
 
     /**
      * Change la largeur de la tuile du recouvrement de la surface sélectionnée.
+     * [UNDOABLE]
      * @param width : la nouvelle largeur.
      */
     public void setTileWidth(double width)
     {
        TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+       double oldWidth = tileType.getWidth();
        tileType.setWidth(width);
+       double newWidth = tileType.getWidth();
+       if (oldWidth != newWidth)
+       {
+           undoManager.addEdit(new UndoSetTileWidth(tileType, oldWidth, newWidth, this));
+       }
     }
 
     /**
      * Change la hauteur de la tuile du recouvrement de la surface sélectionnée.
+     * [UNDOABLE]
      * @param height : la nouvelle hauteur.
      */
     public void setTileHeight(double height)
     {
         TileType tileType = project.getSelectedSurface().getCovering().getTileType();
+        double oldHeight = tileType.getHeight();
         tileType.setHeight(height);
+        double newHeight = tileType.getHeight();
+        if (oldHeight != newHeight)
+        {
+            undoManager.addEdit(new UndoSetTileHeight(tileType, oldHeight, newHeight, this));
+        }
     }
 
 //************************************************************************************************\\
@@ -532,6 +632,21 @@ public class Controller
     public Surface getSelectedSurface()
     {
         return project.getSelectedSurface();
+    }
+    
+    public void setSelectedVertex(Point2D.Double point)
+    {
+        project.setSelectedVertex(point);
+    }
+    
+    public boolean vertexIsSelected()
+    {
+        return project.vertexIsSelected();
+    }
+    
+    public void moveVertexToPoint(Point2D.Double point)
+    {
+        project.moveVertexToPoint(point);
     }
     
     /**
@@ -659,7 +774,6 @@ public class Controller
     {
         return project.getSelectedSurface().getCovering().getRotation();
     }
-    
     
     /**
      * Retourne les informations d'une tuile.
