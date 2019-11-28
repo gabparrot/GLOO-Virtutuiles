@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,7 +32,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
      * @param s2: la deuxième surface fusionnée.
      * @param isHole : la surface est-elle un trou?
      * @param color : la couleur de la surface.
-     * @param covering
+     * @param covering : le covering de la surface.
      */
     public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color, Covering covering)
     {
@@ -375,6 +378,47 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             uncoveredArea.transform(translationTransform);
             coverSurface();
+        }
+    }
+
+    @Override
+    public void moveVertexToPoint(Point2D.Double vertex, Point2D.Double point)
+    {
+        PathIterator iterator = getPathIterator(null);
+        Path2D.Double newPath = new Path2D.Double();
+        double[] v = new double[2];
+        while (!iterator.isDone())
+        {
+            int segmentType = iterator.currentSegment(v);
+            v[0] = Math.round(v[0]);
+            v[1] = Math.round(v[1]);
+            if (v[0] == vertex.x && v[1] == vertex.y)
+            {
+                v[0] = point.x;
+                v[1] = point.y;
+            }
+            switch (segmentType)
+            {
+                case PathIterator.SEG_MOVETO:
+                    newPath.moveTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    newPath.lineTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    break;
+                default:
+                    break;
+            }
+            iterator.next();
+        }
+        Area newArea = new Area(newPath);
+        Rectangle2D bounds = newArea.getBounds2D();
+        if (!newArea.isEmpty() && bounds.getWidth() > 100 && bounds.getHeight() > 100)
+        {
+            reset();
+            add(new Area(newPath));
+            uncoveredArea.intersect(this);
         }
     }
 }

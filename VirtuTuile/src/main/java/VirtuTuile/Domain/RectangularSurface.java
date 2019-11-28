@@ -3,6 +3,7 @@ package VirtuTuile.Domain;
 import java.awt.geom.Rectangle2D;
 import java.awt.Color;
 import java.awt.geom.Area;
+import java.awt.geom.Point2D;
 
 /**
  * Une surface rectangulaire.
@@ -107,7 +108,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
      * de superposition, l'opération est annulée.
      * @param x la nouvelle coordonnée X, en mm
      * @param project le projet possédant cette surface
-     * @return 
+     * @return booléen représentant si l'opération s'est effectuée (true) ou annulée (false)
      */
     @Override
     public boolean setX(double x, Project project)
@@ -352,5 +353,52 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
             surroundingBounds[3] = downRect.getY();
         }
         return surroundingBounds;
+    }
+
+    @Override
+    public void moveVertexToPoint(Point2D.Double vertex, Point2D.Double point)
+    {
+        double oldWidth = width;
+        double oldHeight = height;
+        if (vertex.x == x)
+        {
+            width += (x - point.x);
+            if (width >= 100)
+            {
+                x = point.x;
+            }
+            else
+            {
+                width = oldWidth;
+            }
+        }
+        if (vertex.x == x + width)
+        {
+            width -= (x + width - point.x);
+            if (width < 100)
+            {
+                width = oldWidth;
+            }
+        }
+        if (vertex.y == y)
+        {
+            height += (y - point.y);
+            if (height >= 100)
+            {
+                y = point.y;
+            }
+            else
+            {
+                height = oldHeight;
+            }
+        }
+        if (vertex.y == y + height)
+        {
+            height -= (y + height - point.y);
+            if (height < 100)
+            {
+                height = oldHeight;
+            }
+        }
     }
 }

@@ -1,30 +1,38 @@
 package VirtuTuile.Domain;
 
+import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.Color;
+import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * @class Définissant une surface irrégulière définie par une série de points.
+ * Classe définissant une surface irrégulière définie par une série de points.
  * @author gabparrot
  */
-public class IrregularSurface extends Path2D.Double implements Surface
+public class IrregularSurface extends Area implements Surface, Serializable
 {
     private boolean isHole;
     private Color color;
-    private final Covering covering = new Covering(this);
+    private Covering covering = new Covering(this);
 
     /**
      * Constructeur de IrregularSurface
+     * @param polygon représentant la forme de la surface.
      * @param isHole représentant si oui on non la surface est un trou (non-couvrable).
      * @param color représentant la couleur de la surface.
      */
-    public IrregularSurface(boolean isHole, Color color)
+    public IrregularSurface(Path2D.Double polygon, boolean isHole, Color color)
     {
-        super();
+        super(polygon);
         this.isHole = isHole;
         this.color = color;
     }
@@ -90,11 +98,10 @@ public class IrregularSurface extends Path2D.Double implements Surface
         ArrayList<java.lang.Double> allX = new ArrayList<>();
         ArrayList<java.lang.Double> allY = new ArrayList<>();
         int nbPoints = 0;
-        AffineTransform at = new AffineTransform();
-        PathIterator iter = this.getPathIterator(at);
+        PathIterator iter = getPathIterator(null);
         
         // Compter le nombre de points et placer les X et Y dans des listes
-        for (; iter.isDone(); iter.next()) 
+        for (; !iter.isDone(); iter.next()) 
         {
             nbPoints++;
             double[] currentCoords = new double[2];
@@ -314,6 +321,72 @@ public class IrregularSurface extends Path2D.Double implements Surface
         else
         {
             coverSurface();
+        }
+    }
+    /**
+     * Permet la sauvegarde d'une surface irrégulière dans un OutputStream
+     * @param out le OutputStream de destination
+     * @throws IOException Erreur d'écriture
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException
+    {
+        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(this));
+        out.writeObject(isHole);
+        out.writeObject(color);
+        out.writeObject(covering);
+    }
+    
+    /**
+     * Permet le chargement d'une surface irrégulière à partir d'un InputStream de sauvegarde
+     * @param in L'InputStream de sauvegarde
+     * @throws IOException erreur d'écriture
+     * @throws ClassNotFoundException erreur de définition de classe
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+        add(new Area((Shape) in.readObject()));
+        isHole = (boolean) in.readObject();
+        color = (Color) in.readObject();
+        covering = (Covering) in.readObject();
+    }
+
+    @Override
+    public void moveVertexToPoint(Point2D.Double vertex, Point2D.Double point)
+    {
+        PathIterator iterator = getPathIterator(null);
+        Path2D.Double newPath = new Path2D.Double();
+        double[] v = new double[2];
+        while (!iterator.isDone())
+        {
+            int segmentType = iterator.currentSegment(v);
+            v[0] = Math.round(v[0]);
+            v[1] = Math.round(v[1]);
+            if (v[0] == vertex.x && v[1] == vertex.y)
+            {
+                v[0] = point.x;
+                v[1] = point.y;
+            }
+            switch (segmentType)
+            {
+                case PathIterator.SEG_MOVETO:
+                    newPath.moveTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    newPath.lineTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_CLOSE:
+                    break;
+                default:
+                    break;
+            }
+            iterator.next();
+        }
+        Area newArea = new Area(newPath);
+        Rectangle2D bounds = newArea.getBounds2D();
+        if (newArea.isSingular() && !newArea.isEmpty() && bounds.getWidth() > 100 && bounds.getHeight() > 100)
+        {
+            reset();
+            add(new Area(newPath));
         }
     }
 }

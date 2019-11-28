@@ -2,7 +2,10 @@ package VirtuTuile.Domain.Drawing;
 
 import VirtuTuile.Domain.Surface;
 import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Domain.Controller;
+import VirtuTuile.Domain.Covering;
 import VirtuTuile.Domain.RectangularSurface;
+import VirtuTuile.GUI.CanvasPanel;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -13,6 +16,9 @@ import java.awt.TexturePaint;
 import java.util.ArrayList;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
@@ -22,19 +28,29 @@ import javax.swing.ImageIcon;
  */
 public class CanvasDrawer
 {
-    private final VirtuTuile.GUI.CanvasPanel parent;
-    private VirtuTuile.Domain.Controller controller;
-    private final TexturePaint holeTexture;
+    private final CanvasPanel parent;
+    private Controller controller;
+    private TexturePaint holeTexture;
+    private final BasicStroke SMALL_STROKE = new BasicStroke(1);
+    private final BasicStroke BIG_STROKE = new BasicStroke(3);
+    private final BasicStroke HUGE_STROKE = new BasicStroke(5);
+    private final Color TEMP_RECT_COLOR = new Color(113, 148, 191);
     
     /**
      * Constructeur.
      * @param parent : le canevas qui contient l'afficheur.
      */
-    public CanvasDrawer(VirtuTuile.GUI.CanvasPanel parent)
+    public CanvasDrawer(CanvasPanel parent)
     {
         this.parent = parent;
-        
-        // Mise en place de la texture pour les trous:
+        holeTextureSetup();
+    }
+    
+    /**
+     * Mise en place de la texture pour les trous.
+     */
+    private void holeTextureSetup()
+    {
         BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
         ImageIcon icon = new ImageIcon(getClass().getResource("/dots.png"));
         Graphics g = bi.createGraphics();
@@ -47,7 +63,7 @@ public class CanvasDrawer
      * Setter pour le controller.
      * @param controller : le controller de l'application.
      */
-    public void setController(VirtuTuile.Domain.Controller controller)
+    public void setController(Controller controller)
     {
         this.controller = controller;
     }
@@ -68,6 +84,7 @@ public class CanvasDrawer
             drawSurfaces(g2d, surfaces, transform);
             drawSelectedSurface(g2d, selectedSurface, transform);
             drawTempRect(g2d, transform);
+            drawTempPoly(g2d, transform);
             drawDebug(g2d, selectedSurface, transform);
         }
     }
@@ -78,7 +95,7 @@ public class CanvasDrawer
     private AffineTransform getTransform()
     {
         AffineTransform transform = new AffineTransform();
-        transform.translate(-parent.getHorizontalOffset(), - parent.getVerticalOffset());
+        transform.translate(-parent.getHorizontalOffset(), -parent.getVerticalOffset());
         transform.scale(1. / Utilities.MM_PER_PIXEL, 1. / Utilities.MM_PER_PIXEL);
         transform.scale(parent.getZoom(), parent.getZoom());
         return transform;
@@ -90,25 +107,28 @@ public class CanvasDrawer
     private void drawGrid(Graphics2D g2d)
     {
         g2d.setColor(Color.DARK_GRAY);
-        double gridDistance = parent.getGridDistanceZoomed();
-        
-        double verticalOffset = parent.getVerticalOffset() % gridDistance;
-        double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
-
-        int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
-        int nbRows = (int) (parent.getHeight() / gridDistance + 2);
-
-        for (int column = 0; column < nbColumns; column++)
+        if (parent.getGridDistanceZoomed() > 5)
         {
-            g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
-                         (int) Math.round(column * gridDistance - horizontalOffset),
-                         parent.getHeight());
-        }
-        
-        for (int row = 0; row < nbRows; row++)
-        {
-            g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
-                    parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
+            double gridDistance = parent.getGridDistanceZoomed();
+
+            double verticalOffset = parent.getVerticalOffset() % gridDistance;
+            double horizontalOffset = parent.getHorizontalOffset() % gridDistance;
+
+            int nbColumns = (int) (parent.getWidth() / gridDistance + 2);
+            int nbRows = (int) (parent.getHeight() / gridDistance + 2);
+
+            for (int column = 0; column < nbColumns; column++)
+            {
+                g2d.drawLine((int) Math.round(column * gridDistance - horizontalOffset), 0,
+                             (int) Math.round(column * gridDistance - horizontalOffset),
+                             parent.getHeight());
+            }
+
+            for (int row = 0; row < nbRows; row++)
+            {
+                g2d.drawLine(0, (int) Math.round(row * gridDistance - verticalOffset),
+                        parent.getWidth(), (int) Math.round(row * gridDistance - verticalOffset));
+            }
         }
     }
     
@@ -130,7 +150,11 @@ public class CanvasDrawer
             {
                 g2d.setColor(surface.getColor());
             }
-            else
+            else if (parent.getGridDistanceZoomed() <= 5)
+            {
+                g2d.setColor(surface.getCovering().getTileType().getColor());
+            }
+            else 
             {
                 g2d.setColor(surface.getCovering().getJointColor());
             }
@@ -152,10 +176,12 @@ public class CanvasDrawer
                 g2d.fill(uncoveredArea);
                 g2d.setPaint(holeTexture);
                 g2d.fill(uncoveredArea);
+                g2d.setColor(Color.BLACK);
+                g2d.draw(uncoveredArea);
             }
             
             // Dessine les tuiles.
-            if (hasTiles)
+            if (hasTiles && parent.getGridDistanceZoomed() > 5)
             {
                 drawTiles(g2d, surface, transform);
             }
@@ -174,20 +200,50 @@ public class CanvasDrawer
     {
         if (selectedSurface != null)
         {
-            Area copy = new Area(selectedSurface);
-            copy.transform(transform);
+            Area surfaceCopy = new Area(selectedSurface);
+            surfaceCopy.transform(transform);
             g2d.setColor(Color.BLACK);
-            g2d.setStroke(new BasicStroke(5));
-            g2d.draw(copy);
-            g2d.setStroke(new BasicStroke(1));
+            g2d.setStroke(HUGE_STROKE);
+            g2d.draw(surfaceCopy);
+            g2d.setStroke(SMALL_STROKE);
+            
+            PathIterator iterator = surfaceCopy.getPathIterator(null);
+            g2d.setColor(Color.MAGENTA);
+            double[] vertex = new double[2];
+            while (!iterator.isDone())
+            {
+                int segmentType = iterator.currentSegment(vertex);
+                if (segmentType != PathIterator.SEG_CLOSE)
+                {
+                    g2d.fillOval((int) vertex[0] - 5, (int) vertex[1] - 5, 10, 10);
+                }
+                iterator.next();
+            }
+            if (selectedSurface instanceof CombinedSurface)
+            {
+                Area uncoveredAreaCopy = new Area(((CombinedSurface) selectedSurface).getUncoveredArea());
+                uncoveredAreaCopy.transform(transform);
+                iterator = uncoveredAreaCopy.getPathIterator(null);
+                while (!iterator.isDone())
+                {
+                    int segmentType = iterator.currentSegment(vertex);
+                    if (segmentType != PathIterator.SEG_CLOSE)
+                    {
+                        g2d.fillOval((int) vertex[0] - 5, (int) vertex[1] - 5, 10, 10);
+                    }
+                    iterator.next();
+                }
+            }
         }
     }
     
     private void drawTiles(Graphics2D g2d, Surface surface, AffineTransform transform)
     {
-        ArrayList<Area> tiles = surface.getCovering().getTiles();
-        Color tileColor = surface.getCovering().getTileType().getColor();
-        Color jointColor = surface.getCovering().getJointColor();
+        int minSize = parent.getInspectorLength();
+        Covering covering = surface.getCovering();
+        ArrayList<Area> tiles = covering.getTiles();
+        Color tileColor = covering.getTileType().getColor();
+        Color jointColor = covering.getJointColor();
 
         for (Area tile : tiles)
         {
@@ -195,8 +251,19 @@ public class CanvasDrawer
             tileCopy.transform(transform);
             g2d.setColor(tileColor);
             g2d.fill(tileCopy);
-            g2d.setColor(jointColor);
-            g2d.draw(tileCopy);
+            Rectangle2D bounds = tile.getBounds2D();
+            if (parent.isInspector() && (bounds.getWidth() < minSize || bounds.getHeight() < minSize))
+            {
+                g2d.setColor(Color.RED);
+                g2d.setStroke(BIG_STROKE);
+                g2d.draw(tileCopy);
+                g2d.setStroke(SMALL_STROKE);
+            }
+            else
+            {
+                g2d.setColor(jointColor);
+                g2d.draw(tileCopy);
+            }
         }
     }
     
@@ -210,10 +277,41 @@ public class CanvasDrawer
         {
             Area copy = new Area(temp);
             copy.transform(transform);
-            g2d.setColor(new Color(113, 148, 191));
+            g2d.setColor(TEMP_RECT_COLOR);
             g2d.fill(copy);
             g2d.setColor(Color.BLACK);
             g2d.draw(copy);
+        }
+    }
+    
+    private void drawTempPoly(Graphics2D g2d, AffineTransform transform)
+    {
+        Line2D.Double tempLine = parent.getTemporaryLine();
+        if (tempLine != null)
+        {
+            double zoom = parent.getZoom();
+            int ratio = Utilities.MM_PER_PIXEL;
+            double x1 = (tempLine.x1 / ratio * zoom - parent.getHorizontalOffset());
+            double y1 = (tempLine.y1 / ratio * zoom - parent.getVerticalOffset());
+            double x2 = (tempLine.x2 / ratio * zoom - parent.getHorizontalOffset());
+            double y2 = (tempLine.y2 / ratio * zoom - parent.getVerticalOffset());
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(BIG_STROKE);
+            g2d.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
+            g2d.setStroke(SMALL_STROKE);
+        }
+        else
+        {
+            Path2D.Double tempPolygon = parent.getTemporaryPolygon();
+            if (tempPolygon != null)
+            {
+                Area copy = new Area(tempPolygon);
+                copy.transform(transform);
+                g2d.setColor(Color.BLACK);
+                g2d.setStroke(BIG_STROKE);
+                g2d.draw(copy);
+                g2d.setStroke(SMALL_STROKE);
+            }
         }
     }
     
@@ -232,9 +330,9 @@ public class CanvasDrawer
             Area devArea = new Area(devRec);
             devArea.transform(transform);
             g2d.setColor(Color.MAGENTA);
-            g2d.setStroke(new BasicStroke(3));
+            g2d.setStroke(BIG_STROKE);
             g2d.draw(devArea);
-            g2d.setStroke(new BasicStroke(1));
+            g2d.setStroke(SMALL_STROKE);
         }
     }
 }

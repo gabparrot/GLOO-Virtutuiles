@@ -1,5 +1,6 @@
 package VirtuTuile.Domain;
 
+import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Shape;
 import java.util.ArrayList;
@@ -7,6 +8,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -15,7 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 /**
- * @class définissant le projet en cours
+ * Classe définissant le projet en cours
  * @author gabparrot
  */
 public class Project
@@ -24,6 +27,7 @@ public class Project
     private Surface selectedSurface = null;
     private ArrayList<TileType> tileTypes = new ArrayList<>();
     private final double[][] TRANSLATION_DIRECTIONS = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
+    private Point2D.Double selectedVertex = null;
     
     /**
      * Désélectionne la surface sélectionnée.
@@ -56,8 +60,22 @@ public class Project
         }
         return noConflict;
     }
-
     
+    /**
+     * Crée une nouvelle surface irrégulière.
+     * @param polygon la forme de la surface irrégulière.
+     * @return true si la création à réussie, false sinon.
+     */
+    public boolean addIrregularSurface(Path2D.Double polygon)
+    {
+        boolean noConflict = conflictCheck(polygon);
+        if (noConflict)
+        {
+            surfaces.add(new IrregularSurface(polygon, false, new Color(113, 148, 191)));
+        }
+        return noConflict;
+    }
+
     /**
      * Ajoute une surface, utilisée par le UndoManager.
      * @param surface : la surface qui doit être ajoutée.
@@ -75,32 +93,32 @@ public class Project
      */
     public boolean conflictCheck(Shape shape)
     {
-        for (Surface surface : surfaces)
-        {
-            if (surface == shape) continue;
-            Area area = new Area(surface);
-            area.intersect(new Area(shape));
-            
-            // Premier check:
-            Rectangle2D intersection = area.getBounds2D();
-            if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
-            {
-                // Approximation:
-                AffineTransform translation = new AffineTransform();
-                translation.translate(10000, 10000);
-                area.transform(translation);
-                translation = new AffineTransform();
-                translation.translate(-10000, -10000);
-                area.transform(translation);
-                
-                // Deuxième check, après approximation:
-                intersection = area.getBounds2D();
-                if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
-                {
-                    return false;
-                }
-            }
-        }
+//        for (Surface surface : surfaces)
+//        {
+//            if (surface == shape) continue;
+//            Area area = new Area(surface);
+//            area.intersect(new Area(shape));
+//            
+//            // Premier check:
+//            Rectangle2D intersection = area.getBounds2D();
+//            if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
+//            {
+//                // Approximation:
+//                AffineTransform translation = new AffineTransform();
+//                translation.translate(10000, 10000);
+//                area.transform(translation);
+//                translation = new AffineTransform();
+//                translation.translate(-10000, -10000);
+//                area.transform(translation);
+//                
+//                // Deuxième check, après approximation:
+//                intersection = area.getBounds2D();
+//                if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
+//                {
+//                    return false;
+//                }
+//            }
+//        }
         return true;
     }
     
@@ -113,8 +131,6 @@ public class Project
     public CombinedSurface mergeSurfaces(Surface s1, Surface s2)
     {
         if (!surfacesAreConnected(s1, s2)) return null;
-        
-        // Combine les surfaces:
         Surface biggestSurface = s1.getArea() > s2.getArea() ? s1 : s2;
         Color mergedColor = biggestSurface.getColor();
         Covering mergedCovering = biggestSurface.getCovering();
@@ -162,18 +178,75 @@ public class Project
     public void selectSurface(Point2D.Double point)
     {
         selectedSurface = getSurfaceAtPoint(point);
+        surfaces.add(selectedSurface);
+        for (int i = 0; i < surfaces.size(); i++)
+        {
+            if (surfaces.get(i) == selectedSurface)
+            {
+                surfaces.remove(i);
+                return;
+            }
+        }
+    }
+    
+    public void selectLastSurfaceAdded()
+    {
+        selectedSurface = surfaces.get(surfaces.size() - 1);
     }
     
     public Surface getSurfaceAtPoint(Point2D.Double point)
     {
+        Surface foundSurface = null;
         for (Surface surface : surfaces)
             {
                 if (surface.contains(point))
                 {
-                    return surface;
+                    foundSurface = surface;
                 }
             }
-        return null;
+        return foundSurface;
+    }
+    
+    public void setSelectedVertex(Point2D.Double point)
+    {
+        selectedVertex = null;
+        if (selectedSurface != null)
+        {
+            PathIterator iterator = selectedSurface.getPathIterator(null);
+            double[] vertex = new double[2];
+            while (!iterator.isDone())
+            {
+                int segmentType = iterator.currentSegment(vertex);
+                if (segmentType != PathIterator.SEG_CLOSE)
+                {
+                    if (Math.abs(point.x - vertex[0]) < 10 * Utilities.MM_PER_PIXEL)
+                    {
+                        if (Math.abs(point.y - vertex[1]) < 10 * Utilities.MM_PER_PIXEL)
+                        {
+                            selectedVertex = new Point2D.Double(Math.round(vertex[0]), Math.round(vertex[1]));
+                            return;
+                        }
+                    }
+                }
+                iterator.next();
+            }
+        }
+    }
+    
+    public boolean vertexIsSelected()
+    {
+        return selectedVertex != null;
+    }
+    
+    public void moveVertexToPoint(Point2D.Double point)
+    {
+        if (selectedVertex != null && point.x >= 0 && point.y >= 0)
+        {
+            point = new Point2D.Double(Math.round(point.x), Math.round(point.y));
+            selectedSurface.moveVertexToPoint(selectedVertex, point);
+            selectedSurface.coverSurface();
+            setSelectedVertex(point);
+        }
     }
     
     /**

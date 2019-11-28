@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.io.Serializable;
 
 /**
- * @class definissant un type de tuiles disponibles pour le tuilage
+ * Classe definissant un type de tuiles disponibles pour le tuilage
  * @author gabparrot
  */
 public class TileType implements Serializable

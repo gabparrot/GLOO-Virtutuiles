@@ -1,27 +1,28 @@
 package VirtuTuile.Domain.UndoableEdits;
 
-import VirtuTuile.Domain.Covering;
+import VirtuTuile.Domain.TileType;
+import java.awt.Color;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-public class UndoSetCoveringTileColor implements javax.swing.undo.UndoableEdit
+public class UndoSetTileColor implements javax.swing.undo.UndoableEdit
 {
-    private final int oldIndex;
-    private final int newIndex;
-    private final Covering covering;
+    private final TileType tileType;
+    private final Color oldColor;
+    private final Color newColor;
     
-    public UndoSetCoveringTileColor(int oldIndex, int newIndex, Covering covering)
+    public UndoSetTileColor(TileType tileType, Color oldColor, Color newColor)
     {
-        this.oldIndex = oldIndex;
-        this.newIndex = newIndex;
-        this.covering = covering;
+        this.tileType = tileType;
+        this.oldColor = oldColor;
+        this.newColor = newColor;
     }
     
     @Override
     public void undo() throws CannotUndoException
     {
-        covering.setTileColorByIndex(oldIndex);
+        tileType.setColor(oldColor);
     }
 
     @Override
@@ -33,7 +34,7 @@ public class UndoSetCoveringTileColor implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        covering.setTileColorByIndex(newIndex);
+        tileType.setColor(newColor);
     }
     
     @Override
@@ -68,18 +69,18 @@ public class UndoSetCoveringTileColor implements javax.swing.undo.UndoableEdit
     @Override
     public String getPresentationName()
     {
-        return "Changement de la couleur d'un recouvrement";
+        return "Changement de la couleur d'un matériau";
     }
 
     @Override
     public String getUndoPresentationName()
     {
-        return "Annuler le changement de la couleur du recouvrement";
+        return "Annuler le changement de la couleur d'un matériau";
     }
 
     @Override
     public String getRedoPresentationName()
     {
-        return "Refaire le changement de la couleur du recouvrement";
+        return "Refaire le changement de la couleur d'un matériau";
     }
 }
