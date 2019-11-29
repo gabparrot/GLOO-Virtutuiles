@@ -269,13 +269,26 @@ public class Covering implements Serializable, Cloneable
         int columnCounter = 0;
         int rowCounter = 0;
         double surfaceHypothenuse = Math.sqrt(bounds.getHeight() * bounds.getHeight() + bounds.getWidth() * bounds.getWidth());
-        //int maxColsOrRows = (int) Math.ceil(tileHeight < tileWidth ? surfaceHypothenuse / tileHeight : surfaceHypothenuse / tileWidth) * 3;
         
         int maxColsOrRows = 0;
         
+<<<<<<< Updated upstream
 
         maxColsOrRows = (int) Math.ceil(tileHeight < tileWidth ? surfaceHypothenuse / tileHeight : surfaceHypothenuse / tileWidth) * 10;
+=======
         
+        maxColsOrRows = (int) Math.ceil(tileHeight < tileWidth ? surfaceHypothenuse / tileHeight : surfaceHypothenuse / tileWidth) * 4;
+>>>>>>> Stashed changes
+        
+        
+        if (rotation > 45 && rotation <= 135)
+        {
+            //TODO
+        }
+        else
+        {
+            //TODO
+        }
         
         // Départ du recouvrement
         Point2D.Double currentPoint = new Point2D.Double(bounds.getX() - (Math.floor(maxColsOrRows/5) * (tileWidth + jointWidth)) + offsetXMod,
@@ -334,7 +347,7 @@ public class Covering implements Serializable, Cloneable
                 }
             }
            
-            if (columnCounter < maxColsOrRows)
+            if (columnCounter < maxColsOrRows /2)
             {
                 currentPoint.x += tileWidth + jointWidth;
                 columnCounter += 1;

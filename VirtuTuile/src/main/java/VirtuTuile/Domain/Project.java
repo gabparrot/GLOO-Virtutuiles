@@ -215,6 +215,25 @@ public class Project
             PathIterator iterator = selectedSurface.getPathIterator(null);
             double[] vertex = new double[2];
             while (!iterator.isDone())
+<<<<<<< Updated upstream
+=======
+            {
+                int segmentType = iterator.currentSegment(vertex);
+                if (segmentType != PathIterator.SEG_CLOSE)
+                {
+                    if (Math.abs(point.x - vertex[0]) < 10 * Utilities.MM_PER_PIXEL)
+                    {
+                        if (Math.abs(point.y - vertex[1]) < 10 * Utilities.MM_PER_PIXEL)
+                        {
+                            selectedVertex = new Point2D.Double(Math.round(vertex[0]), Math.round(vertex[1]));
+                            return;
+                        }
+                    }
+                }
+                iterator.next();
+            }
+            if (selectedSurface instanceof CombinedSurface)
+>>>>>>> Stashed changes
             {
                 int segmentType = iterator.currentSegment(vertex);
                 if (segmentType != PathIterator.SEG_CLOSE)

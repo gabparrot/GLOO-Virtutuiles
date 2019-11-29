@@ -1740,7 +1740,26 @@ public class MainWindow extends JFrame
 
         yInLabel.setText("in");
 
+<<<<<<< Updated upstream
         widthInLabel.setText("in");
+=======
+        jointWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        jointWidthField.setEnabled(false);
+        jointWidthField.setPreferredSize(new java.awt.Dimension(7, 27));
+        jointWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                jointWidthFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(jointWidthField, gridBagConstraints);
+>>>>>>> Stashed changes
 
         heightInLabel.setText("in");
 
@@ -1924,20 +1943,96 @@ public class MainWindow extends JFrame
                 tileTypeComboBoxActionPerformed(evt);
             }
         });
+<<<<<<< Updated upstream
 
         tileWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         tileWidthField.setEnabled(false);
         tileWidthField.addActionListener(new java.awt.event.ActionListener()
+=======
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(rowOffsetField, gridBagConstraints);
+
+        rowOffsetLabel.setText("%");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(rowOffsetLabel, gridBagConstraints);
+
+        RotationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        RotationLabel.setText("Rotation :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(RotationLabel, gridBagConstraints);
+
+        rotationTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        rotationTextField.setEnabled(false);
+        rotationTextField.setPreferredSize(new java.awt.Dimension(7, 27));
+        rotationTextField.addActionListener(new java.awt.event.ActionListener()
+>>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
                 tileWidthFieldActionPerformed(evt);
             }
         });
+<<<<<<< Updated upstream
 
         tileHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         tileHeightField.setEnabled(false);
         tileHeightField.addActionListener(new java.awt.event.ActionListener()
+=======
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(rotationTextField, gridBagConstraints);
+
+        degreesLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        degreesLabel.setText("°");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 17;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(degreesLabel, gridBagConstraints);
+
+        jLabel8.setBackground(new java.awt.Color(0, 107, 107));
+        jLabel8.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel8.setText("Type de tuile :");
+        jLabel8.setInheritsPopupMenu(false);
+        jLabel8.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        newPanel.add(jLabel8, gridBagConstraints);
+
+        tileNameLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        tileNameLabel.setText("Nom :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(tileNameLabel, gridBagConstraints);
+
+        tileNameField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        tileNameField.setEnabled(false);
+        tileNameField.setPreferredSize(new java.awt.Dimension(7, 27));
+        tileNameField.addActionListener(new java.awt.event.ActionListener()
+>>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
@@ -1968,9 +2063,25 @@ public class MainWindow extends JFrame
 
         jLabel19.setText("Nb/boîte :");
 
+<<<<<<< Updated upstream
         tileNbPerBoxField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         tileNbPerBoxField.setEnabled(false);
         tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
+=======
+        jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel13.setText("Hauteur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 21;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel13, gridBagConstraints);
+
+        tileHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        tileHeightField.setEnabled(false);
+        tileHeightField.setPreferredSize(new java.awt.Dimension(7, 27));
+        tileHeightField.addActionListener(new java.awt.event.ActionListener()
+>>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
@@ -1986,12 +2097,35 @@ public class MainWindow extends JFrame
                 tileColorButtonActionPerformed(evt);
             }
         });
+<<<<<<< Updated upstream
 
         jLabel20.setText("Décalage rangées :");
 
         rowOffsetField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         rowOffsetField.setEnabled(false);
         rowOffsetField.addActionListener(new java.awt.event.ActionListener()
+=======
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 22;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileColorButton, gridBagConstraints);
+
+        jLabel19.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel19.setText("Nb/boîte :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 23;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel19, gridBagConstraints);
+
+        tileNbPerBoxField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        tileNbPerBoxField.setEnabled(false);
+        tileNbPerBoxField.setPreferredSize(new java.awt.Dimension(7, 27));
+        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
+>>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
@@ -2010,6 +2144,7 @@ public class MainWindow extends JFrame
                 createTileButtonActionPerformed(evt);
             }
         });
+<<<<<<< Updated upstream
 
         RotationLabel.setText("Rotation:");
 
@@ -2287,6 +2422,17 @@ public class MainWindow extends JFrame
         );
 
         jScrollPane1.setViewportView(rightPanel);
+=======
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 24;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.ipady = 1;
+        gridBagConstraints.weighty = 100000.0;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(createTileButton, gridBagConstraints);
+
+        jScrollPane1.setViewportView(newPanel);
+>>>>>>> Stashed changes
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -4764,7 +4910,10 @@ public class MainWindow extends JFrame
     private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JButton redoButton;
     private javax.swing.JMenuItem relativeMoveMenuItem;
+<<<<<<< Updated upstream
     private javax.swing.JPanel rightPanel;
+=======
+>>>>>>> Stashed changes
     private javax.swing.JTextField rotationTextField;
     private javax.swing.JTextField rowOffsetField;
     private javax.swing.JLabel rowOffsetLabel;
