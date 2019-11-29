@@ -143,6 +143,7 @@ public class CanvasDrawer
         {   
             boolean hasTiles = !surface.getCovering().getTiles().isEmpty();
             Area copy = new Area(surface);
+<<<<<<< Updated upstream
             copy.transform(transform);
             
             // Dessine l'interieur de la surface.
@@ -166,15 +167,31 @@ public class CanvasDrawer
                 g2d.setPaint(holeTexture);
                 g2d.fill(copy);
             }
+=======
+            if (surface instanceof CombinedSurface)
+            {
+                copy.subtract(((CombinedSurface) surface).getUncoveredArea());
+            }
+            copy.transform(transform);
+            
+            // Dessine la surface.
+            setColor(g2d, surface, hasTiles);
+            g2d.fill(copy);
+>>>>>>> Stashed changes
             
             // Dessine le uncoveredArea d'une surface combinée.
-            else if (surface instanceof CombinedSurface)
+            if (surface instanceof CombinedSurface)
             {
                 Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
                 uncoveredArea.transform(transform);
+<<<<<<< Updated upstream
                 g2d.setColor(surface.getColor());
                 g2d.fill(uncoveredArea);
                 g2d.setPaint(holeTexture);
+=======
+                Color surfCol = surface.getColor();
+                g2d.setColor(new Color(surfCol.getRed(), surfCol.getGreen(), surfCol.getBlue(), 160));
+>>>>>>> Stashed changes
                 g2d.fill(uncoveredArea);
                 g2d.setColor(Color.BLACK);
                 g2d.draw(uncoveredArea);
@@ -189,6 +206,28 @@ public class CanvasDrawer
             // Dessine le contour de la surface.
             g2d.setColor(Color.BLACK);
             g2d.draw(copy);
+        }
+    }
+    
+    private void setColor(Graphics2D g2d, Surface surface, boolean hasTiles)
+    {
+        // Dessine l'interieur de la surface.
+        if (surface.isHole())
+        {
+            Color surfCol = surface.getColor();
+            g2d.setColor(new Color(surfCol.getRed(), surfCol.getGreen(), surfCol.getBlue(), 160));
+        }
+        else if (!hasTiles)
+        {
+            g2d.setColor(surface.getColor());
+        }
+        else if (parent.getGridDistanceZoomed() <= 5)
+        {
+            g2d.setColor(surface.getCovering().getTileType().getColor());
+        }
+        else
+        {
+            g2d.setColor(surface.getCovering().getJointColor());
         }
     }
     
