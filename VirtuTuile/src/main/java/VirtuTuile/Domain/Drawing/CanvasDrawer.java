@@ -9,19 +9,16 @@ import VirtuTuile.GUI.CanvasPanel;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
-import java.awt.TexturePaint;
+import java.awt.Stroke;
 import java.util.ArrayList;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import javax.swing.ImageIcon;
 
 /**
  * Objet qui permet de dessiner sur le canevas.
@@ -30,10 +27,10 @@ public class CanvasDrawer
 {
     private final CanvasPanel parent;
     private Controller controller;
-    private TexturePaint holeTexture;
     private final BasicStroke SMALL_STROKE = new BasicStroke(1);
     private final BasicStroke BIG_STROKE = new BasicStroke(3);
     private final BasicStroke HUGE_STROKE = new BasicStroke(5);
+    private final Stroke DASHED_STROKE = new BasicStroke(3, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[]{9}, 0);
     private final Color TEMP_RECT_COLOR = new Color(113, 148, 191);
     
     /**
@@ -43,20 +40,6 @@ public class CanvasDrawer
     public CanvasDrawer(CanvasPanel parent)
     {
         this.parent = parent;
-        holeTextureSetup();
-    }
-    
-    /**
-     * Mise en place de la texture pour les trous.
-     */
-    private void holeTextureSetup()
-    {
-        BufferedImage bi = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
-        ImageIcon icon = new ImageIcon(getClass().getResource("/dots.png"));
-        Graphics g = bi.createGraphics();
-        icon.paintIcon(null, g, 0, 0);
-        g.dispose();
-        holeTexture = new TexturePaint(bi, new Rectangle(0, 0, 100, 100));
     }
     
     /**
@@ -84,6 +67,7 @@ public class CanvasDrawer
             drawSurfaces(g2d, surfaces, transform);
             drawSelectedSurface(g2d, selectedSurface, transform);
             drawTempRect(g2d, transform);
+            drawTempEllipse(g2d, transform);
             drawTempPoly(g2d, transform);
             drawDebug(g2d, selectedSurface, transform);
         }
@@ -143,55 +127,23 @@ public class CanvasDrawer
         {   
             boolean hasTiles = !surface.getCovering().getTiles().isEmpty();
             Area copy = new Area(surface);
-<<<<<<< Updated upstream
-            copy.transform(transform);
-            
-            // Dessine l'interieur de la surface.
-            if (surface.isHole() || !hasTiles)
-            {
-                g2d.setColor(surface.getColor());
-            }
-            else if (parent.getGridDistanceZoomed() <= 5)
-            {
-                g2d.setColor(surface.getCovering().getTileType().getColor());
-            }
-            else 
-            {
-                g2d.setColor(surface.getCovering().getJointColor());
-            }
-            g2d.fill(copy);
-            
-            // Dessine la texture d'une surface non-couverte.
-            if (surface.isHole())
-            {
-                g2d.setPaint(holeTexture);
-                g2d.fill(copy);
-            }
-=======
             if (surface instanceof CombinedSurface)
             {
-                copy.subtract(((CombinedSurface) surface).getUncoveredArea());
+                copy.subtract(new Area(((CombinedSurface) surface).getUncoveredPath()));
             }
             copy.transform(transform);
             
             // Dessine la surface.
             setColor(g2d, surface, hasTiles);
             g2d.fill(copy);
->>>>>>> Stashed changes
             
             // Dessine le uncoveredArea d'une surface combinée.
             if (surface instanceof CombinedSurface)
             {
-                Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredArea());
+                Area uncoveredArea = new Area(((CombinedSurface) surface).getUncoveredPath());
                 uncoveredArea.transform(transform);
-<<<<<<< Updated upstream
-                g2d.setColor(surface.getColor());
-                g2d.fill(uncoveredArea);
-                g2d.setPaint(holeTexture);
-=======
                 Color surfCol = surface.getColor();
                 g2d.setColor(new Color(surfCol.getRed(), surfCol.getGreen(), surfCol.getBlue(), 160));
->>>>>>> Stashed changes
                 g2d.fill(uncoveredArea);
                 g2d.setColor(Color.BLACK);
                 g2d.draw(uncoveredArea);
@@ -245,34 +197,81 @@ public class CanvasDrawer
             g2d.setStroke(HUGE_STROKE);
             g2d.draw(surfaceCopy);
             g2d.setStroke(SMALL_STROKE);
-            
-            PathIterator iterator = surfaceCopy.getPathIterator(null);
-            g2d.setColor(Color.MAGENTA);
-            double[] vertex = new double[2];
-            while (!iterator.isDone())
-            {
-                int segmentType = iterator.currentSegment(vertex);
-                if (segmentType != PathIterator.SEG_CLOSE)
-                {
-                    g2d.fillOval((int) vertex[0] - 5, (int) vertex[1] - 5, 10, 10);
-                }
-                iterator.next();
-            }
+            drawVertices(g2d, selectedSurface);
+        }
+    }
+    
+    private void drawVertices(Graphics2D g2d, Surface selectedSurface)
+    {
+        if (parent.getGridDistanceZoomed() > 5)
+        {
+            _drawVertices(g2d, selectedSurface.getPathIterator(null));
             if (selectedSurface instanceof CombinedSurface)
             {
-                Area uncoveredAreaCopy = new Area(((CombinedSurface) selectedSurface).getUncoveredArea());
-                uncoveredAreaCopy.transform(transform);
-                iterator = uncoveredAreaCopy.getPathIterator(null);
-                while (!iterator.isDone())
+                _drawVertices(g2d,
+                        ((CombinedSurface) selectedSurface).getUncoveredPath().getPathIterator(null));
+            }
+        }
+    }
+    
+    private void _drawVertices(Graphics2D g2d, PathIterator iterator)
+    {
+        double zoom = parent.getZoom();
+        int hOffset = parent.getHorizontalOffset();
+        int vOffset = parent.getVerticalOffset();
+        int lastX, lastY, x0, y0, x1, y1, x2, y2, x3, y3, segmentType;
+        lastX = lastY = x2 = y2 = x3 = y3 = 0;
+        double[] vertex = new double[6];
+        while (!iterator.isDone())
+        {
+            x0 = lastX;
+            y0 = lastY;
+            segmentType = iterator.currentSegment(vertex);
+            if (segmentType != PathIterator.SEG_CLOSE)
+            {
+                x1 = (int) (vertex[0] / Utilities.MM_PER_PIXEL * zoom) - hOffset;
+                y1 = (int) (vertex[1] / Utilities.MM_PER_PIXEL * zoom) - vOffset;
+                g2d.setColor(Color.MAGENTA);
+                g2d.fillOval(x1 - 5, y1 - 5, 10, 10);
+                g2d.setColor(Color.BLACK);
+                g2d.drawOval(x1 - 5, y1 - 5, 10, 10);
+                lastX = x1;
+                lastY = y1;
+                
+                if (segmentType >= PathIterator.SEG_QUADTO)
                 {
-                    int segmentType = iterator.currentSegment(vertex);
-                    if (segmentType != PathIterator.SEG_CLOSE)
+                    x2 = (int) (vertex[2] / Utilities.MM_PER_PIXEL * zoom) - hOffset;
+                    y2 = (int) (vertex[3] / Utilities.MM_PER_PIXEL * zoom) - vOffset;
+                    g2d.setColor(Color.MAGENTA);
+                    g2d.fillOval(x2 - 5, y2 - 5, 10, 10);
+                    g2d.setColor(Color.BLACK);
+                    g2d.drawOval(x2 - 5, y2 - 5, 10, 10);
+                    lastX = x2;
+                    lastY = y2;
+                    
+                    if (segmentType == PathIterator.SEG_CUBICTO)
                     {
-                        g2d.fillOval((int) vertex[0] - 5, (int) vertex[1] - 5, 10, 10);
+                        x3 = (int) (vertex[4] / Utilities.MM_PER_PIXEL * zoom) - hOffset;
+                        y3 = (int) (vertex[5] / Utilities.MM_PER_PIXEL * zoom) - vOffset;
+                        g2d.setColor(Color.MAGENTA);
+                        g2d.fillOval(x3 - 5, y3 - 5, 10, 10);
+                        g2d.setColor(Color.BLACK);
+                        g2d.drawOval(x3 - 5, y3 - 5, 10, 10);
+                        lastY = y3;
+                        lastX = x3;
                     }
-                    iterator.next();
+                }
+                if (segmentType == PathIterator.SEG_CUBICTO)
+                {
+                    g2d.setColor(Color.MAGENTA);
+                    g2d.setStroke(DASHED_STROKE);
+                    g2d.drawLine(x0, y0, x1, y1);
+                    g2d.drawLine(x1, y1, x2, y2);
+                    g2d.drawLine(x2, y2, x3, y3);
+                    g2d.setStroke(SMALL_STROKE);
                 }
             }
+            iterator.next();
         }
     }
     
@@ -306,12 +305,23 @@ public class CanvasDrawer
         }
     }
     
-    /**
-     * Dessine un rectangle temporaire lors de la création de surface rectangulaire.
-     */
     private void drawTempRect(Graphics2D g2d, AffineTransform transform)
     {
         Rectangle2D.Double temp = parent.getTemporaryRectangle();
+        if (temp != null)
+        {
+            Area copy = new Area(temp);
+            copy.transform(transform);
+            g2d.setColor(TEMP_RECT_COLOR);
+            g2d.fill(copy);
+            g2d.setColor(Color.BLACK);
+            g2d.draw(copy);
+        }
+    }
+    
+    private void drawTempEllipse(Graphics2D g2d, AffineTransform transform)
+    {
+        Ellipse2D.Double temp = parent.getTemporaryEllipse();
         if (temp != null)
         {
             Area copy = new Area(temp);
@@ -339,18 +349,15 @@ public class CanvasDrawer
             g2d.drawLine((int) x1, (int) y1, (int) x2, (int) y2);
             g2d.setStroke(SMALL_STROKE);
         }
-        else
+        Path2D.Double tempPolygon = parent.getTemporaryPolygon();
+        if (tempPolygon != null)
         {
-            Path2D.Double tempPolygon = parent.getTemporaryPolygon();
-            if (tempPolygon != null)
-            {
-                Area copy = new Area(tempPolygon);
-                copy.transform(transform);
-                g2d.setColor(Color.BLACK);
-                g2d.setStroke(BIG_STROKE);
-                g2d.draw(copy);
-                g2d.setStroke(SMALL_STROKE);
-            }
+            Area copy = new Area(tempPolygon);
+            copy.transform(transform);
+            g2d.setColor(Color.BLACK);
+            g2d.setStroke(BIG_STROKE);
+            g2d.draw(copy);
+            g2d.setStroke(SMALL_STROKE);
         }
     }
     

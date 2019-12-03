@@ -8,6 +8,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.Area;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.io.File;
@@ -28,7 +29,8 @@ public class Project
     private ArrayList<TileType> tileTypes = new ArrayList<>();
     private final double[][] TRANSLATION_DIRECTIONS = {{0, -0.1}, {0, 0.1}, {-0.1, 0}, {0.1, 0}};
     private Point2D.Double selectedVertex = null;
-    
+    private boolean hasCollisionCheck = false;
+
     /**
      * Désélectionne la surface sélectionnée.
      */
@@ -62,18 +64,34 @@ public class Project
     }
     
     /**
+     * Crée une nouvelle surface circulaire.
+     * @param rectangle les bornes de l'ellipse.
+     * @return true si la création à réussie, false sinon.
+     */
+    public boolean addCircularSurface(Rectangle2D.Double rectangle)
+    {
+        boolean noConflict = conflictCheck(new Ellipse2D.Double(
+                rectangle.x, rectangle.y, rectangle.width, rectangle.height));
+        if (noConflict)
+        {
+            surfaces.add(new CircularSurface(rectangle, false, new Color(113, 148, 191)));
+        }
+        return noConflict;
+    }
+    
+    /**
      * Crée une nouvelle surface irrégulière.
      * @param polygon la forme de la surface irrégulière.
      * @return true si la création à réussie, false sinon.
      */
     public boolean addIrregularSurface(Path2D.Double polygon)
     {
-        boolean noConflict = conflictCheck(polygon);
-        if (noConflict)
+        if (conflictCheck(polygon) && (new Area(polygon)).isSingular())
         {
             surfaces.add(new IrregularSurface(polygon, false, new Color(113, 148, 191)));
+            return true;
         }
-        return noConflict;
+        return false;
     }
 
     /**
@@ -93,32 +111,35 @@ public class Project
      */
     public boolean conflictCheck(Shape shape)
     {
-//        for (Surface surface : surfaces)
-//        {
-//            if (surface == shape) continue;
-//            Area area = new Area(surface);
-//            area.intersect(new Area(shape));
-//            
-//            // Premier check:
-//            Rectangle2D intersection = area.getBounds2D();
-//            if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
-//            {
-//                // Approximation:
-//                AffineTransform translation = new AffineTransform();
-//                translation.translate(10000, 10000);
-//                area.transform(translation);
-//                translation = new AffineTransform();
-//                translation.translate(-10000, -10000);
-//                area.transform(translation);
-//                
-//                // Deuxième check, après approximation:
-//                intersection = area.getBounds2D();
-//                if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
-//                {
-//                    return false;
-//                }
-//            }
-//        }
+        if (hasCollisionCheck)
+        {
+            for (Surface surface : surfaces)
+            {
+                if (surface == shape) continue;
+                Area area = new Area(surface);
+                area.intersect(new Area(shape));
+
+                // Premier check:
+                Rectangle2D intersection = area.getBounds2D();
+                if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
+                {
+                    // Approximation:
+                    AffineTransform translation = new AffineTransform();
+                    translation.translate(10000, 10000);
+                    area.transform(translation);
+                    translation = new AffineTransform();
+                    translation.translate(-10000, -10000);
+                    area.transform(translation);
+
+                    // Deuxième check, après approximation:
+                    intersection = area.getBounds2D();
+                    if (intersection.getWidth() > 0.1 && intersection.getHeight() > 0.1)
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
     
@@ -189,11 +210,19 @@ public class Project
         }
     }
     
+    /**
+     * Sélectionne la surface à la fin de la liste des surfaces.
+     */
     public void selectLastSurfaceAdded()
     {
         selectedSurface = surfaces.get(surfaces.size() - 1);
     }
     
+    /**
+     * Retourne la surface qui contient un point.
+     * @param point : le point contenu dans la surface.
+     * @return la surface qui contient le point.
+     */
     public Surface getSurfaceAtPoint(Point2D.Double point)
     {
         Surface foundSurface = null;
@@ -207,16 +236,18 @@ public class Project
         return foundSurface;
     }
     
-    public void setSelectedVertex(Point2D.Double point)
+    /**
+     * Sélectionne un sommet d'une surface.
+     * @param point le point qui touche au sommet.
+     */
+    public void selectVertex(Point2D.Double point)
     {
         selectedVertex = null;
         if (selectedSurface != null)
         {
             PathIterator iterator = selectedSurface.getPathIterator(null);
-            double[] vertex = new double[2];
+            double[] vertex = new double[6];
             while (!iterator.isDone())
-<<<<<<< Updated upstream
-=======
             {
                 int segmentType = iterator.currentSegment(vertex);
                 if (segmentType != PathIterator.SEG_CLOSE)
@@ -227,44 +258,108 @@ public class Project
                         {
                             selectedVertex = new Point2D.Double(Math.round(vertex[0]), Math.round(vertex[1]));
                             return;
+                        }
+                    }
+                    if (segmentType >= PathIterator.SEG_QUADTO)
+                    {
+                        if (Math.abs(point.x - vertex[2]) < 10 * Utilities.MM_PER_PIXEL)
+                        {
+                            if (Math.abs(point.y - vertex[3]) < 10 * Utilities.MM_PER_PIXEL)
+                            {
+                                selectedVertex = new Point2D.Double(Math.round(vertex[2]), Math.round(vertex[3]));
+                                return;
+                            }
+                        }
+                        if (segmentType == PathIterator.SEG_CUBICTO)
+                        {
+                            if (Math.abs(point.x - vertex[4]) < 10 * Utilities.MM_PER_PIXEL)
+                            {
+                                if (Math.abs(point.y - vertex[5]) < 10 * Utilities.MM_PER_PIXEL)
+                                {
+                                    selectedVertex = new Point2D.Double(Math.round(vertex[4]), Math.round(vertex[5]));
+                                    return;
+                                }
+                            }
                         }
                     }
                 }
                 iterator.next();
             }
             if (selectedSurface instanceof CombinedSurface)
->>>>>>> Stashed changes
             {
-                int segmentType = iterator.currentSegment(vertex);
-                if (segmentType != PathIterator.SEG_CLOSE)
-                {
-                    if (Math.abs(point.x - vertex[0]) < 10 * Utilities.MM_PER_PIXEL)
-                    {
-                        if (Math.abs(point.y - vertex[1]) < 10 * Utilities.MM_PER_PIXEL)
-                        {
-                            selectedVertex = new Point2D.Double(Math.round(vertex[0]), Math.round(vertex[1]));
-                            return;
-                        }
-                    }
-                }
-                iterator.next();
+                selectVertexUncoveredArea(point);
             }
         }
     }
     
+    private void selectVertexUncoveredArea(Point2D.Double point)
+    {
+        PathIterator iterator = ((CombinedSurface) selectedSurface).getUncoveredPath().getPathIterator(null);
+        double[] vertex = new double[6];
+        while (!iterator.isDone())
+        {
+            int segmentType = iterator.currentSegment(vertex);
+            if (segmentType != PathIterator.SEG_CLOSE)
+            {
+                if (Math.abs(point.x - vertex[0]) < 10 * Utilities.MM_PER_PIXEL)
+                {
+                    if (Math.abs(point.y - vertex[1]) < 10 * Utilities.MM_PER_PIXEL)
+                    {
+                        selectedVertex = new Point2D.Double(Math.round(vertex[0]), Math.round(vertex[1]));
+                        return;
+                    }
+                }
+                if (segmentType >= PathIterator.SEG_QUADTO)
+                {
+                    if (Math.abs(point.x - vertex[2]) < 10 * Utilities.MM_PER_PIXEL)
+                    {
+                        if (Math.abs(point.y - vertex[3]) < 10 * Utilities.MM_PER_PIXEL)
+                        {
+                            selectedVertex = new Point2D.Double(Math.round(vertex[2]), Math.round(vertex[3]));
+                            return;
+                        }
+                    }
+                    if (segmentType == PathIterator.SEG_CUBICTO)
+                    {
+                        if (Math.abs(point.x - vertex[4]) < 10 * Utilities.MM_PER_PIXEL)
+                        {
+                            if (Math.abs(point.y - vertex[5]) < 10 * Utilities.MM_PER_PIXEL)
+                            {
+                                selectedVertex = new Point2D.Double(Math.round(vertex[4]), Math.round(vertex[5]));
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+            iterator.next();
+        }
+    }
+    
+    /**
+     * Retourne true si un sommet est sélectionné, false sinon.
+     * @return true si un sommet est sélectionné, false sinon.
+     */
     public boolean vertexIsSelected()
     {
         return selectedVertex != null;
     }
     
+    /**
+     * Déplace le sommet sélectionné vers un point.
+     * @param point le point destination du sommet.
+     */
     public void moveVertexToPoint(Point2D.Double point)
     {
         if (selectedVertex != null && point.x >= 0 && point.y >= 0)
         {
             point = new Point2D.Double(Math.round(point.x), Math.round(point.y));
-            selectedSurface.moveVertexToPoint(selectedVertex, point);
-            selectedSurface.coverSurface();
-            setSelectedVertex(point);
+            if (!point.equals(selectedVertex))
+            {
+                selectedSurface.moveVertexToPoint(selectedVertex, point);
+                selectedSurface.coverSurface();
+                selectVertex(point);
+            }
         }
     }
     
@@ -359,10 +454,10 @@ public class Project
     
     
     /**
-     * Retourne un tableau avec les noms des types de tuiles.
+     * Retourne les noms des types de tuiles.
      * @return les noms des types de tuiles.
      */
-    public String[] getTileTypeStrings()
+    public String[] getTileNames()
     {
         String[] tileTypeStrings = new String[tileTypes.size()];
         for (int i = 0; i < tileTypes.size(); i++)
@@ -370,6 +465,49 @@ public class Project
             tileTypeStrings[i] = tileTypes.get(i).getName();
         }
         return tileTypeStrings;
+    }
+    
+    /**
+     * Retourne le nombre de tuiles par boite par type de tuiles.
+     * @return le nombre de tuiles par boite par type de tuiles.
+     */
+    public int[] getBoxCapacities()
+    {
+        int[] nbTilePerBox = new int[tileTypes.size()];
+        for (int i = 0; i < tileTypes.size(); i++)
+        {
+            nbTilePerBox[i] = tileTypes.get(i).getNbPerBox();
+        }
+        return nbTilePerBox;
+    }
+    
+    /**
+     * Retourne le nombre de tuiles utilisées par type de tuiles.
+     * @return le nombre de tuiles utilisées par type de tuiles.
+     */
+    public int[] getTileQuantities()
+    {       
+        int[] tileQuantities = new int[tileTypes.size()];
+        for (int i = 0; i < tileTypes.size(); i++)
+        {
+            for (Surface surface : surfaces)
+            {                
+                if (surface.getCovering().getTileType() == tileTypes.get(i))
+                {                        
+                    tileQuantities[i] += surface.getCovering().getNbTiles();
+                }
+            }
+        }
+        return tileQuantities;
+    }
+    
+    /**
+     * Retourne le nombre de tuiles utilisées par la surface sélectionnée
+     * @return le nombre de tuiles utilisées par la surface sélectionnée.
+     */
+    public int getTileQuantity()
+    {
+        return selectedSurface.getCovering().getNbTiles();
     }
     
     /**
@@ -447,5 +585,40 @@ public class Project
             }
         }
         catch (IOException | ClassNotFoundException i) { i.printStackTrace(System.out); }
+    }
+
+    void toggleCollisionCheck()
+    {
+        hasCollisionCheck = !hasCollisionCheck;
+    }
+    
+    /**
+     * Vérifie si le type de tuile sélectionné est utilisé dans un motif qui exige
+     * des dimensions fixes.
+     * @return true si le type de tuile sélectionnée est utilisé par un motif qui exige
+     * des dimensions fixes.
+     */
+    public boolean tileTypeDimensionsAreLocked()
+    {
+        TileType tileType = selectedSurface.getCovering().getTileType();
+        for (Surface surface : surfaces)
+        {
+            Covering covering = surface.getCovering();
+            if (covering.getTileType() == tileType
+                    && (covering.getPattern() == Pattern.LSHAPE
+                    || covering.getPattern() == Pattern.TWOBYTWO))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void unmergeSurface()
+    {
+        surfaces.add(((CombinedSurface) selectedSurface).getFirstSurface());
+        surfaces.add(((CombinedSurface) selectedSurface).getSecondSurface());
+        surfaces.remove(selectedSurface);
+        selectedSurface = null;
     }
 }

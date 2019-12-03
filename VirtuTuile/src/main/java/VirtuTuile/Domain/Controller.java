@@ -2,6 +2,7 @@ package VirtuTuile.Domain;
 
 import VirtuTuile.Domain.UndoableEdits.*;
 import java.awt.Color;
+import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.awt.geom.Point2D;
@@ -54,9 +55,21 @@ public class Controller
         project.selectSurface(point);
     }
     
+    /**
+     * Sélectionne la surface à la fin de la liste des surfaces.
+     */
     public void selectLastSurfaceAdded()
     {
         project.selectLastSurfaceAdded();
+    }
+    
+    /**
+     * Sélectionne un sommet d'une surface.
+     * @param point le point qui touche au sommet.
+     */
+    public void selectVertex(Point2D.Double point)
+    {
+        project.selectVertex(point);
     }
     
     /**
@@ -136,6 +149,23 @@ public class Controller
             RectangularSurface surface = (RectangularSurface)
                     (project.getSurfaces().get(project.getSurfaces().size() - 1));
             undoManager.addEdit(new UndoAddRectangularSurface(project, surface));
+        }
+        return status;
+    }
+    
+    /**
+     * Crée une nouvelle surface circulaire.
+     * @param rectangle les bornes de l'ellipse.
+     * @return true si la création à réussie, false sinon.
+     */
+    public boolean addCircularSurface(Rectangle2D.Double rectangle)
+    {
+        boolean status = project.addCircularSurface(rectangle);
+        if (status)
+        {
+            CircularSurface surface = (CircularSurface)
+                    (project.getSurfaces().get(project.getSurfaces().size() - 1));
+            undoManager.addEdit(new UndoAddCircularSurface(project, surface));
         }
         return status;
     }
@@ -594,7 +624,78 @@ public class Controller
             undoManager.addEdit(new UndoSetTileHeight(tileType, oldHeight, newHeight, this));
         }
     }
+    
+    /**
+     * Déplace le sommet sélectionné vers un point.
+     * [UNDOABLE]
+     * @param point le point destination du sommet.
+     */
+    public void moveVertexToPoint(Point2D.Double point)
+    {
+        Surface surface = project.getSelectedSurface();
+        if (surface instanceof RectangularSurface)
+        {
+            Rectangle2D oldRect = surface.getBounds2D();
+            project.moveVertexToPoint(point);
+            Rectangle2D newRect = surface.getBounds2D();
+            if (!oldRect.equals(newRect))
+            {
+                undoManager.addEdit(new UndoMoveVertexRectangularSurface(
+                        oldRect, newRect, (RectangularSurface) surface));
+            }
+        }
+        else if (surface instanceof IrregularSurface)
+        {
+            Path2D.Double oldPath = new Path2D.Double(((IrregularSurface) surface).getPath());
+            project.moveVertexToPoint(point);
+            Path2D.Double newPath = new Path2D.Double(((IrregularSurface) surface).getPath());
+            if (!oldPath.equals(newPath))
+            {
+                undoManager.addEdit(new UndoMoveVertexIrregularSurface(
+                        oldPath, newPath, (IrregularSurface) surface));
+            }
+        }
+        else if (surface instanceof CombinedSurface)
+        {
+            Path2D.Double oldPath = new Path2D.Double(((CombinedSurface) surface).getPath());
+            Path2D.Double oldUncoveredPath =
+                    new Path2D.Double(((CombinedSurface) surface).getUncoveredPath());
+            project.moveVertexToPoint(point);
+            Path2D.Double newPath = new Path2D.Double(((CombinedSurface) surface).getPath());
+            Path2D.Double newUncoveredPath =
+                    new Path2D.Double(((CombinedSurface) surface).getUncoveredPath());
+            if (!oldPath.equals(newPath) || !oldUncoveredPath.equals(newUncoveredPath))
+            {
+                undoManager.addEdit(new UndoMoveVertexCombinedSurface(
+                        oldPath, newPath, oldUncoveredPath,
+                        newUncoveredPath, (CombinedSurface) surface));
+            }
+        }
+        else if (surface instanceof CircularSurface)
+        {
+            Path2D.Double oldPath = new Path2D.Double(((CircularSurface) surface).getPath());
+            project.moveVertexToPoint(point);
+            Path2D.Double newPath = new Path2D.Double(((CircularSurface) surface).getPath());
+            if (!oldPath.equals(newPath))
+            {
+                undoManager.addEdit(new UndoMoveVertexCircularSurface(
+                        oldPath, newPath, (CircularSurface) surface));
+            }
+        }
+    }
 
+    /**
+     * Défusionne deux surfaces combinées.
+     * [UNDOABLE]
+     */
+    public void unmergeSurface()
+    {
+        CombinedSurface surface = ((CombinedSurface) project.getSelectedSurface());
+        undoManager.addEdit(new UndoUnmergeSurface(
+                project, surface.getFirstSurface(), surface.getSecondSurface(), surface));
+        project.unmergeSurface();
+    }
+    
 //************************************************************************************************\\
 //                                      GETTERS                                                   \\
 //************************************************************************************************\\
@@ -634,19 +735,13 @@ public class Controller
         return project.getSelectedSurface();
     }
     
-    public void setSelectedVertex(Point2D.Double point)
-    {
-        project.setSelectedVertex(point);
-    }
-    
+    /**
+     * Retourne true si un sommet est sélectionné, false sinon.
+     * @return true si un sommet est sélectionné, false sinon.
+     */
     public boolean vertexIsSelected()
     {
         return project.vertexIsSelected();
-    }
-    
-    public void moveVertexToPoint(Point2D.Double point)
-    {
-        project.moveVertexToPoint(point);
     }
     
     /**
@@ -798,9 +893,9 @@ public class Controller
      * Retourne un tableau avec les noms des types de tuiles du projet.
      * @return les noms des types de tuiles du projet.
      */
-    public String[] getTileTypeStrings()
+    public String[] getTileNames()
     {
-        return project.getTileTypeStrings();
+        return project.getTileNames();
     }
     
     /**
@@ -840,12 +935,39 @@ public class Controller
     }
     
     /**
+     * Retourne le nombre de tuiles par boite par type de tuiles.
+     * @return le nombre de tuiles par boite par type de tuiles.
+     */
+    public int[] getBoxCapacities()
+    {
+        return project.getBoxCapacities();
+    }    
+    
+    /**
      * Retourne la couleur de la tuile du recouvrement de la surface sélectionnée. 
      * @return la couleur de la tuile du recouvrement de la surface sélectionnée.
      */
     public Color getTileColor()
     {
         return project.getSelectedSurface().getCovering().getTileType().getColor();
+    }
+    
+    /**
+     * Retourne le nombre de tuiles utilisées par la surface sélectionnée
+     * @return le nombre de tuiles utilisées par la surface sélectionnée.
+     */
+    public int getTileQuantity()
+    {
+        return project.getTileQuantity();
+    }
+    
+    /**
+     * Retourne le nombre de tuiles utilisées par type de tuiles.
+     * @return le nombre de tuiles utilisées par type de tuiles.
+     */
+    public int[] getTileQuantities()
+    {       
+        return project.getTileQuantities();
     }
     
     /**
@@ -871,6 +993,15 @@ public class Controller
     public boolean surfaceIsRectangular()
     {
         return project.getSelectedSurface() instanceof RectangularSurface;
+    }
+    
+    /**
+     * Retourne true si la surface sélectionnée est combinée.
+     * @return true si la surface sélectionnée est combinée.
+     */
+    public boolean surfaceIsCombined()
+    {
+        return project.getSelectedSurface() instanceof CombinedSurface;
     }
     
     /**
@@ -993,5 +1124,21 @@ public class Controller
     public void startPatternOnFullRow()
     {
         setOffsetY(0.0);
+    }
+
+    public void toggleCollisionCheck()
+    {
+        project.toggleCollisionCheck();
+    }
+    
+    /**
+     * Vérifie si le type de tuile sélectionné est utilisé dans un motif qui exige
+     * des dimensions fixes.
+     * @return true si le type de tuile sélectionnée est utilisé par un motif qui exige
+     * des dimensions fixes.
+     */
+    public boolean tileTypeDimensionsAreLocked()
+    {
+        return project.tileTypeDimensionsAreLocked();
     }
 }
