@@ -3142,6 +3142,11 @@ public class MainWindow extends JFrame
                 if (flag)
                 {
                     controller.selectLastSurfaceAdded();
+                    toggleGroup.clearSelection();
+                    selectionToggle.setSelected(true);
+                    selectedMode = ApplicationModes.SELECT;
+                    updatePanelInformation();
+                    repaint();
                 }
                 else
                 {
@@ -3216,8 +3221,12 @@ public class MainWindow extends JFrame
                     if (status)
                     {
                         controller.selectLastSurfaceAdded();
+                        toggleGroup.clearSelection();
+                        selectionToggle.setSelected(true);
+                        selectedMode = ApplicationModes.SELECT;
                         enablePanelButtons();
                         updatePanelInformation();
+                        repaint();
                     }
                     else
                     {
@@ -3265,8 +3274,12 @@ public class MainWindow extends JFrame
                     if (status)
                     {
                         controller.selectLastSurfaceAdded();
+                        toggleGroup.clearSelection();
+                        selectionToggle.setSelected(true);
+                        selectedMode = ApplicationModes.SELECT;
                         enablePanelButtons();
                         updatePanelInformation();
+                        repaint();
                     }
                     else
                     {
@@ -3343,6 +3356,9 @@ public class MainWindow extends JFrame
         if (status)
         {
             controller.selectLastSurfaceAdded();
+            toggleGroup.clearSelection();
+            selectionToggle.setSelected(true);
+            selectedMode = ApplicationModes.SELECT;
             enablePanelButtons();
             updatePanelInformation();
         }
@@ -3394,8 +3410,7 @@ public class MainWindow extends JFrame
         {
             mouseDraggedTileMove(evt);
         }
-        else if (selectedMode == ApplicationModes.SELECT && controller.surfaceIsSelected() && movingVertex && 
-                canvasPanel.getZoom() > 5)
+        else if (selectedMode == ApplicationModes.SELECT && controller.surfaceIsSelected() && movingVertex)
         {
             mouseDraggedVertexMove(evt);
         }

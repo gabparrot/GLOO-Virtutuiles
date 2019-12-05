@@ -45,7 +45,7 @@ public class UndoMoveVertexCombinedSurface implements javax.swing.undo.UndoableE
     {
         surface.reset();
         surface.append(oldArea, false);
-        surface.setUncoveredPath(oldUncoveredArea);
+        surface.setUncoveredPath(new Path2D.Double(oldUncoveredArea));
         surface.coverSurface();
     }
 
@@ -60,7 +60,7 @@ public class UndoMoveVertexCombinedSurface implements javax.swing.undo.UndoableE
     {
         surface.reset();
         surface.append(newArea, false);
-        surface.setUncoveredPath(newUncoveredArea);
+        surface.setUncoveredPath(new Path2D.Double(newUncoveredArea));
         surface.coverSurface();
     }
     

@@ -267,7 +267,7 @@ public class CanvasPanel extends javax.swing.JPanel
         int lx = x + horizontalOffset;
         int ly = y + verticalOffset;
         double oldZoom = zoom;
-        int booster = (int) Math.ceil(oldZoom - (oldZoom % 100) / 100);
+        int booster = (int) Math.round(Math.ceil(oldZoom - (oldZoom % 100) / 200));
         
         
         double newZoom = (Math.round(zoom * 100) - increment * 5 * booster) / 100.;
