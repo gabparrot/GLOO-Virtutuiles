@@ -18,12 +18,15 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
     private final double offsetY;
     private final int rowOffset;
     private final Area fullArea;
+    private int modCounterX;
+    private int modCounterY;
+    private double angleAdjustX;
+    private double angleAdjustY;
     private final ArrayList<Area> tiles = new java.util.ArrayList<>();
     
     public DiagonalCoveringStrategy(
-            double tileWidth, double tileHeight, double jointWidth,
-            double offsetX, double offsetY, int rowOffset,
-            Area fullArea, int rotation)
+            double tileWidth, double tileHeight, double jointWidth, double offsetX, double offsetY, int rowOffset, 
+            Area fullArea, int rotation, int pModCounterX, int pModCounterY, double pAngleAdjustX, double pAngleAdjustY)
     {
         this.rotation = rotation;
         this.tileWidth = tileWidth;
@@ -33,6 +36,11 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         this.offsetY = offsetY;
         this.rowOffset = rowOffset;
         this.fullArea = fullArea;
+        this.modCounterX = pModCounterX;
+        this.modCounterY = pModCounterY;
+        this.angleAdjustX = pAngleAdjustX;
+        this.angleAdjustY = pAngleAdjustY;
+        
     }
     
     /**
@@ -127,8 +135,18 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         }
         
         // Décalage
-        double offsetModX = this.offsetX % tileJointedWidth;
-        double offsetModY = this.offsetY % tileJointedHeight;
+        double offsetModX = this.offsetX;
+        double offsetModY = this.offsetY;
+        
+        double[] offsets = offsetModulos(offsetModX, offsetModY,tileJointedWidth, tileJointedHeight, 
+                                         sinTheta, cosTheta,sinPhi, cosPhi);
+        
+        this.modCounterX = (int) (this.offsetX / (tileJointedWidth * sinPhi + tileJointedHeight * cosPhi));
+        this.modCounterY = (int) (this.offsetY /(tileJointedWidth * cosPhi + tileJointedHeight * sinPhi));
+        
+        offsetModX = offsets[0];
+        offsetModY = offsets[1];
+        
         double rowOffsetMod;
         double rowOffsetModX;
         double rowOffsetModY;
@@ -164,25 +182,27 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         double modelRotatedY = modelTile.getBounds2D().getCenterY();
         AffineTransform modelRewind = new AffineTransform();
         
-        if (shouldInvertRow(tileJointedHeight * cosTheta))
-        {
-            currentRow++;
-            maxRows++;
-            modelRewind.translate(-rowOffsetModX - tileWidth * cosTheta, -rowOffsetModY);
-        }
-        if (shouldInvertCol(tileJointedWidth * cosTheta))
-        {
-            //currentCol++;
-            maxCols++;
-            modelRewind.translate(0, -tileWidth * sinTheta);
-        }
-        
-        modelRewind.translate(modelOriginX - modelRotatedX - nextRowX * 2 - nextColX * 3 + offsetModX, 
-                              modelOriginY - modelRotatedY - nextRowY * 2 - nextColY * 3 + offsetModY);
+       // if (shouldInvertRow(tileJointedWidth * cosPhi + tileJointedHeight * cosPhi))
+        //{
+         //   currentRow++;
+          //  maxRows++;
+        //    modelRewind.translate(-rowOffsetModX - tileJointedWidth * cosTheta + tileJointedWidth * sinTheta, -rowOffsetModY);
+       // }
+//        if (shouldInvertCol(tileJointedWidth * cosPhi + tileJointedHeight * cosPhi))
+//        {
+//            //currentCol++;
+//            //maxCols++;
+//            //modelRewind.translate(0, -tileJointedWidth * sinTheta);
+//        }
+
+        modelRewind.translate(modelOriginX - modelRotatedX - nextRowX * 2 - nextColX * 3, 
+                              modelOriginY - modelRotatedY - nextRowY * 2 - nextColY * 3);
         modelTile.transform(modelRewind);
         AffineTransform moveModelToStart = new AffineTransform();
-        moveModelToStart.translate(frameXOffset, frameYOffset);
+        moveModelToStart.translate(frameXOffset + offsetModX + angleAdjustX, 
+                                   frameYOffset + offsetModY + angleAdjustY);
         modelTile.transform(moveModelToStart);
+
         
         // Création et positionnement des tuiles
         while (currentRow < maxRows)
@@ -240,13 +260,109 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
                 currentRow++;
             }
         }
-        
+            
         return tiles;
+    }
+    
+    /**
+     * Compense les offset subissant un modulo en angle
+     * @param pOffsetModX 
+     * @param pOffsetModY
+     * @param pTileJointedWidth
+     * @param pTileJointedHeight
+     * @param pSinTheta
+     * @param pCosTheta
+     * @param pSinPhi
+     * @param pCosPhi
+     * @param changedX drapeau indiquant si pOffsetModX a subit un changement dans l'itération précédente
+     * @param changedY drapeau indiquant si pOffsetModY a subit un changement dans l'itération précédente
+     * @return offsets, un array avec les décalages X et Y résultants
+     */
+    private double[] offsetModulos(double pOffsetModX, double pOffsetModY, double pTileJointedWidth, 
+                                   double pTileJointedHeight, double pSinTheta, double pCosTheta, double pSinPhi, 
+                                   double pCosPhi)
+    {
+        double[] offsets = new double[2];
+        double newOffsetModX = pOffsetModX % (pTileJointedWidth * pSinPhi + pTileJointedHeight * pCosPhi);
+        double newOffsetModY = pOffsetModY % (pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi);
+        int newModCounterX = (int) (this.offsetX / (pTileJointedWidth * pSinPhi + pTileJointedHeight * pCosPhi));
+        int newModCounterY =(int) (this.offsetY /(pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi));
+        
+        if (newModCounterX != this.modCounterX)
+        { 
+            if (newModCounterX < this.modCounterX)
+            {
+                this.angleAdjustX -= (pTileJointedHeight * pSinTheta); // Compense angle vers gauche
+                this.angleAdjustY += (pTileJointedWidth * pSinTheta);  // compense angle vers bas
+            }
+            if (newModCounterX > this.modCounterX)
+            {
+                this.angleAdjustX += (pTileJointedHeight * pSinTheta); // Compense angle vers droite
+                this.angleAdjustY -= (pTileJointedWidth * pSinTheta);  // compense angle vers haut
+            }
+        }
+
+        if (newModCounterY != this.modCounterY)
+        {
+            if (newModCounterY < this.modCounterY)
+            {
+                this.angleAdjustX -= (pTileJointedHeight * pSinTheta); // Compense angle vers gauche
+                this.angleAdjustY -= (pTileJointedWidth * pSinTheta);  // compense angle vers bas
+            }
+            if (newModCounterY > this.modCounterY)
+            {
+                this.angleAdjustX += (pTileJointedHeight * pSinTheta); // Compense angle vers droite
+                this.angleAdjustY += (pTileJointedWidth * pSinTheta);  // compense angle vers haut
+            }
+
+        }
+        
+        newOffsetModX = newOffsetModX % (pTileJointedWidth * pSinPhi + pTileJointedHeight * pCosPhi);
+        newOffsetModY = newOffsetModY % (pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi);       
+        offsets[0] = newOffsetModX;
+        offsets[1] = newOffsetModY;
+        
+        double oldAdjustX = angleAdjustX;
+        this.angleAdjustX %= (pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi);
+        
+        if (oldAdjustX < angleAdjustX)
+        {
+            this.angleAdjustX -= (pTileJointedHeight * pSinTheta); // Compense angle vers gauche
+            this.angleAdjustY += (pTileJointedWidth * pSinTheta);  // compense angle vers bas
+        }
+        if (oldAdjustX > angleAdjustX)
+        {
+            this.angleAdjustX += (pTileJointedHeight * pSinTheta); // Compense angle vers droite
+            this.angleAdjustY -= (pTileJointedWidth * pSinTheta);  // compense angle vers haut
+        }
+        
+        double oldAdjustY = angleAdjustY;
+        this.angleAdjustY %= (pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi);
+        if (oldAdjustY < angleAdjustY)
+        {
+            this.angleAdjustX -= (pTileJointedHeight * pSinTheta); // Compense angle vers gauche
+            this.angleAdjustY -= (pTileJointedWidth * pSinTheta);  // compense angle vers bas
+        }
+        if (oldAdjustY > angleAdjustY)
+        {
+            this.angleAdjustX += (pTileJointedHeight * pSinTheta); // Compense angle vers droite
+            this.angleAdjustY += (pTileJointedWidth * pSinTheta);  // compense angle vers haut
+        }
+        
+        if (rotation > 90)
+        {
+            this.angleAdjustX = -1 * angleAdjustX;
+            this.angleAdjustY = -1 * angleAdjustY;
+        }
+        
+        this.modCounterX = newModCounterX;
+        this.modCounterY = newModCounterY;
+        return offsets;
     }
     
     private boolean shouldInvertRow(double pTileHeight)
     {
-        double x = offsetY;
+        double x = offsetY + angleAdjustY;
         if (x < 0)
         {
             x = Math.abs(x) + 2 * pTileHeight;
@@ -256,22 +372,12 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
     
     private boolean shouldInvertCol(double pTileWidth)
     {
-        double x = offsetX;
+        double x = offsetX + angleAdjustX;
         if(x < 0)
         {
             x = Math.abs(x) + 2 * pTileWidth;
         }
         return x % (pTileWidth * 2) < pTileWidth;
-    }
-    
-    private boolean OLDshouldInvertRow(double tileHeight)
-    {
-        double x = offsetY;
-        if (x < 0)
-        {
-            x = Math.abs(x) + 2 * tileHeight + 2* jointWidth;
-        }
-        return x % ((tileHeight + jointWidth) * 2) < tileHeight + jointWidth;
     }
     
     /**
@@ -287,5 +393,25 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         rotateAT.rotate(java.lang.Math.toRadians(rotation), anchorX, anchorY);
         tileToRotate.transform(rotateAT);
         return tileToRotate;
+    }
+    
+    public int getModCounterX()
+    {
+        return modCounterX;
+    }
+    
+    public int getModCounterY()
+    {
+        return modCounterY;
+    }
+    
+    public double getAngleAdjustX()
+    {
+        return angleAdjustX;
+    }
+            
+    public double getAngleAdjustY()
+    {
+        return angleAdjustY;
     }
 }

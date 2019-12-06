@@ -4897,8 +4897,8 @@ public class MainWindow extends JFrame
         {
             receipt += "Nom de la tuile:                               " + tileNames[i]  + "\n";
             receipt += "Nombre de tuiles par boîte:          " + boxCapacities[i] + "\n";
-            receipt += "Nombre de tuiles utilisées:          " + tileQuantities[i] + "\n";
-            receipt += "Nombre de boîtes nécessaires: " +
+            receipt += "Nombre de tuiles utilisées:           " + tileQuantities[i] + "\n";
+            receipt += "Nombre de boîtes nécessaires:   " +
                     (int)Math.ceil((double)tileQuantities[i] / (double)boxCapacities[i]) + "\n\n";
         }
         String message = receipt + "Enregistré sous VirtuTuile/FACTURE_VirtuTuile.txt";

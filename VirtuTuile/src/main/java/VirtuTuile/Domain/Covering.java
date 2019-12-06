@@ -29,6 +29,10 @@ public class Covering implements Serializable, Cloneable
     private transient ArrayList<Area> tiles = new java.util.ArrayList<>();
     private TileType tileType = null;
     private Surface parent;
+    private int modCounterX = 0;
+    private int modCounterY = 0;
+    private double angleAdjustX = 0.0;
+    private double angleAdjustY = 0.0;
     
     /**
      * Constructeur standard de covering
@@ -37,7 +41,7 @@ public class Covering implements Serializable, Cloneable
     public Covering(Surface parent)
     {
         this.parent = parent;
-        cover();
+        cover(); 
     }
     
     /**
@@ -110,13 +114,19 @@ public class Covering implements Serializable, Cloneable
                         if (isNinetyDegree) // Inverser width et height et appliquer degrés indépendamment
                         {
                             coveringStrategy = new DiagonalCoveringStrategy(tileType.getHeight(), tileType.getWidth(),
-                                jointWidth, offsetX,offsetY, rowOffset, fullArea, rotation);
+                                jointWidth, offsetX,offsetY, rowOffset, fullArea, rotation, modCounterX, 
+                                modCounterY, angleAdjustX, angleAdjustY);
                         }
                         else
                         {
                             coveringStrategy = new DiagonalCoveringStrategy(tileType.getWidth(), tileType.getHeight(),
-                                jointWidth, offsetX,offsetY, rowOffset, fullArea, rotation);
+                            jointWidth, offsetX,offsetY, rowOffset, fullArea, rotation, modCounterX, modCounterY, 
+                            angleAdjustX, angleAdjustY);
                         }
+                        this.modCounterX = ((DiagonalCoveringStrategy)coveringStrategy).getModCounterX();
+                        this.modCounterY = ((DiagonalCoveringStrategy)coveringStrategy).getModCounterY();
+                        this.angleAdjustX = ((DiagonalCoveringStrategy)coveringStrategy).getAngleAdjustX();
+                        this.angleAdjustY = ((DiagonalCoveringStrategy)coveringStrategy).getAngleAdjustY();
                         break;
                 }
                 break;
@@ -124,6 +134,15 @@ public class Covering implements Serializable, Cloneable
                 throw new IllegalStateException();
         }
         tiles = coveringStrategy.cover();
+        if (coveringStrategy instanceof DiagonalCoveringStrategy)
+        {
+            System.out.println("COVERING oldModX: " + modCounterX + ", COVERING oldModY:" + modCounterY);
+            this.modCounterX = ((DiagonalCoveringStrategy)coveringStrategy).getModCounterX();
+            this.modCounterY = ((DiagonalCoveringStrategy)coveringStrategy).getModCounterY();
+            this.angleAdjustX = ((DiagonalCoveringStrategy)coveringStrategy).getAngleAdjustX();
+            this.angleAdjustY = ((DiagonalCoveringStrategy)coveringStrategy).getAngleAdjustY();
+            System.out.println("COVERING newModX: " + modCounterX + ", COVERING newModY:" + modCounterY);
+        }
     }
     
     /**
