@@ -2,6 +2,7 @@ package VirtuTuile.Domain.UndoableEdits;
 
 import VirtuTuile.Domain.CombinedSurface;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
@@ -13,21 +14,36 @@ public class UndoMoveVertexCombinedSurface implements javax.swing.undo.UndoableE
     private final Path2D.Double oldUncoveredArea;
     private Path2D.Double newUncoveredArea;
     private final CombinedSurface surface;
+    private final Point2D.Double oldPoint;
+    private Point2D.Double newPoint;
     
     public UndoMoveVertexCombinedSurface(
             Path2D.Double oldArea, Path2D.Double newArea,
-            Path2D.Double oldUncoveredArea, Path2D.Double newUncoveredArea, CombinedSurface surface)
+            Path2D.Double oldUncoveredArea, Path2D.Double newUncoveredArea, CombinedSurface surface,
+            Point2D.Double oldPoint, Point2D.Double newPoint)
     {
         this.oldArea = oldArea;
         this.newArea = newArea;
         this.oldUncoveredArea = oldUncoveredArea;
         this.newUncoveredArea = newUncoveredArea;
         this.surface = surface;
+        this.oldPoint = oldPoint;
+        this.newPoint = newPoint;
     }
     
     public CombinedSurface getSurface()
     {
         return surface;
+    }
+    
+    public Point2D.Double getOldPoint()
+    {
+        return oldPoint;
+    }
+    
+    public Point2D.Double getNewPoint()
+    {
+        return newPoint;
     }
     
     public Path2D.Double getNewArea()
@@ -81,8 +97,9 @@ public class UndoMoveVertexCombinedSurface implements javax.swing.undo.UndoableE
         if (anEdit instanceof UndoMoveVertexCombinedSurface)
         {
             UndoMoveVertexCombinedSurface newEdit = (UndoMoveVertexCombinedSurface) anEdit;
-            if (this.surface == newEdit.getSurface())
+            if (this.surface == newEdit.getSurface() && this.newPoint.equals(newEdit.getOldPoint()))
             {
+                this.newPoint = newEdit.getNewPoint();
                 this.newArea = newEdit.getNewArea();
                 this.newUncoveredArea = newEdit.getNewUncoveredArea();
                 return true;

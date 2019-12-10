@@ -346,6 +346,15 @@ public class Project
     }
     
     /**
+     * Retourne le sommet sélectionné.
+     * @return le sommet sélectionné.
+     */
+    public Point2D.Double getSelectedVertex()
+    {
+        return selectedVertex;
+    }
+    
+    /**
      * Déplace le sommet sélectionné vers un point.
      * @param point le point destination du sommet.
      */
@@ -353,7 +362,6 @@ public class Project
     {
         if (selectedVertex != null && point.x >= 0 && point.y >= 0)
         {
-            point = new Point2D.Double(Math.round(point.x), Math.round(point.y));
             if (!point.equals(selectedVertex))
             {
                 selectedSurface.moveVertexToPoint(selectedVertex, point);
@@ -616,8 +624,12 @@ public class Project
     
     public void unmergeSurface()
     {
-        surfaces.add(((CombinedSurface) selectedSurface).getFirstSurface());
-        surfaces.add(((CombinedSurface) selectedSurface).getSecondSurface());
+        Surface firstSurface = ((CombinedSurface) selectedSurface).getFirstSurface();
+        Surface secondSurface = ((CombinedSurface) selectedSurface).getSecondSurface();
+        surfaces.add(firstSurface);
+        surfaces.add(secondSurface);
+        firstSurface.coverSurface();
+        secondSurface.coverSurface();
         surfaces.remove(selectedSurface);
         selectedSurface = null;
     }

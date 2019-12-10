@@ -38,13 +38,13 @@ public class TwoByTwoCoveringStrategy implements CoveringStrategy
         }
         
         double offsetXMod = offsetX % (2 * longLength + jointWidth);
-        double offsetYMod = offsetY % (longLength + jointWidth);
+        double offsetYMod = offsetY % (2 * longLength + jointWidth);
         
         Rectangle2D bounds = fullArea.getBounds2D();
         Area innerArea = Geometry.getInnerArea(fullArea, jointWidth);
         Point2D.Double currentPoint = new Point2D.Double(
-                bounds.getX() - offsetXMod,
-                bounds.getY() - offsetYMod);
+                bounds.getX() - 2 * longLength - 2 * jointWidth + offsetXMod,
+                bounds.getY() - 3 * longLength - 3 * jointWidth + offsetYMod);
         
         Point2D.Double firstTileCorner;
         Point2D.Double secondTileCorner;
@@ -91,12 +91,12 @@ public class TwoByTwoCoveringStrategy implements CoveringStrategy
                 tileCount = 1;
                 if(rowCount % 2 == 0)
                 {
-                    currentPoint.x = bounds.getX() - 2 * shortLength - 2 * jointWidth + offsetXMod;
+                    currentPoint.x = bounds.getX() - 4 * shortLength - 4 * jointWidth + offsetXMod;
                     currentPoint.y += longLength + jointWidth;
                 }
                 else
                 {                    
-                    currentPoint.x = bounds.getX() - offsetXMod;
+                    currentPoint.x = bounds.getX() - 3 * longLength - 3 * jointWidth + offsetXMod;
                     currentPoint.y += longLength + jointWidth;
                 }                
             }

@@ -118,8 +118,8 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         double frameHeight = boundsHeight * sinPhi + boundsWidth * sinTheta;
         
         // Calcul du nombre de colonnes/rangées maximum
-        int maxCols = (int) Math.ceil(frameWidth / tileJointedWidth) + 5; // + pour permettre décalage
-        int maxRows = (int) Math.ceil(frameHeight/ tileJointedHeight) + 3;
+        int maxCols = (int) Math.ceil(frameWidth / tileJointedWidth) + 9; // + pour permettre décalage
+        int maxRows = (int) Math.ceil(frameHeight/ tileJointedHeight) + 7;
         
         if (theta > 30)
         {
@@ -195,8 +195,8 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
 //            //modelRewind.translate(0, -tileJointedWidth * sinTheta);
 //        }
 
-        modelRewind.translate(modelOriginX - modelRotatedX - nextRowX * 2 - nextColX * 3, 
-                              modelOriginY - modelRotatedY - nextRowY * 2 - nextColY * 3);
+        modelRewind.translate(modelOriginX - modelRotatedX - nextRowX * 5 - nextColX * 5, 
+                              modelOriginY - modelRotatedY - nextRowY * 5 - nextColY * 5);
         modelTile.transform(modelRewind);
         AffineTransform moveModelToStart = new AffineTransform();
         moveModelToStart.translate(frameXOffset + offsetModX + angleAdjustX, 
@@ -218,7 +218,7 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
                 newTile.transform(translateRow);
                 }
                 
-                //newTile.intersect(innerArea);
+                newTile.intersect(innerArea);
                 
                 // Éliminer tuiles en dehors de la surface
                 if (!newTile.isEmpty())
@@ -233,7 +233,7 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
                         ArrayList<Area> subTiles = Geometry.divideTile(newTile);
                         for (Area subTile : subTiles)
                         {
-                            //subTile.intersect(innerArea);
+                            subTile.intersect(innerArea);
                             if (!subTile.isEmpty())
                             {
                                 tiles.add(subTile);
@@ -338,6 +338,7 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
         
         double oldAdjustY = angleAdjustY;
         this.angleAdjustY %= (pTileJointedWidth * pCosPhi + pTileJointedHeight * pSinPhi);
+        
         if (oldAdjustY < angleAdjustY)
         {
             this.angleAdjustX -= (pTileJointedHeight * pSinTheta); // Compense angle vers gauche
@@ -349,10 +350,18 @@ public class DiagonalCoveringStrategy implements CoveringStrategy
             this.angleAdjustY += (pTileJointedWidth * pSinTheta);  // compense angle vers haut
         }
         
-        if (rotation > 90)
+        
+        // MAUVAISE COMPARAISON JE DOIS COMPARER AVEC LE MODULO GLOBAL PAS CELUI DU ANGLEADJUST DERP
+        if (rotation > 90 && oldAdjustX != angleAdjustX)
         {
             this.angleAdjustX = -1 * angleAdjustX;
             this.angleAdjustY = -1 * angleAdjustY;
+        }
+        
+        if (rotation > 90 && oldAdjustY != angleAdjustY)
+        {
+            this.angleAdjustX = angleAdjustX * 2;
+            this.angleAdjustY = angleAdjustY * 2;
         }
         
         this.modCounterX = newModCounterX;

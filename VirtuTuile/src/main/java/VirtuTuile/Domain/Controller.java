@@ -2,7 +2,6 @@ package VirtuTuile.Domain;
 
 import VirtuTuile.Domain.UndoableEdits.*;
 import java.awt.Color;
-import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.awt.geom.Point2D;
@@ -155,6 +154,7 @@ public class Controller
     
     /**
      * Crée une nouvelle surface circulaire.
+     * [UNDOABLE]
      * @param rectangle les bornes de l'ellipse.
      * @return true si la création à réussie, false sinon.
      */
@@ -632,6 +632,14 @@ public class Controller
      */
     public void moveVertexToPoint(Point2D.Double point)
     {
+        Point2D.Double selectedVertex = project.getSelectedVertex();
+        if (selectedVertex == null)
+        {
+            return;
+        }
+        point = new Point2D.Double(Math.round(point.x), Math.round(point.y));
+        Point2D.Double oldPoint = (Point2D.Double) selectedVertex.clone();
+        Point2D.Double newPoint = (Point2D.Double) point.clone();
         Surface surface = project.getSelectedSurface();
         if (surface instanceof RectangularSurface)
         {
@@ -641,7 +649,7 @@ public class Controller
             if (!oldRect.equals(newRect))
             {
                 undoManager.addEdit(new UndoMoveVertexRectangularSurface(
-                        oldRect, newRect, (RectangularSurface) surface));
+                        oldRect, newRect, (RectangularSurface) surface, oldPoint, newPoint));
             }
         }
         else if (surface instanceof IrregularSurface)
@@ -652,7 +660,7 @@ public class Controller
             if (!oldPath.equals(newPath))
             {
                 undoManager.addEdit(new UndoMoveVertexIrregularSurface(
-                        oldPath, newPath, (IrregularSurface) surface));
+                        oldPath, newPath, (IrregularSurface) surface, oldPoint, newPoint));
             }
         }
         else if (surface instanceof CombinedSurface)
@@ -668,7 +676,7 @@ public class Controller
             {
                 undoManager.addEdit(new UndoMoveVertexCombinedSurface(
                         oldPath, newPath, oldUncoveredPath,
-                        newUncoveredPath, (CombinedSurface) surface));
+                        newUncoveredPath, (CombinedSurface) surface, oldPoint, newPoint));
             }
         }
         else if (surface instanceof CircularSurface)
@@ -679,7 +687,7 @@ public class Controller
             if (!oldPath.equals(newPath))
             {
                 undoManager.addEdit(new UndoMoveVertexCircularSurface(
-                        oldPath, newPath, (CircularSurface) surface));
+                        oldPath, newPath, (CircularSurface) surface, oldPoint, newPoint));
             }
         }
     }

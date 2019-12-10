@@ -1,6 +1,7 @@
 package VirtuTuile.Domain.UndoableEdits;
 
 import VirtuTuile.Domain.RectangularSurface;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -11,12 +12,18 @@ public class UndoMoveVertexRectangularSurface implements javax.swing.undo.Undoab
     private final Rectangle2D oldRect;
     private Rectangle2D newRect;
     private final RectangularSurface surface;
+    private final Point2D.Double oldPoint;
+    private Point2D.Double newPoint;
     
-    public UndoMoveVertexRectangularSurface(Rectangle2D oldRect, Rectangle2D newRect, RectangularSurface surface)
+    public UndoMoveVertexRectangularSurface(
+            Rectangle2D oldRect, Rectangle2D newRect, RectangularSurface surface,
+            Point2D.Double oldPoint, Point2D.Double newPoint)
     {
         this.oldRect = oldRect;
         this.newRect = newRect;
         this.surface = surface;
+        this.oldPoint = oldPoint;
+        this.newPoint = newPoint;
     }
     
     public RectangularSurface getSurface()
@@ -27,6 +34,16 @@ public class UndoMoveVertexRectangularSurface implements javax.swing.undo.Undoab
     public Rectangle2D getNewRect()
     {
         return newRect;
+    }
+    
+    public Point2D.Double getOldPoint()
+    {
+        return oldPoint;
+    }
+    
+    public Point2D.Double getNewPoint()
+    {
+        return newPoint;
     }
     
     @Override
@@ -66,8 +83,9 @@ public class UndoMoveVertexRectangularSurface implements javax.swing.undo.Undoab
         if (anEdit instanceof UndoMoveVertexRectangularSurface)
         {
             UndoMoveVertexRectangularSurface newEdit = (UndoMoveVertexRectangularSurface) anEdit;
-            if (this.surface == newEdit.getSurface())
+            if (this.surface == newEdit.getSurface() && this.newPoint.equals(newEdit.getOldPoint()))
             {
+                this.newPoint = newEdit.getNewPoint();
                 this.newRect = newEdit.getNewRect();
                 return true;
             }

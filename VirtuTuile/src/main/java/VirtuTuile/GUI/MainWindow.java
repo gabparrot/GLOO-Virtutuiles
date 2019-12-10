@@ -4342,6 +4342,7 @@ public class MainWindow extends JFrame
     private void createTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileButtonActionPerformed
     {//GEN-HEADEREND:event_createTileButtonActionPerformed
         createTileWindow.setVisible(true);
+        createTileNameField.grabFocus();
     }//GEN-LAST:event_createTileButtonActionPerformed
 
     private void rowOffsetFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_rowOffsetFieldActionPerformed
@@ -4528,8 +4529,10 @@ public class MainWindow extends JFrame
         {
             Pattern pattern;
             String message = "Ce motif peut seulement être appliqué si la longueur du "
-                                + "plus long côté du matériau est égale au double de la longeur de "
-                                + "son plus court côté plus la largeur du joint.";
+                                + "plus long côté du matériau est égale\nau double de la longeur de "
+                                + "son plus court côté plus la largeur du joint.\n\n"
+                                + "FORMULE: côté long = 2 * côté court + largeur du joint\n"
+                                + "EXEMPLE: une tuile 30cm x 14cm avec un joint de 2cm";
             switch ((String) patternComboBox.getSelectedItem())
             {
                 case patternA:
