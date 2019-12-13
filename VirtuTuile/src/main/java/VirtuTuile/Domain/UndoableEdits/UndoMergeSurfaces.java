@@ -39,7 +39,6 @@ public class UndoMergeSurfaces implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.unselect();
         project.removeSurface(s1);
         project.removeSurface(s2);
         project.addSurface(s3);

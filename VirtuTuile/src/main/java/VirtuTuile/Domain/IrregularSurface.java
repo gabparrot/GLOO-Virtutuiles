@@ -3,12 +3,14 @@ package VirtuTuile.Domain;
 import java.awt.geom.Area;
 import java.awt.geom.Path2D;
 import java.awt.Color;
-import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -16,12 +18,11 @@ import java.util.ArrayList;
  * Classe définissant une surface irrégulière définie par une série de points.
  * @author gabparrot
  */
-public class IrregularSurface implements Surface, Serializable
+public class IrregularSurface extends Area implements Surface, Serializable
 {
-    private final Path2D.Double path = new Path2D.Double();
     private boolean isHole;
     private Color color;
-    private final Covering covering = new Covering(this);
+    private Covering covering = new Covering(this);
 
     /**
      * Constructeur de IrregularSurface
@@ -31,7 +32,7 @@ public class IrregularSurface implements Surface, Serializable
      */
     public IrregularSurface(Path2D.Double polygon, boolean isHole, Color color)
     {
-        path.append(polygon, false);
+        super(polygon);
         this.isHole = isHole;
         this.color = color;
     }
@@ -93,7 +94,54 @@ public class IrregularSurface implements Surface, Serializable
     @Override
     public double getArea()
     {
-        return path.getBounds2D().getWidth() * path.getBounds2D().getHeight();
+        double area = 0;
+        ArrayList<java.lang.Double> allX = new ArrayList<>();
+        ArrayList<java.lang.Double> allY = new ArrayList<>();
+        int nbPoints = 0;
+        PathIterator iter = getPathIterator(null);
+        
+        // Compter le nombre de points et placer les X et Y dans des listes
+        for (; !iter.isDone(); iter.next()) 
+        {
+            nbPoints++;
+            double[] currentCoords = new double[2];
+            iter.currentSegment(currentCoords);
+            allX.add(currentCoords[0]);
+            allY.add(currentCoords[1]);
+        }
+
+        switch (nbPoints) 
+        {
+            // Cas d'erreurs retournent 0
+            case 0:
+                break;
+                
+            case 1:
+                break;
+                
+            case 2:
+                break;
+                
+            //triangle
+            case 3:
+                double base = Math.sqrt(Math.pow(allX.get(0) - allX.get(1), 2) + Math.pow(allY.get(0) - allY.get(1), 2));
+                double height = Math.sqrt(Math.pow(allX.get(0) - allX.get(2), 2) + Math.pow(allY.get(0) - allY.get(2), 2));
+                area = (base * height) / 2;
+                break;
+                
+            // Calcule l'aire de tout polygone de 5+ sommets
+            default:
+                int j = nbPoints - 1;
+                
+                for (int i = 0; i < nbPoints; i++) 
+                {
+                    area = area + (allX.get(j) + allX.get(i)) * (allY.get(j) - allY.get(i));
+                    j = i;
+                }
+                
+                area = area / 2;
+        }
+        return area;
     }
     
     /**
@@ -119,11 +167,11 @@ public class IrregularSurface implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = path.getBounds2D();
+        Rectangle2D bounds = this.getBounds2D();
         double deltaX = x - bounds.getX();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(deltaX, 0);
-        path.transform(translationTransform);
+        this.transform(translationTransform);
         if (project.conflictCheck(this))
         {
             coverSurface();
@@ -133,7 +181,7 @@ public class IrregularSurface implements Surface, Serializable
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(-deltaX, 0);
-            path.transform(translationTransform);
+            this.transform(translationTransform);
             return false;
         }
     }
@@ -152,11 +200,11 @@ public class IrregularSurface implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = path.getBounds2D();
+        Rectangle2D bounds = this.getBounds2D();
         double deltaY = y - bounds.getY();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(0, deltaY);
-        path.transform(translationTransform);
+        this.transform(translationTransform);
         if (project.conflictCheck(this))
         {
             coverSurface();
@@ -166,7 +214,7 @@ public class IrregularSurface implements Surface, Serializable
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(0, -deltaY);
-            path.transform(translationTransform);
+            this.transform(translationTransform);
             return false;
         }
     }
@@ -185,13 +233,13 @@ public class IrregularSurface implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = path.getBounds2D();
+        Rectangle2D bounds = getBounds2D();
         double oldWidth = bounds.getWidth();
         double oldX = bounds.getX();
         
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(width / oldWidth, 1);
-        path.transform(scaleTransform);
+        transform(scaleTransform);
         setX(oldX, project);
         
         if (project.conflictCheck(this))
@@ -203,7 +251,7 @@ public class IrregularSurface implements Surface, Serializable
         {
             scaleTransform = new AffineTransform();
             scaleTransform.scale(oldWidth / width, 1);
-            path.transform(scaleTransform);
+            transform(scaleTransform);
             setX(oldX, project);
             return false;
         }
@@ -223,13 +271,13 @@ public class IrregularSurface implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = path.getBounds2D();
+        Rectangle2D bounds = getBounds2D();
         double oldHeight = bounds.getHeight();
         double oldY = bounds.getY();
         
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(1, height / oldHeight);
-        path.transform(scaleTransform);
+        transform(scaleTransform);
         setY(oldY, project);
         
         if (project.conflictCheck(this))
@@ -241,7 +289,7 @@ public class IrregularSurface implements Surface, Serializable
         {
             scaleTransform = new AffineTransform();
             scaleTransform.scale(1, oldHeight / height);
-            path.transform(scaleTransform);
+            transform(scaleTransform);
             setY(oldY, project);
             return false;
         }
@@ -259,21 +307,47 @@ public class IrregularSurface implements Surface, Serializable
     {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-        double deltaX = x - path.getBounds2D().getX();
-        double deltaY = y - path.getBounds2D().getY();
+        double deltaX = x - getBounds2D().getX();
+        double deltaY = y - getBounds2D().getY();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(deltaX, deltaY);
-        path.transform(translationTransform);
+        transform(translationTransform);
         if (!project.conflictCheck(this))
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(-deltaX, -deltaY);
-            path.transform(translationTransform);
+            transform(translationTransform);
         }
         else
         {
             coverSurface();
         }
+    }
+    /**
+     * Permet la sauvegarde d'une surface irrégulière dans un OutputStream
+     * @param out le OutputStream de destination
+     * @throws IOException Erreur d'écriture
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException
+    {
+        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(this));
+        out.writeObject(isHole);
+        out.writeObject(color);
+        out.writeObject(covering);
+    }
+    
+    /**
+     * Permet le chargement d'une surface irrégulière à partir d'un InputStream de sauvegarde
+     * @param in L'InputStream de sauvegarde
+     * @throws IOException erreur d'écriture
+     * @throws ClassNotFoundException erreur de définition de classe
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+    {
+        add(new Area((Shape) in.readObject()));
+        isHole = (boolean) in.readObject();
+        color = (Color) in.readObject();
+        covering = (Covering) in.readObject();
     }
 
     @Override
@@ -311,88 +385,8 @@ public class IrregularSurface implements Surface, Serializable
         Rectangle2D bounds = newArea.getBounds2D();
         if (newArea.isSingular() && !newArea.isEmpty() && bounds.getWidth() > 100 && bounds.getHeight() > 100)
         {
-            path.reset();
-            path.append(newPath, false);
+            reset();
+            add(new Area(newPath));
         }
-    }
-
-    @Override
-    public Rectangle getBounds()
-    {
-        return path.getBounds();
-    }
-
-    @Override
-    public Rectangle2D getBounds2D()
-    {
-        return path.getBounds2D();
-    }
-
-    @Override
-    public boolean contains(double x, double y)
-    {
-        return path.contains(x, y);
-    }
-
-    @Override
-    public boolean contains(Point2D p)
-    {
-        return path.contains(p);
-    }
-
-    @Override
-    public boolean intersects(double x, double y, double w, double h)
-    {
-        return path.intersects(x, y, w, h);
-    }
-
-    @Override
-    public boolean intersects(Rectangle2D r)
-    {
-        return path.intersects(r);
-    }
-
-    @Override
-    public boolean contains(double x, double y, double w, double h)
-    {
-        return path.contains(x, y, w, h);
-    }
-
-    @Override
-    public boolean contains(Rectangle2D r)
-    {
-        return path.contains(r);
-    }
-
-    @Override
-    public PathIterator getPathIterator(AffineTransform at)
-    {
-        return path.getPathIterator(at);
-    }
-
-    @Override
-    public PathIterator getPathIterator(AffineTransform at, double flatness)
-    {
-        return path.getPathIterator(at, flatness);
-    }
-    
-    public void reset()
-    {
-        path.reset();
-    }
-    
-    public void append(PathIterator pi, boolean connect)
-    {
-        path.append(pi, connect);
-    }
-    
-    public void append(Shape s, boolean connect)
-    {
-        path.append(s, connect);
-    }
-    
-    public Path2D.Double getPath()
-    {
-        return path;
     }
 }
