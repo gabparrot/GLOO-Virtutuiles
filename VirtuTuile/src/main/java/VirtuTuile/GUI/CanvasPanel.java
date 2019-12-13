@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import VirtuTuile.Domain.Drawing.CanvasDrawer;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.RenderingHints;
+import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 
@@ -32,8 +33,8 @@ public class CanvasPanel extends javax.swing.JPanel
     // Objet qui déssine sur le panneau.
     private final CanvasDrawer drawer = new CanvasDrawer(this);
     
-    // Rectangle temporaire qui sert de user feedback lors de la création de sruface.
     private Rectangle2D.Double temporaryRectangle = null;
+    private Ellipse2D.Double temporaryEllipse = null;
     private Path2D.Double temporaryPolygon = null;
     private Line2D.Double temporaryLine = null;
     
@@ -123,6 +124,31 @@ public class CanvasPanel extends javax.swing.JPanel
     public Rectangle2D.Double getTemporaryRectangle()
     {
         return temporaryRectangle;
+    }
+    
+    /**
+     * Setter pour l'ellipse temporaire qui sert de user feedback lors de la création de surface.
+     * @param r : les bornes de l'ellipse temporaire.
+     */
+    public void setTemporaryEllipse(Rectangle2D.Double r)
+    {
+        if (r == null)
+        {
+            temporaryEllipse = null;
+        }
+        else
+        {
+            temporaryEllipse = new Ellipse2D.Double(r.x, r.y, r.width, r.height);
+        }
+    }
+    
+    /**
+     * Getter pour l'ellipse temporaire qui sert de user feedback lors de la création de surface.
+     * @return l'ellipse temporaire.
+     */
+    public Ellipse2D.Double.Double getTemporaryEllipse()
+    {
+        return temporaryEllipse;
     }
     
     /**
@@ -241,8 +267,10 @@ public class CanvasPanel extends javax.swing.JPanel
         int lx = x + horizontalOffset;
         int ly = y + verticalOffset;
         double oldZoom = zoom;
+        int booster = (int) Math.round(Math.ceil(oldZoom - (oldZoom % 100) / 200));
         
-        double newZoom = (Math.round(zoom * 100) - increment * 5) / 100.;
+        
+        double newZoom = (Math.round(zoom * 100) - increment * 5 * booster) / 100.;
         if (newZoom >= 0.1)
         {
             zoom = newZoom;

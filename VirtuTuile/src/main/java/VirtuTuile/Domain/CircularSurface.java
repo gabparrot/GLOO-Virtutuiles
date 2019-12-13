@@ -1,117 +1,75 @@
 package VirtuTuile.Domain;
 
-import java.awt.geom.Area;
-import java.awt.geom.Path2D;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.Serializable;
-import java.util.ArrayList;
 
-/**
- * Classe définissant une surface irrégulière définie par une série de points.
- * @author gabparrot
- */
-public class IrregularSurface implements Surface, Serializable
+public class CircularSurface implements Surface, Serializable
 {
     private final Path2D.Double path = new Path2D.Double();
     private boolean isHole;
     private Color color;
     private final Covering covering = new Covering(this);
-
-    /**
-     * Constructeur de IrregularSurface
-     * @param polygon représentant la forme de la surface.
-     * @param isHole représentant si oui on non la surface est un trou (non-couvrable).
-     * @param color représentant la couleur de la surface.
-     */
-    public IrregularSurface(Path2D.Double polygon, boolean isHole, Color color)
+    
+    public CircularSurface(Rectangle2D.Double bounds, boolean isHole, Color color)
     {
-        path.append(polygon, false);
+        path.append(
+                new Ellipse2D.Double(bounds.x, bounds.y, bounds.width, bounds.height), false);
         this.isHole = isHole;
         this.color = color;
     }
 
-    /**
-     * Getter du statut de trou (non couvrable)
-     * @return isHole booleen representant si oui ou non la surface est un trou
-     */    
     @Override
     public boolean isHole()
     {
         return isHole;
     }
     
-    /**
-     * Setter du statut de trou (non couvrable)
-     * @param newStatus Booleen representant si oui ou non la surface devra etre un trou non couvrable
-     */
     @Override
     public void setIsHole(boolean newStatus)
     {
         this.isHole = newStatus;
         coverSurface();
     }
-    /**
-     * Getter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
-     * @return color objet Color
-     */
+    
     @Override
     public Color getColor()
     {
         return color;
     }
     
-    /**
-     * Setter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
-     * @param newColor objet Color
-     */
     @Override
     public void setColor(Color newColor)
     {
         this.color =  newColor;
     }
     
-    /**
-     * Getter du covering representant les tuiles sur la surface, si elle est couverte
-     * @return covering l'objet covering 
-     */
     @Override
     public Covering getCovering()
     {
         return covering;
     }
     
-    /**
-     * Retourne l'aire de cette IrregularSurface
-     * @return area Un double representant l'aire
-     */
     @Override
     public double getArea()
     {
         return path.getBounds2D().getWidth() * path.getBounds2D().getHeight();
     }
     
-    /**
-     * Demande au covering de se couvrir de tuiles, selon les règles définies par ses attributs actuels
-     */
     @Override
     public void coverSurface()
     {
         covering.cover();
     }
 
-    /**
-     * Tente de déplacer la surface horizontalement vers la coordonnée X reçue, en préservant sa valeur en Y. Arrête au
-     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
-     * @param x La destination en X, en mm
-     * @param project le projet en cours
-     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
-     */
     @Override
     public boolean setX(double x, Project project)
     {
@@ -138,13 +96,6 @@ public class IrregularSurface implements Surface, Serializable
         }
     }
 
-    /**
-     * Tente de déplacer la surface verticalement vers la coordonnée Y reçue, en préservant sa valeur en X. Arrête au
-     * premier obstacle rencontré. Si le déplacement est impossible, il est annulé.
-     * @param y La destination en Y, en mm
-     * @param project le projet en cours
-     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
-     */
     @Override
     public boolean setY(double y, Project project)
     {
@@ -171,13 +122,6 @@ public class IrregularSurface implements Surface, Serializable
         }
     }
 
-    /**
-     * Tente de modifier la largeur de la surface pour celle demandée. Si cette opération cause une superposition entre
-     * deux surfaces, elle est annulée.
-     * @param width la largeur demandée.
-     * @param project le projet en cours.
-     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
-     */
     @Override
     public boolean setWidth(double width, Project project)
     {
@@ -209,13 +153,6 @@ public class IrregularSurface implements Surface, Serializable
         }
     }
 
-    /**
-     * Tente de modifier la hauteur de la surface pour celle demandée. Si cette opération cause une superposition entre
-     * deux surfaces, elle est annulée.
-     * @param height la largeur demandée.
-     * @param project le projet en cours.
-     * @return booléen représentant si [true] l'opération a été effectuée avec succès, ou a été annulée [false]
-     */
     @Override
     public boolean setHeight(double height, Project project)
     {
@@ -247,20 +184,13 @@ public class IrregularSurface implements Surface, Serializable
         }
     }
 
-    /**
-     * Tente de déplacer la surface vers la coordonnée XY reçue. Arrête au premier obstacle rencontré. Si le déplacement
-     * est impossible, il est annulé.
-     * @param x La destination en X, en mm
-     * @param y La destination en Y, en mm
-     * @param project le projet en cours
-     */
     @Override
     public void setXY(double x, double y, Project project)
     {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-        double deltaX = x - path.getBounds2D().getX();
-        double deltaY = y - path.getBounds2D().getY();
+        double deltaX = x - getBounds2D().getX();
+        double deltaY = y - getBounds2D().getY();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(deltaX, deltaY);
         path.transform(translationTransform);
@@ -281,16 +211,21 @@ public class IrregularSurface implements Surface, Serializable
     {
         PathIterator iterator = getPathIterator(null);
         Path2D.Double newPath = new Path2D.Double();
-        double[] v = new double[2];
+        double[] v = new double[6];
         while (!iterator.isDone())
         {
             int segmentType = iterator.currentSegment(v);
-            v[0] = Math.round(v[0]);
-            v[1] = Math.round(v[1]);
-            if (v[0] == vertex.x && v[1] == vertex.y)
+            for (int i = 0; i < 6; i++)
             {
-                v[0] = point.x;
-                v[1] = point.y;
+                v[i] = Math.round(v[i]);
+            }
+            for (int i = 0; i < 5; i += 2)
+            {
+                if (v[i] == vertex.x && v[i + 1] == vertex.y)
+                {
+                    v[i] = point.x;
+                    v[i + 1] = point.y;
+                }
             }
             switch (segmentType)
             {
@@ -300,9 +235,11 @@ public class IrregularSurface implements Surface, Serializable
                 case PathIterator.SEG_LINETO:
                     newPath.lineTo(v[0], v[1]);
                     break;
-                case PathIterator.SEG_CLOSE:
+                case PathIterator.SEG_QUADTO:
+                    newPath.quadTo(v[0], v[1], v[2], v[3]);
                     break;
-                default:
+                case PathIterator.SEG_CUBICTO:
+                    newPath.curveTo(v[0], v[1], v[2], v[3], v[4], v[5]);
                     break;
             }
             iterator.next();

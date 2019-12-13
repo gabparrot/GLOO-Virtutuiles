@@ -1,33 +1,27 @@
 package VirtuTuile.Domain.UndoableEdits;
 
 import VirtuTuile.Domain.Project;
-import VirtuTuile.Domain.Surface;
-import VirtuTuile.Domain.CombinedSurface;
+import VirtuTuile.Domain.CircularSurface;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 
-public class UndoMergeSurfaces implements javax.swing.undo.UndoableEdit
+public class UndoAddCircularSurface implements javax.swing.undo.UndoableEdit
 {
     Project project;
-    Surface s1, s2;
-    CombinedSurface s3;
+    CircularSurface surface;
     
-    public UndoMergeSurfaces(Project project, Surface s1, Surface s2, CombinedSurface s3)
+    public UndoAddCircularSurface(Project project, CircularSurface surface)
     {
         this.project = project;
-        this.s1 = s1;
-        this.s2 = s2;
-        this.s3 = s3;
+        this.surface = surface;
     }
     
     @Override
     public void undo() throws CannotUndoException
     {
         project.unselect();
-        project.removeSurface(s3);
-        project.addSurface(s1);
-        project.addSurface(s2);
+        project.removeSurface(surface);
     }
 
     @Override
@@ -39,10 +33,7 @@ public class UndoMergeSurfaces implements javax.swing.undo.UndoableEdit
     @Override
     public void redo() throws CannotRedoException
     {
-        project.unselect();
-        project.removeSurface(s1);
-        project.removeSurface(s2);
-        project.addSurface(s3);
+        project.addSurface(surface);
     }
     
     @Override
@@ -77,18 +68,18 @@ public class UndoMergeSurfaces implements javax.swing.undo.UndoableEdit
     @Override
     public String getPresentationName()
     {
-        return "Fusion de surfaces";
+        return "Création d'une surface circulaire";
     }
 
     @Override
     public String getUndoPresentationName()
     {
-        return "Annuler la fusion des surfaces";
+        return "Annuler la création de la surface circulaire";
     }
 
     @Override
     public String getRedoPresentationName()
     {
-        return "Refaire la fusion des surfaces";
+        return "Refaire la création de la surface circulaire";
     }
 }

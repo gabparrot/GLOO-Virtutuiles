@@ -4,6 +4,7 @@ import VirtuTuile.Domain.Pattern;
 import VirtuTuile.Infrastructure.Utilities;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
@@ -15,8 +16,14 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.ParseException;
+import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -24,6 +31,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * La fenêtre principale de l'application.
@@ -37,7 +45,7 @@ public class MainWindow extends JFrame
     // Enumération des différents modes de l'application.
     private enum ApplicationModes
     {
-        SELECT, SURFACEMOVE, RECTANGLE, POLYGON, MERGE, TILEMOVE ,NONE;
+        SELECT, SURFACEMOVE, RECTANGLE, CIRCLE, POLYGON, MERGE, TILEMOVE ,NONE;
     }
 
     private enum ContextMenuModes
@@ -54,9 +62,8 @@ public class MainWindow extends JFrame
     private ContextMenuModes contextMode = ContextMenuModes.NONE;
     private ApplicationModes selectedMode = ApplicationModes.NONE;
 
-    // Un rectangle est défini par deux points, son premier point métrique est enregistré ici.
     private Point2D.Double firstRectangleCorner = null;
-    
+    private Point2D.Double firstEllipseCorner = null;
     private Path2D.Double polygonInProgress = null;
     private int numberVertices = 0;
 
@@ -74,12 +81,15 @@ public class MainWindow extends JFrame
     
     // La couleur utilisé pour les boutons désactivés.
     private final Color disabledColor = new Color(240, 240, 240);
+    
+    FileNameExtensionFilter filter = new FileNameExtensionFilter("SER File", "ser");
 
     /**
      * Constructeur.
      */
     public MainWindow()
     {
+        setIcon();
         controller = new VirtuTuile.Domain.Controller();
         initComponents();
         canvasPanel.assignControllerToDrawer(controller);
@@ -93,30 +103,39 @@ public class MainWindow extends JFrame
         heightInLabel.setVisible(false);
         toolBar.setVisible(false);
         createTileWindow.setVisible(false);
-        tileInfoWidth.setText("Largeur : ");
-        tileInfoHeight.setText("Hauteur : ");
     }
-
-    /**
-     * Désélectionne la surface sélectionnée.
-     */
+    
+    private void setIcon()
+    {
+        try
+        {
+            ImageIcon img = new ImageIcon(getClass().getResource("/logo.png"));
+            setIconImage(img.getImage());
+        }
+        catch (Exception e){}
+    }
+    
+    private void unselectSurface()
+    {
+        controller.unselectSurface();
+        disableSurfaceButtons();
+        disableCoveringButtons();
+        disableTileTypeButtons();
+        unselect();
+    }
+    
     private void unselect()
     {
         contextMode = ContextMenuModes.NONE;
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-
         firstRectangleCorner = null;
+        firstEllipseCorner = null;
         polygonInProgress = null;
         canvasPanel.setTemporaryRectangle(null);
+        canvasPanel.setTemporaryEllipse(null);
         canvasPanel.setTemporaryPolygon(null);
         canvasPanel.setTemporaryLine(null);
         numberVertices = 0;
-        controller.unselectSurface();
-
-        disableSurfaceButtons();
-        disableCoveringButtons();
-        disableTileTypeButtons();
-        
         canvasPanel.repaint();
     }
     
@@ -176,10 +195,16 @@ public class MainWindow extends JFrame
         
         rowOffsetField.setText("");
         rowOffsetField.setEnabled(false);
+        
+        rotationTextField.setText("");
+        rotationTextField.setEnabled(false);
     }
     
     private void disableTileTypeButtons()
     {
+        nbTilesOnSurfaceLabels.setText("0 tuiles");
+        nbBoxesOnSurfaceLabel.setText("0 boîtes");
+        
         tileNameField.setText("");
         tileNameField.setEnabled(false);
         
@@ -265,6 +290,17 @@ public class MainWindow extends JFrame
         {
             zeroOrientationRadioButton.setSelected(true);
         }
+        
+        updatePatternComboBox();
+        
+        jointColorButton.setBackground(controller.getJointColor());
+        DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileNames());
+        tileTypeComboBox.setModel(model);
+        rotationTextField.setText("" + controller.getRotation());
+    }
+    
+    private void updatePatternComboBox()
+    {
         String patternString;
         switch (controller.getPattern())
         {
@@ -278,9 +314,6 @@ public class MainWindow extends JFrame
                 patternString = patternD;
         }
         patternComboBox.setSelectedItem(patternString);
-        jointColorButton.setBackground(controller.getJointColor());
-        DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileTypeStrings());
-        tileTypeComboBox.setModel(model);
     }
     
     private void updateTileTypePanel()
@@ -309,6 +342,23 @@ public class MainWindow extends JFrame
         {
             tileTypeComboBox.setSelectedItem(null);
             disableTileTypeButtons();
+        }
+        updateSurfaceQuantities();
+    }
+
+    private void updateSurfaceQuantities()
+    {
+        if (controller.hasTileType())
+        {
+            nbTilesOnSurfaceLabels.setText(controller.getTileQuantity() + " tuiles");
+            int boxesNeeded = (int) Math.ceil(
+                    (double) controller.getTileQuantity() / controller.getTileNbPerBox());
+            nbBoxesOnSurfaceLabel.setText(boxesNeeded + " boîtes");
+        }
+        else
+        {
+            nbTilesOnSurfaceLabels.setText("0 tuiles");
+            nbBoxesOnSurfaceLabel.setText("0 boîtes");   
         }
     }
 
@@ -343,17 +393,93 @@ public class MainWindow extends JFrame
         jointWidthField.setEnabled(true);
         jointColorButton.setEnabled(true);
         patternComboBox.setEnabled(true);
-        zeroOrientationRadioButton.setEnabled(true);
-        ninetyOrientationRadioButton.setEnabled(true);
         offsetXField.setEnabled(true);
         offsetYField.setEnabled(true);
-        if (controller.getPattern() == Pattern.CHECKERED)
+        rowOffsetField.setEnabled(true);
+        zeroOrientationRadioButton.setEnabled(true);
+        ninetyOrientationRadioButton.setEnabled(true);
+        rotationTextField.setEnabled(true);
+
+        switch (controller.getPattern())
         {
-            rowOffsetField.setEnabled(true);
-        } else
-        {
-            rowOffsetField.setEnabled(false);
+            case CHECKERED:
+                
+                jointWidthField.setEditable(true);
+                updateFieldVisibilityCheckered();
+                break;
+            case DIAGONAL:
+                jointWidthField.setEditable(true);
+                updateFieldVisibilityDiagonal();
+                break;
+            case LSHAPE:
+                jointWidthField.setEditable(false);
+                updateFieldVisibilityLShape();
+                break;
+            case TWOBYTWO:
+                jointWidthField.setEditable(false);
+                updateFieldVisibilityTwoByTwo();
+                break;
         }
+    }
+    
+    private void updateFieldVisibilityCheckered()
+    {
+        orientationLabel.setVisible(true);
+        zeroOrientationRadioButton.setVisible(true);
+        ninetyOrientationRadioButton.setVisible(true);
+        
+        rowOffsetLabel1.setVisible(true);
+        rowOffsetField.setVisible(true);
+        rowOffsetLabel2.setVisible(true);
+        
+        rotationLabel1.setVisible(false);
+        rotationTextField.setVisible(false);
+        rotationLabel2.setVisible(false);
+    }
+    
+    private void updateFieldVisibilityLShape()
+    {
+        orientationLabel.setVisible(false);
+        zeroOrientationRadioButton.setVisible(false);
+        ninetyOrientationRadioButton.setVisible(false);
+        
+        rowOffsetLabel1.setVisible(false);
+        rowOffsetField.setVisible(false);
+        rowOffsetLabel2.setVisible(false);
+        
+        rotationLabel1.setVisible(false);
+        rotationTextField.setVisible(false);
+        rotationLabel2.setVisible(false);
+    }
+    
+    private void updateFieldVisibilityTwoByTwo()
+    {
+        orientationLabel.setVisible(false);
+        zeroOrientationRadioButton.setVisible(false);
+        ninetyOrientationRadioButton.setVisible(false);
+        
+        rowOffsetLabel1.setVisible(false);
+        rowOffsetField.setVisible(false);
+        rowOffsetLabel2.setVisible(false);
+        
+        rotationLabel1.setVisible(false);
+        rotationTextField.setVisible(false);
+        rotationLabel2.setVisible(false);
+    }
+    
+    private void updateFieldVisibilityDiagonal()
+    {
+        orientationLabel.setVisible(false);
+        zeroOrientationRadioButton.setVisible(false);
+        ninetyOrientationRadioButton.setVisible(false);
+        
+        rowOffsetLabel1.setVisible(true);
+        rowOffsetField.setVisible(true);
+        rowOffsetLabel2.setVisible(true);
+        
+        rotationLabel1.setVisible(true);
+        rotationTextField.setVisible(true);
+        rotationLabel2.setVisible(true);
     }
     
     private void enableTileTypePanelButtons()
@@ -363,6 +489,17 @@ public class MainWindow extends JFrame
         tileHeightField.setEnabled(true);
         tileColorButton.setEnabled(true);
         tileNbPerBoxField.setEnabled(true);
+        
+        if (controller.tileTypeDimensionsAreLocked())
+        {
+            tileWidthField.setEditable(false);
+            tileHeightField.setEditable(false);
+        }
+        else
+        {
+            tileWidthField.setEditable(true);
+            tileHeightField.setEditable(true);
+        }
     }
 
     /**
@@ -428,6 +565,7 @@ public class MainWindow extends JFrame
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents()
     {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         menuBar = new javax.swing.JMenu();
         toggleGroup = new javax.swing.ButtonGroup();
@@ -470,6 +608,7 @@ public class MainWindow extends JFrame
         centerPatternHMenuItem = new javax.swing.JMenuItem();
         centerPatternVMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        decombineMenuItem = new javax.swing.JMenuItem();
         deleteSurfaceMenuItem = new javax.swing.JMenuItem();
         orientationGroup = new javax.swing.ButtonGroup();
         measureGroup = new javax.swing.ButtonGroup();
@@ -485,15 +624,17 @@ public class MainWindow extends JFrame
         selectionToggle = new javax.swing.JToggleButton();
         surfaceMoveToggle = new javax.swing.JToggleButton();
         tileMoveToggle = new javax.swing.JToggleButton();
-        rectangleToggle = new javax.swing.JToggleButton();
-        polygonToggle = new javax.swing.JToggleButton();
         mergeToggle = new javax.swing.JToggleButton();
+        jSeparator9 = new javax.swing.JToolBar.Separator();
+        rectangleToggle = new javax.swing.JToggleButton();
+        ellipseToggleButton = new javax.swing.JToggleButton();
+        polygonToggle = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
-        quantitiesButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JToolBar.Separator();
         magnetButton = new javax.swing.JToggleButton();
         inspectorButton = new javax.swing.JToggleButton();
+        collisionCheckToggleButton = new javax.swing.JToggleButton();
         jSeparator3 = new javax.swing.JToolBar.Separator();
+        quantitiesButton = new javax.swing.JButton();
         debugToggleButton = new javax.swing.JToggleButton();
         mainPanel = new javax.swing.JPanel();
         leftPanel = new javax.swing.JPanel();
@@ -529,82 +670,83 @@ public class MainWindow extends JFrame
         tileState = new javax.swing.JLabel();
         tileInfoWidth = new javax.swing.JLabel();
         tileInfoHeight = new javax.swing.JLabel();
+        jLabel28 = new javax.swing.JLabel();
+        nbTilesOnSurfaceLabels = new javax.swing.JLabel();
+        nbBoxesOnSurfaceLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        rightPanel = new javax.swing.JPanel();
+        newPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
-        surfaceColorButton = new javax.swing.JButton();
-        coverRadioButton = new javax.swing.JRadioButton();
-        doNotCoverRadioButton = new javax.swing.JRadioButton();
         surfaceXField = new javax.swing.JTextField();
-        surfaceYField = new javax.swing.JTextField();
-        surfaceWidthField = new javax.swing.JTextField();
-        surfaceHeightField = new javax.swing.JTextField();
         xFtLabel = new javax.swing.JLabel();
-        yFtLabel = new javax.swing.JLabel();
-        widthFtLabel = new javax.swing.JLabel();
-        heightFtLabel = new javax.swing.JLabel();
-        surfaceHeightFieldInches = new javax.swing.JTextField();
-        surfaceWidthFieldInches = new javax.swing.JTextField();
-        surfaceYFieldInches = new javax.swing.JTextField();
         surfaceXFieldInches = new javax.swing.JTextField();
         xInLabel = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        surfaceYField = new javax.swing.JTextField();
+        yFtLabel = new javax.swing.JLabel();
+        surfaceYFieldInches = new javax.swing.JTextField();
         yInLabel = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        surfaceWidthField = new javax.swing.JTextField();
+        widthFtLabel = new javax.swing.JLabel();
+        surfaceWidthFieldInches = new javax.swing.JTextField();
         widthInLabel = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        surfaceHeightField = new javax.swing.JTextField();
+        heightFtLabel = new javax.swing.JLabel();
+        surfaceHeightFieldInches = new javax.swing.JTextField();
         heightInLabel = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        surfaceColorButton = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
+        coverRadioButton = new javax.swing.JRadioButton();
+        doNotCoverRadioButton = new javax.swing.JRadioButton();
         jLabel7 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
+        tileTypeComboBox = new javax.swing.JComboBox<>();
         jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        jointColorButton = new javax.swing.JButton();
         jointWidthField = new javax.swing.JTextField();
         largeurJointText = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jointColorButton = new javax.swing.JButton();
+        jLabel17 = new javax.swing.JLabel();
         patternComboBox = new javax.swing.JComboBox<>();
+        orientationLabel = new javax.swing.JLabel();
         zeroOrientationRadioButton = new javax.swing.JRadioButton();
         ninetyOrientationRadioButton = new javax.swing.JRadioButton();
+        jLabel9 = new javax.swing.JLabel();
         offsetXField = new javax.swing.JTextField();
         offsetXText = new javax.swing.JLabel();
-        offsetYText = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
         offsetYField = new javax.swing.JTextField();
-        tileTypeComboBox = new javax.swing.JComboBox<>();
-        tileWidthField = new javax.swing.JTextField();
-        tileHeightField = new javax.swing.JTextField();
-        largeurTuileText = new javax.swing.JLabel();
-        hauteurTuileText = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel26 = new javax.swing.JLabel();
+        offsetYText = new javax.swing.JLabel();
+        rowOffsetLabel1 = new javax.swing.JLabel();
+        rowOffsetField = new javax.swing.JTextField();
+        rowOffsetLabel2 = new javax.swing.JLabel();
+        rotationLabel1 = new javax.swing.JLabel();
+        rotationTextField = new javax.swing.JTextField();
+        rotationLabel2 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
         tileNameLabel = new javax.swing.JLabel();
         tileNameField = new javax.swing.JTextField();
+        jLabel12 = new javax.swing.JLabel();
+        tileWidthField = new javax.swing.JTextField();
+        largeurTuileText = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        tileHeightField = new javax.swing.JTextField();
+        hauteurTuileText = new javax.swing.JLabel();
+        jLabel26 = new javax.swing.JLabel();
+        tileColorButton = new javax.swing.JButton();
         jLabel19 = new javax.swing.JLabel();
         tileNbPerBoxField = new javax.swing.JTextField();
-        tileColorButton = new javax.swing.JButton();
-        jLabel20 = new javax.swing.JLabel();
-        rowOffsetField = new javax.swing.JTextField();
-        rowOffsetLabel = new javax.swing.JLabel();
         createTileButton = new javax.swing.JButton();
-        RotationLabel = new javax.swing.JLabel();
-        rotationTextField = new javax.swing.JTextField();
-        degreesLabel = new javax.swing.JLabel();
         topMenuBar = new javax.swing.JMenuBar();
         menuFichier = new javax.swing.JMenu();
         newProjectButton = new javax.swing.JMenuItem();
         openProjectButton = new javax.swing.JMenuItem();
         closeProjectButton = new javax.swing.JMenuItem();
         saveProjectButton = new javax.swing.JMenuItem();
+        exportMenuItem = new javax.swing.JMenuItem();
         menuFichierQuitter = new javax.swing.JMenuItem();
         menuEdition = new javax.swing.JMenu();
         menuEditionAnnuler = new javax.swing.JMenuItem();
@@ -612,6 +754,7 @@ public class MainWindow extends JFrame
         menuAffichage = new javax.swing.JMenu();
         menuGridDistance = new javax.swing.JMenuItem();
         inspectorMenuItem = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
         menuCustomZoom = new javax.swing.JMenuItem();
         menuResetZoom = new javax.swing.JMenuItem();
         menuAide = new javax.swing.JMenu();
@@ -959,6 +1102,16 @@ public class MainWindow extends JFrame
         surfacePopupMenu.add(centerPatternSubMenu);
         surfacePopupMenu.add(jSeparator5);
 
+        decombineMenuItem.setText("Décombiner la surface");
+        decombineMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                decombineMenuItemActionPerformed(evt);
+            }
+        });
+        surfacePopupMenu.add(decombineMenuItem);
+
         deleteSurfaceMenuItem.setText("Effacer la surface");
         deleteSurfaceMenuItem.addActionListener(new java.awt.event.ActionListener()
         {
@@ -1088,7 +1241,7 @@ public class MainWindow extends JFrame
 
         toggleGroup.add(selectionToggle);
         selectionToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/select.png"))); // NOI18N
-        selectionToggle.setToolTipText("Sélectionner une surface");
+        selectionToggle.setToolTipText("Sélection et remodelage");
         selectionToggle.setFocusable(false);
         selectionToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         selectionToggle.setMargin(new java.awt.Insets(0, 0, 0, 0));
@@ -1136,6 +1289,23 @@ public class MainWindow extends JFrame
             }
         });
         toolBar.add(tileMoveToggle);
+        toolBar.add(jSeparator9);
+
+        toggleGroup.add(mergeToggle);
+        mergeToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/combine.png"))); // NOI18N
+        mergeToggle.setToolTipText("Combiner deux surfaces");
+        mergeToggle.setFocusable(false);
+        mergeToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        mergeToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        mergeToggle.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                mergeToggleActionPerformed(evt);
+            }
+        });
+        toolBar.add(mergeToggle);
+        toolBar.add(jSeparator9);
 
         toggleGroup.add(rectangleToggle);
         rectangleToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/rectangle.png"))); // NOI18N
@@ -1155,6 +1325,21 @@ public class MainWindow extends JFrame
         });
         toolBar.add(rectangleToggle);
 
+        toggleGroup.add(ellipseToggleButton);
+        ellipseToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/ellipse.png"))); // NOI18N
+        ellipseToggleButton.setToolTipText("Créer une surface circulaire");
+        ellipseToggleButton.setFocusable(false);
+        ellipseToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        ellipseToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        ellipseToggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                ellipseToggleButtonActionPerformed(evt);
+            }
+        });
+        toolBar.add(ellipseToggleButton);
+
         toggleGroup.add(polygonToggle);
         polygonToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/polygon.png"))); // NOI18N
         polygonToggle.setToolTipText("Créer une surface irrégulière");
@@ -1172,33 +1357,7 @@ public class MainWindow extends JFrame
             }
         });
         toolBar.add(polygonToggle);
-
-        toggleGroup.add(mergeToggle);
-        mergeToggle.setIcon(new javax.swing.ImageIcon(getClass().getResource("/combine.png"))); // NOI18N
-        mergeToggle.setToolTipText("Combiner deux surfaces");
-        mergeToggle.setFocusable(false);
-        mergeToggle.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        mergeToggle.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        mergeToggle.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                mergeToggleActionPerformed(evt);
-            }
-        });
-        toolBar.add(mergeToggle);
         toolBar.add(jSeparator1);
-
-        quantitiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/quantities.png"))); // NOI18N
-        quantitiesButton.setToolTipText("Calculer les quantités");
-        quantitiesButton.setFocusable(false);
-        quantitiesButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        quantitiesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        quantitiesButton.setMaximumSize(new java.awt.Dimension(30, 30));
-        quantitiesButton.setMinimumSize(new java.awt.Dimension(30, 30));
-        quantitiesButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        toolBar.add(quantitiesButton);
-        toolBar.add(jSeparator2);
 
         magnetButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/magnet.png"))); // NOI18N
         magnetButton.setSelected(true);
@@ -1236,7 +1395,38 @@ public class MainWindow extends JFrame
             }
         });
         toolBar.add(inspectorButton);
+
+        collisionCheckToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/collision.png"))); // NOI18N
+        collisionCheckToggleButton.setToolTipText("Activer la détection de collision");
+        collisionCheckToggleButton.setFocusable(false);
+        collisionCheckToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        collisionCheckToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        collisionCheckToggleButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                collisionCheckToggleButtonActionPerformed(evt);
+            }
+        });
+        toolBar.add(collisionCheckToggleButton);
         toolBar.add(jSeparator3);
+
+        quantitiesButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/quantities.png"))); // NOI18N
+        quantitiesButton.setToolTipText("Calculer les quantités");
+        quantitiesButton.setFocusable(false);
+        quantitiesButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        quantitiesButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        quantitiesButton.setMaximumSize(new java.awt.Dimension(30, 30));
+        quantitiesButton.setMinimumSize(new java.awt.Dimension(30, 30));
+        quantitiesButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        quantitiesButton.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                quantitiesButtonActionPerformed(evt);
+            }
+        });
+        toolBar.add(quantitiesButton);
 
         debugToggleButton.setText("DEBUG");
         debugToggleButton.setToolTipText("Activer mode debug");
@@ -1307,7 +1497,12 @@ public class MainWindow extends JFrame
         createTileWindow.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         createTileWindow.setAutoscrolls(true);
 
-        jLabel21.setText("Créer une nouvelle tuile");
+        jLabel21.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel21.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel21.setText("Créer un nouveau type de tuile");
+        jLabel21.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+
+        createTileNameField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
 
         createTileOKButton.setText("OK");
         createTileOKButton.addActionListener(new java.awt.event.ActionListener()
@@ -1329,13 +1524,6 @@ public class MainWindow extends JFrame
         jLabel27.setText("Couleur :");
 
         createTileWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        createTileWidthField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                createTileWidthFieldActionPerformed(evt);
-            }
-        });
 
         createTileHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
 
@@ -1367,53 +1555,42 @@ public class MainWindow extends JFrame
         createTileWindow.setLayout(createTileWindowLayout);
         createTileWindowLayout.setHorizontalGroup(
             createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel21, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE)
             .addGroup(createTileWindowLayout.createSequentialGroup()
-                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(createTileWindowLayout.createSequentialGroup()
-                        .addGap(48, 48, 48)
+                .addGap(48, 48, 48)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel25, javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jLabel27)
                         .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jLabel25, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jLabel27)
-                                .addGroup(createTileWindowLayout.createSequentialGroup()
-                                    .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(jLabel23)
-                                            .addComponent(jLabel22))
-                                        .addComponent(jLabel24))
-                                    .addGap(23, 23, 23)
+                            .addGroup(createTileWindowLayout.createSequentialGroup()
+                                .addComponent(createTileOKButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(createTileCancelButton))
+                            .addGroup(createTileWindowLayout.createSequentialGroup()
+                                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                     .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(createTileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addGroup(createTileWindowLayout.createSequentialGroup()
-                                            .addComponent(createTileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(createWindowWidthLabel))
-                                        .addGroup(createTileWindowLayout.createSequentialGroup()
-                                            .addComponent(createTileHeightField)
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                            .addComponent(createWindowHeightLabel))
-                                        .addComponent(createTileColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
-                                        .addComponent(createTileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                    .addGroup(createTileWindowLayout.createSequentialGroup()
-                        .addGap(87, 87, 87)
-                        .addComponent(createTileOKButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(createTileCancelButton)))
-                .addContainerGap(52, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, createTileWindowLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jLabel21)
-                .addGap(89, 89, 89))
+                                        .addComponent(jLabel23)
+                                        .addComponent(jLabel22))
+                                    .addComponent(jLabel24))
+                                .addGap(23, 23, 23)
+                                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(createTileNameField, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                                    .addComponent(createTileWidthField)
+                                    .addComponent(createTileHeightField)
+                                    .addComponent(createTileColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(createTileNbPerBoxField))))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(createWindowWidthLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(createWindowHeightLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(24, 24, 24))
         );
-
-        createTileWindowLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {createTileColorButton, createTileHeightField, createTileNbPerBoxField, createTileWidthField});
-
         createTileWindowLayout.setVerticalGroup(
             createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(createTileWindowLayout.createSequentialGroup()
-                .addGap(20, 20, 20)
-                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 14, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(26, 26, 26)
+                .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(createTileWindowLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(createTileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel22))
@@ -1450,16 +1627,16 @@ public class MainWindow extends JFrame
         canvasPanelLayout.setHorizontalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, canvasPanelLayout.createSequentialGroup()
-                .addContainerGap(165, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(165, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         canvasPanelLayout.setVerticalGroup(
             canvasPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(canvasPanelLayout.createSequentialGroup()
-                .addContainerGap(201, Short.MAX_VALUE)
+                .addContainerGap(282, Short.MAX_VALUE)
                 .addComponent(createTileWindow, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(200, Short.MAX_VALUE))
+                .addContainerGap(282, Short.MAX_VALUE))
         );
 
         xPixelCoordsLabel.setText("X: 0 pixels");
@@ -1515,13 +1692,22 @@ public class MainWindow extends JFrame
             }
         });
 
-        tileState.setText("Dimensions Tuile : ");
+        tileState.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        tileState.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        tileState.setText("Tuile: ");
         tileState.setToolTipText("");
         tileState.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
         tileInfoWidth.setText("Largeur :");
 
         tileInfoHeight.setText("Hauteur :");
+
+        jLabel28.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        jLabel28.setText("Surface:");
+
+        nbTilesOnSurfaceLabels.setText("0 tuiles");
+
+        nbBoxesOnSurfaceLabel.setText("0 boîtes");
 
         javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
         leftPanel.setLayout(leftPanelLayout);
@@ -1548,11 +1734,17 @@ public class MainWindow extends JFrame
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                     .addComponent(xMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                                     .addComponent(yMeasureCoordsLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(40, 40, 40)
+                                .addGap(20, 20, 20)
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(yPixelCoordsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)
                                     .addComponent(xPixelCoordsLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 80, Short.MAX_VALUE)
+                                .addComponent(jLabel28)
+                                .addGap(14, 14, 14)
+                                .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addComponent(nbBoxesOnSurfaceLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(nbTilesOnSurfaceLabels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(tileState, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -1591,30 +1783,272 @@ public class MainWindow extends JFrame
                         .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(yPixelCoordsLabel)
                             .addComponent(yMeasureCoordsLabel)
-                            .addComponent(tileInfoHeight)))
+                            .addComponent(tileInfoHeight)
+                            .addComponent(nbBoxesOnSurfaceLabel)))
                     .addComponent(tileInfoWidth)
-                    .addComponent(tileState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tileState, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(nbTilesOnSurfaceLabels)
+                        .addComponent(jLabel28)))
                 .addGap(5, 5, 5))
         );
 
         jScrollPane1.setBackground(new java.awt.Color(0, 107, 107));
 
-        rightPanel.setBackground(new java.awt.Color(0, 153, 153));
-        rightPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(10, 10, 10, 10, new java.awt.Color(0, 107, 107)));
+        newPanel.setBackground(new java.awt.Color(0, 153, 153));
+        newPanel.setBorder(javax.swing.BorderFactory.createMatteBorder(10, 10, 10, 10, new java.awt.Color(0, 107, 107)));
+        newPanel.setLayout(new java.awt.GridBagLayout());
 
+        jLabel1.setBackground(new java.awt.Color(0, 107, 107));
+        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel1.setText("Surface :");
+        jLabel1.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        newPanel.add(jLabel1, gridBagConstraints);
+
+        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel2.setText("x :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel2, gridBagConstraints);
 
+        surfaceXField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceXField.setEnabled(false);
+        surfaceXField.setPreferredSize(new java.awt.Dimension(60, 27));
+        surfaceXField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceXFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceXField, gridBagConstraints);
+
+        xFtLabel.setText("m");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        newPanel.add(xFtLabel, gridBagConstraints);
+
+        surfaceXFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceXFieldInches.setEnabled(false);
+        surfaceXFieldInches.setMinimumSize(new java.awt.Dimension(7, 23));
+        surfaceXFieldInches.setPreferredSize(new java.awt.Dimension(60, 23));
+        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceXFieldInchesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceXFieldInches, gridBagConstraints);
+
+        xInLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        xInLabel.setText("in");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(xInLabel, gridBagConstraints);
+
+        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel3.setText("y :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel3, gridBagConstraints);
 
+        surfaceYField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceYField.setEnabled(false);
+        surfaceYField.setPreferredSize(new java.awt.Dimension(50, 27));
+        surfaceYField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceYFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceYField, gridBagConstraints);
+
+        yFtLabel.setText("m");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        newPanel.add(yFtLabel, gridBagConstraints);
+
+        surfaceYFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceYFieldInches.setEnabled(false);
+        surfaceYFieldInches.setPreferredSize(new java.awt.Dimension(7, 23));
+        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceYFieldInchesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceYFieldInches, gridBagConstraints);
+
+        yInLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        yInLabel.setText("in");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(yInLabel, gridBagConstraints);
+
+        jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel4.setText("Largeur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel4, gridBagConstraints);
 
+        surfaceWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceWidthField.setEnabled(false);
+        surfaceWidthField.setPreferredSize(new java.awt.Dimension(50, 27));
+        surfaceWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceWidthFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceWidthField, gridBagConstraints);
+
+        widthFtLabel.setText("m");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        newPanel.add(widthFtLabel, gridBagConstraints);
+
+        surfaceWidthFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceWidthFieldInches.setEnabled(false);
+        surfaceWidthFieldInches.setPreferredSize(new java.awt.Dimension(7, 23));
+        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceWidthFieldInchesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceWidthFieldInches, gridBagConstraints);
+
+        widthInLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        widthInLabel.setText("in");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(widthInLabel, gridBagConstraints);
+
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText("Hauteur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel5, gridBagConstraints);
 
+        surfaceHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceHeightField.setEnabled(false);
+        surfaceHeightField.setPreferredSize(new java.awt.Dimension(50, 27));
+        surfaceHeightField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceHeightFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceHeightField, gridBagConstraints);
+
+        heightFtLabel.setText("m");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        newPanel.add(heightFtLabel, gridBagConstraints);
+
+        surfaceHeightFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        surfaceHeightFieldInches.setEnabled(false);
+        surfaceHeightFieldInches.setPreferredSize(new java.awt.Dimension(7, 23));
+        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                surfaceHeightFieldInchesActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceHeightFieldInches, gridBagConstraints);
+
+        heightInLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        heightInLabel.setText("in");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(heightInLabel, gridBagConstraints);
+
+        jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel11.setText("Couleur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel11, gridBagConstraints);
 
         surfaceColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         surfaceColorButton.setBorderPainted(false);
         surfaceColorButton.setEnabled(false);
+        surfaceColorButton.setMinimumSize(new java.awt.Dimension(100, 30));
+        surfaceColorButton.setPreferredSize(new java.awt.Dimension(7, 27));
         surfaceColorButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1622,6 +2056,21 @@ public class MainWindow extends JFrame
                 surfaceColorButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(surfaceColorButton, gridBagConstraints);
+
+        jLabel6.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel6.setText("Couvir :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel6, gridBagConstraints);
 
         coverRadioButton.setBackground(new java.awt.Color(0, 153, 153));
         coverButtonGroup.add(coverRadioButton);
@@ -1634,6 +2083,11 @@ public class MainWindow extends JFrame
                 coverRadioButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(coverRadioButton, gridBagConstraints);
 
         doNotCoverRadioButton.setBackground(new java.awt.Color(0, 153, 153));
         coverButtonGroup.add(doNotCoverRadioButton);
@@ -1646,103 +2100,59 @@ public class MainWindow extends JFrame
                 doNotCoverRadioButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 7;
+        newPanel.add(doNotCoverRadioButton, gridBagConstraints);
 
-        surfaceXField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceXField.setEnabled(false);
-        surfaceXField.addActionListener(new java.awt.event.ActionListener()
+        jLabel7.setBackground(new java.awt.Color(0, 107, 107));
+        jLabel7.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
+        jLabel7.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel7.setText("Recouvrement :");
+        jLabel7.setOpaque(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipady = 10;
+        gridBagConstraints.weightx = 1.0;
+        newPanel.add(jLabel7, gridBagConstraints);
+
+        jLabel14.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel14.setText("Type de tuile :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel14, gridBagConstraints);
+
+        tileTypeComboBox.setEnabled(false);
+        tileTypeComboBox.setMinimumSize(new java.awt.Dimension(100, 22));
+        tileTypeComboBox.setPreferredSize(new java.awt.Dimension(140, 30));
+        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                surfaceXFieldActionPerformed(evt);
+                tileTypeComboBoxActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileTypeComboBox, gridBagConstraints);
 
-        surfaceYField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceYField.setEnabled(false);
-        surfaceYField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceYFieldActionPerformed(evt);
-            }
-        });
+        jLabel15.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel15.setText("Largeur joints :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel15, gridBagConstraints);
 
-        surfaceWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceWidthField.setEnabled(false);
-        surfaceWidthField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceWidthFieldActionPerformed(evt);
-            }
-        });
-
-        surfaceHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceHeightField.setEnabled(false);
-        surfaceHeightField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceHeightFieldActionPerformed(evt);
-            }
-        });
-
-        xFtLabel.setText("m");
-
-        yFtLabel.setText("m");
-
-        widthFtLabel.setText("m");
-
-        heightFtLabel.setText("m");
-
-        surfaceHeightFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceHeightFieldInches.setEnabled(false);
-        surfaceHeightFieldInches.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceHeightFieldInchesActionPerformed(evt);
-            }
-        });
-
-        surfaceWidthFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceWidthFieldInches.setEnabled(false);
-        surfaceWidthFieldInches.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceWidthFieldInchesActionPerformed(evt);
-            }
-        });
-
-        surfaceYFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceYFieldInches.setEnabled(false);
-        surfaceYFieldInches.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceYFieldInchesActionPerformed(evt);
-            }
-        });
-
-        surfaceXFieldInches.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        surfaceXFieldInches.setToolTipText("");
-        surfaceXFieldInches.setEnabled(false);
-        surfaceXFieldInches.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                surfaceXFieldInchesActionPerformed(evt);
-            }
-        });
-
-        xInLabel.setText("in");
-
-        yInLabel.setText("in");
-
-<<<<<<< Updated upstream
-        widthInLabel.setText("in");
-=======
         jointWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         jointWidthField.setEnabled(false);
         jointWidthField.setPreferredSize(new java.awt.Dimension(7, 27));
@@ -1759,98 +2169,29 @@ public class MainWindow extends JFrame
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         newPanel.add(jointWidthField, gridBagConstraints);
->>>>>>> Stashed changes
 
-        heightInLabel.setText("in");
+        largeurJointText.setText("mm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(largeurJointText, gridBagConstraints);
 
-        jLabel6.setText("Couvir :");
-
-        jPanel1.setBackground(new java.awt.Color(0, 107, 107));
-
-        jLabel1.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel1.setText("Surface :");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5))
-        );
-
-        jPanel2.setBackground(new java.awt.Color(0, 107, 107));
-
-        jLabel7.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel7.setText("Recouvrement :");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5))
-        );
-
-        jPanel3.setBackground(new java.awt.Color(0, 107, 107));
-
-        jLabel8.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel8.setText("Type de tuile :");
-
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 128, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
-                .addGap(5, 5, 5)
-                .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5))
-        );
-
-        jLabel9.setText("Décalage x :");
-
-        jLabel10.setText("Décalage y :");
-
-        jLabel14.setText("Type de tuile :");
-
-        jLabel15.setText("Largeur joints :");
-
+        jLabel16.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel16.setText("Couleur joints :");
-
-        jLabel17.setText("Motif :");
-
-        jLabel18.setText("Orientation :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel16, gridBagConstraints);
 
         jointColorButton.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         jointColorButton.setBorderPainted(false);
         jointColorButton.setEnabled(false);
         jointColorButton.setMaximumSize(new java.awt.Dimension(100, 30));
         jointColorButton.setMinimumSize(new java.awt.Dimension(100, 30));
-        jointColorButton.setPreferredSize(new java.awt.Dimension(100, 30));
+        jointColorButton.setPreferredSize(new java.awt.Dimension(100, 27));
         jointColorButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1858,19 +2199,21 @@ public class MainWindow extends JFrame
                 jointColorButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(jointColorButton, gridBagConstraints);
 
-        jointWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        jointWidthField.setEnabled(false);
-        jointWidthField.setPreferredSize(new java.awt.Dimension(50, 30));
-        jointWidthField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                jointWidthFieldActionPerformed(evt);
-            }
-        });
-
-        largeurJointText.setText("mm");
+        jLabel17.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel17.setText("Motif :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel17, gridBagConstraints);
 
         patternComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Quadrillé", "L-shape", "Deux-par-deux", "Diagonal" }));
         patternComboBox.setSelectedItem(null);
@@ -1884,6 +2227,21 @@ public class MainWindow extends JFrame
                 patternComboBoxActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(patternComboBox, gridBagConstraints);
+
+        orientationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        orientationLabel.setText("Orientation :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(orientationLabel, gridBagConstraints);
 
         zeroOrientationRadioButton.setBackground(new java.awt.Color(0, 153, 153));
         orientationGroup.add(zeroOrientationRadioButton);
@@ -1896,6 +2254,10 @@ public class MainWindow extends JFrame
                 zeroOrientationRadioButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(zeroOrientationRadioButton, gridBagConstraints);
 
         ninetyOrientationRadioButton.setBackground(new java.awt.Color(0, 153, 153));
         orientationGroup.add(ninetyOrientationRadioButton);
@@ -1908,9 +2270,24 @@ public class MainWindow extends JFrame
                 ninetyOrientationRadioButtonActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(ninetyOrientationRadioButton, gridBagConstraints);
+
+        jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel9.setText("Décalage x :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel9, gridBagConstraints);
 
         offsetXField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         offsetXField.setEnabled(false);
+        offsetXField.setPreferredSize(new java.awt.Dimension(7, 27));
         offsetXField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1918,13 +2295,32 @@ public class MainWindow extends JFrame
                 offsetXFieldActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(offsetXField, gridBagConstraints);
 
         offsetXText.setText("cm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(offsetXText, gridBagConstraints);
 
-        offsetYText.setText("cm");
+        jLabel10.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel10.setText("Décalage y :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel10, gridBagConstraints);
 
         offsetYField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         offsetYField.setEnabled(false);
+        offsetYField.setPreferredSize(new java.awt.Dimension(7, 27));
         offsetYField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -1932,23 +2328,39 @@ public class MainWindow extends JFrame
                 offsetYFieldActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(offsetYField, gridBagConstraints);
 
-        tileTypeComboBox.setEnabled(false);
-        tileTypeComboBox.setMinimumSize(new java.awt.Dimension(200, 22));
-        tileTypeComboBox.setPreferredSize(new java.awt.Dimension(200, 30));
-        tileTypeComboBox.addActionListener(new java.awt.event.ActionListener()
+        offsetYText.setText("cm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(offsetYText, gridBagConstraints);
+
+        rowOffsetLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        rowOffsetLabel1.setText("Déc. rangées :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 16;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(rowOffsetLabel1, gridBagConstraints);
+
+        rowOffsetField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        rowOffsetField.setEnabled(false);
+        rowOffsetField.setPreferredSize(new java.awt.Dimension(7, 27));
+        rowOffsetField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                tileTypeComboBoxActionPerformed(evt);
+                rowOffsetFieldActionPerformed(evt);
             }
         });
-<<<<<<< Updated upstream
-
-        tileWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        tileWidthField.setEnabled(false);
-        tileWidthField.addActionListener(new java.awt.event.ActionListener()
-=======
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 16;
         gridBagConstraints.gridwidth = 3;
@@ -1956,39 +2368,32 @@ public class MainWindow extends JFrame
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         newPanel.add(rowOffsetField, gridBagConstraints);
 
-        rowOffsetLabel.setText("%");
+        rowOffsetLabel2.setText("%");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
-        newPanel.add(rowOffsetLabel, gridBagConstraints);
+        newPanel.add(rowOffsetLabel2, gridBagConstraints);
 
-        RotationLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        RotationLabel.setText("Rotation :");
+        rotationLabel1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        rotationLabel1.setText("Rotation :");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 17;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
-        newPanel.add(RotationLabel, gridBagConstraints);
+        newPanel.add(rotationLabel1, gridBagConstraints);
 
         rotationTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         rotationTextField.setEnabled(false);
         rotationTextField.setPreferredSize(new java.awt.Dimension(7, 27));
         rotationTextField.addActionListener(new java.awt.event.ActionListener()
->>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                tileWidthFieldActionPerformed(evt);
+                rotationTextFieldActionPerformed(evt);
             }
         });
-<<<<<<< Updated upstream
-
-        tileHeightField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        tileHeightField.setEnabled(false);
-        tileHeightField.addActionListener(new java.awt.event.ActionListener()
-=======
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 17;
         gridBagConstraints.gridwidth = 3;
@@ -1996,13 +2401,13 @@ public class MainWindow extends JFrame
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         newPanel.add(rotationTextField, gridBagConstraints);
 
-        degreesLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        degreesLabel.setText("°");
+        rotationLabel2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        rotationLabel2.setText("°");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 17;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
-        newPanel.add(degreesLabel, gridBagConstraints);
+        newPanel.add(rotationLabel2, gridBagConstraints);
 
         jLabel8.setBackground(new java.awt.Color(0, 107, 107));
         jLabel8.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
@@ -2032,42 +2437,52 @@ public class MainWindow extends JFrame
         tileNameField.setEnabled(false);
         tileNameField.setPreferredSize(new java.awt.Dimension(7, 27));
         tileNameField.addActionListener(new java.awt.event.ActionListener()
->>>>>>> Stashed changes
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                tileHeightFieldActionPerformed(evt);
-            }
-        });
-
-        largeurTuileText.setText("cm");
-
-        hauteurTuileText.setText("cm");
-
-        jLabel12.setText("Largeur :");
-
-        jLabel13.setText("Hauteur :");
-
-        jLabel26.setText("Couleur :");
-
-        tileNameLabel.setText("Nom :");
-
-        tileNameField.setEnabled(false);
-        tileNameField.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
                 tileNameFieldActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileNameField, gridBagConstraints);
 
-        jLabel19.setText("Nb/boîte :");
+        jLabel12.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel12.setText("Largeur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel12, gridBagConstraints);
 
-<<<<<<< Updated upstream
-        tileNbPerBoxField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        tileNbPerBoxField.setEnabled(false);
-        tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
-=======
+        tileWidthField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
+        tileWidthField.setEnabled(false);
+        tileWidthField.setPreferredSize(new java.awt.Dimension(7, 27));
+        tileWidthField.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                tileWidthFieldActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileWidthField, gridBagConstraints);
+
+        largeurTuileText.setText("cm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(largeurTuileText, gridBagConstraints);
+
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel13.setText("Hauteur :");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2081,15 +2496,38 @@ public class MainWindow extends JFrame
         tileHeightField.setEnabled(false);
         tileHeightField.setPreferredSize(new java.awt.Dimension(7, 27));
         tileHeightField.addActionListener(new java.awt.event.ActionListener()
->>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                tileNbPerBoxFieldActionPerformed(evt);
+                tileHeightFieldActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 21;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileHeightField, gridBagConstraints);
+
+        hauteurTuileText.setText("cm");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 21;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
+        newPanel.add(hauteurTuileText, gridBagConstraints);
+
+        jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel26.setText("Couleur :");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 22;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
+        newPanel.add(jLabel26, gridBagConstraints);
 
         tileColorButton.setEnabled(false);
+        tileColorButton.setMinimumSize(new java.awt.Dimension(33, 30));
+        tileColorButton.setPreferredSize(new java.awt.Dimension(33, 30));
         tileColorButton.addActionListener(new java.awt.event.ActionListener()
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
@@ -2097,14 +2535,6 @@ public class MainWindow extends JFrame
                 tileColorButtonActionPerformed(evt);
             }
         });
-<<<<<<< Updated upstream
-
-        jLabel20.setText("Décalage rangées :");
-
-        rowOffsetField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        rowOffsetField.setEnabled(false);
-        rowOffsetField.addActionListener(new java.awt.event.ActionListener()
-=======
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 22;
         gridBagConstraints.gridwidth = 3;
@@ -2125,17 +2555,20 @@ public class MainWindow extends JFrame
         tileNbPerBoxField.setEnabled(false);
         tileNbPerBoxField.setPreferredSize(new java.awt.Dimension(7, 27));
         tileNbPerBoxField.addActionListener(new java.awt.event.ActionListener()
->>>>>>> Stashed changes
         {
             public void actionPerformed(java.awt.event.ActionEvent evt)
             {
-                rowOffsetFieldActionPerformed(evt);
+                tileNbPerBoxFieldActionPerformed(evt);
             }
         });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridy = 23;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        newPanel.add(tileNbPerBoxField, gridBagConstraints);
 
-        rowOffsetLabel.setText("%");
-
-        createTileButton.setText("Créer nouveau");
+        createTileButton.setText("Créer un nouveau type de tuile");
         createTileButton.setEnabled(false);
         createTileButton.addActionListener(new java.awt.event.ActionListener()
         {
@@ -2144,285 +2577,6 @@ public class MainWindow extends JFrame
                 createTileButtonActionPerformed(evt);
             }
         });
-<<<<<<< Updated upstream
-
-        RotationLabel.setText("Rotation:");
-
-        rotationTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        rotationTextField.setText("0");
-        rotationTextField.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
-                rotationTextFieldActionPerformed(evt);
-            }
-        });
-
-        degreesLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        degreesLabel.setText("°");
-
-        javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
-        rightPanel.setLayout(rightPanelLayout);
-        rightPanelLayout.setHorizontalGroup(
-            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel14)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel2)
-                                    .addComponent(jLabel3)
-                                    .addComponent(jLabel5)
-                                    .addComponent(jLabel11)
-                                    .addComponent(jLabel4)
-                                    .addComponent(jLabel6))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(coverRadioButton)
-                                        .addGap(30, 30, 30)
-                                        .addComponent(doNotCoverRadioButton))
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addComponent(surfaceHeightField, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
-                                            .addComponent(surfaceWidthField)
-                                            .addComponent(surfaceXField, javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(surfaceYField, javax.swing.GroupLayout.Alignment.LEADING))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addComponent(yFtLabel)
-                                                    .addComponent(xFtLabel))
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(xInLabel))
-                                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                                        .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                        .addComponent(yInLabel))))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(widthFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(widthInLabel))
-                                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                                .addComponent(heightFtLabel)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                                .addComponent(heightInLabel))))
-                                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(jLabel9))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel19)
-                                    .addComponent(jLabel26))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 126, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(createTileButton)
-                                    .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel12)
-                                    .addComponent(jLabel13)
-                                    .addComponent(tileNameLabel))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(tileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(tileHeightField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
-                                        .addComponent(tileWidthField, javax.swing.GroupLayout.Alignment.TRAILING)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(largeurTuileText, javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(hauteurTuileText, javax.swing.GroupLayout.Alignment.TRAILING)))))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addComponent(jLabel15)
-                                .addGap(5, 5, 5)
-                                .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(largeurJointText, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(rightPanelLayout.createSequentialGroup()
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addGroup(rightPanelLayout.createSequentialGroup()
-                                        .addComponent(RotationLabel)
-                                        .addGap(68, 68, 68)
-                                        .addComponent(rotationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                        .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                                                .addComponent(jLabel18)
-                                                .addGap(19, 19, 19)
-                                                .addComponent(zeroOrientationRadioButton, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addGap(1, 1, 1)
-                                                .addComponent(ninetyOrientationRadioButton))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                                                .addComponent(jLabel17)
-                                                .addGap(43, 43, 43)
-                                                .addComponent(patternComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, rightPanelLayout.createSequentialGroup()
-                                                .addComponent(jLabel16)
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                                .addComponent(jointColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                        .addGroup(rightPanelLayout.createSequentialGroup()
-                                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                                .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
-                                                .addComponent(jLabel20, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                            .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                                .addComponent(offsetXField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 66, Short.MAX_VALUE)
-                                                .addComponent(rowOffsetField, javax.swing.GroupLayout.Alignment.TRAILING)
-                                                .addComponent(offsetYField, javax.swing.GroupLayout.Alignment.TRAILING)))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(offsetXText)
-                                    .addComponent(offsetYText)
-                                    .addComponent(rowOffsetLabel)
-                                    .addComponent(degreesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE))))))
-                .addContainerGap(15, Short.MAX_VALUE))
-        );
-        rightPanelLayout.setVerticalGroup(
-            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(rightPanelLayout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(5, 5, 5)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jLabel2)
-                    .addComponent(surfaceXField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(xFtLabel)
-                    .addComponent(surfaceXFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(xInLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jLabel3)
-                    .addComponent(surfaceYField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(yFtLabel)
-                    .addComponent(surfaceYFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(yInLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jLabel4)
-                    .addComponent(surfaceWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(widthFtLabel)
-                    .addComponent(surfaceWidthFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(widthInLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jLabel5)
-                    .addComponent(surfaceHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(heightFtLabel)
-                    .addComponent(surfaceHeightFieldInches, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(heightInLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(surfaceColorButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, 27, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(coverRadioButton)
-                    .addComponent(doNotCoverRadioButton)
-                    .addComponent(jLabel6))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel14)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tileTypeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(largeurJointText, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel15)
-                        .addComponent(jointWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(jLabel16))
-                    .addGroup(rightPanelLayout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jointColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(patternComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel17))
-                .addGap(6, 6, 6)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(zeroOrientationRadioButton)
-                    .addComponent(ninetyOrientationRadioButton)
-                    .addComponent(jLabel18))
-                .addGap(7, 7, 7)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
-                    .addComponent(offsetXField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(offsetXText))
-                .addGap(6, 6, 6)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(offsetYText)
-                    .addComponent(offsetYField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel10))
-                .addGap(5, 5, 5)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(rowOffsetField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(rowOffsetLabel)
-                    .addComponent(jLabel20))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(RotationLabel)
-                    .addComponent(rotationTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(degreesLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tileNameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tileNameLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tileWidthField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(largeurTuileText)
-                    .addComponent(jLabel12))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(hauteurTuileText)
-                    .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jLabel13)
-                        .addComponent(tileHeightField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tileColorButton, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel26))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tileNbPerBoxField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel19))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(createTileButton)
-                .addGap(5, 5, 5))
-        );
-
-        jScrollPane1.setViewportView(rightPanel);
-=======
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 24;
         gridBagConstraints.gridwidth = 5;
@@ -2432,22 +2586,21 @@ public class MainWindow extends JFrame
         newPanel.add(createTileButton, gridBagConstraints);
 
         jScrollPane1.setViewportView(newPanel);
->>>>>>> Stashed changes
 
         javax.swing.GroupLayout mainPanelLayout = new javax.swing.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
         mainPanelLayout.setHorizontalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(mainPanelLayout.createSequentialGroup()
-                .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 692, Short.MAX_VALUE)
+                .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 713, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 316, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0))
         );
         mainPanelLayout.setVerticalGroup(
             mainPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 780, Short.MAX_VALUE)
+            .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
         );
 
         menuFichier.setText("Fichier");
@@ -2495,6 +2648,16 @@ public class MainWindow extends JFrame
             }
         });
         menuFichier.add(saveProjectButton);
+
+        exportMenuItem.setText("Exporter Rendu");
+        exportMenuItem.addActionListener(new java.awt.event.ActionListener()
+        {
+            public void actionPerformed(java.awt.event.ActionEvent evt)
+            {
+                exportMenuItemActionPerformed(evt);
+            }
+        });
+        menuFichier.add(exportMenuItem);
 
         menuFichierQuitter.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK));
         menuFichierQuitter.setText("Quitter");
@@ -2558,6 +2721,7 @@ public class MainWindow extends JFrame
             }
         });
         menuAffichage.add(inspectorMenuItem);
+        menuAffichage.add(jSeparator8);
 
         menuCustomZoom.setText("Zoom personnalisé");
         menuCustomZoom.addActionListener(new java.awt.event.ActionListener()
@@ -2614,13 +2778,7 @@ public class MainWindow extends JFrame
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-    
-    /**
-     * Mets à jour les coordonnées de la souris sur le canevas.
-     *
-     * @param evt : position de la souris
-     */
-    
+
     private void canvasPanelMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canvasPanelMouseMoved
         updateMouseCoordinates(evt);
         Point2D.Double metricPoint = pointToMetric(evt.getPoint());
@@ -2628,19 +2786,62 @@ public class MainWindow extends JFrame
         {
             showTileInfo(controller.getTileAtPoint(metricPoint));
         }
-        // Dessine un rectangle temporaire lors de la création d'un rectangle.
         if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
-            if (gridIsMagnetic)
-            {
-                Utilities.movePointToGrid(metricPoint, canvasPanel.getGridDistance());
-            }
-            canvasPanel.setTemporaryRectangle(Utilities.cornersToRectangle(firstRectangleCorner,
-                    metricPoint));
-            canvasPanel.repaint();
+            canvasPanelMouseMovedTemporaryRectangle(metricPoint);
+        }
+        else if (selectedMode == ApplicationModes.CIRCLE && firstEllipseCorner != null)
+        {
+            canvasPanelMouseMovedTemporaryCircle(metricPoint);
+        }
+        else if (selectedMode == ApplicationModes.POLYGON && numberVertices > 0)
+        {
+            canvasPanelMouseMovedTemporaryPolygon(metricPoint);
         }
     }//GEN-LAST:event_canvasPanelMouseMoved
 
+    private void canvasPanelMouseMovedTemporaryRectangle(Point2D.Double metricPoint)
+    {
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(metricPoint, canvasPanel.getGridDistance());
+        }
+        canvasPanel.setTemporaryRectangle(Utilities.cornersToRectangle(firstRectangleCorner,
+                metricPoint));
+        canvasPanel.repaint();
+    }
+    
+    private void canvasPanelMouseMovedTemporaryCircle(Point2D.Double metricPoint)
+    {
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(metricPoint, canvasPanel.getGridDistance());
+        }
+        canvasPanel.setTemporaryEllipse(Utilities.cornersToRectangle(firstEllipseCorner,
+                metricPoint));
+        canvasPanel.repaint();
+    }
+    
+    private void canvasPanelMouseMovedTemporaryPolygon(Point2D.Double metricPoint)
+    {
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(metricPoint, canvasPanel.getGridDistance());
+        }
+        if (numberVertices == 1)
+        {
+            Point2D firstPoint = polygonInProgress.getCurrentPoint();
+            canvasPanel.setTemporaryLine(new Line2D.Double(firstPoint, metricPoint));
+        }
+        else
+        {
+            Path2D.Double pathCopy = new Path2D.Double(polygonInProgress);
+            pathCopy.lineTo(metricPoint.x, metricPoint.y);
+            canvasPanel.setTemporaryPolygon(pathCopy);
+        }
+        canvasPanel.repaint();
+    } 
+    
     private void updateMouseCoordinates(MouseEvent evt)
     {
         int posXPixels = evt.getX() + canvasPanel.getHorizontalOffset();
@@ -2669,12 +2870,7 @@ public class MainWindow extends JFrame
                     + String.format("%.02f", posYInches) + "in");
         }
     }
-    
-    /**
-     * Décrémente le zoom.
-     *
-     * @param evt
-     */
+
     private void zoomOutButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomOutButtonActionPerformed
         double newZoom = canvasPanel.zoomOutIncrement();
         if (newZoom * 100 > 5)
@@ -2692,11 +2888,6 @@ public class MainWindow extends JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_zoomOutButtonActionPerformed
 
-    /**
-     * Incrémente le zoom.
-     *
-     * @param evt
-     */
     private void zoomInButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomInButtonActionPerformed
         double newZoom = canvasPanel.zoomInIncrement();
         
@@ -2740,18 +2931,16 @@ public class MainWindow extends JFrame
         if (toolBar.isVisible())
         {
             JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Enregistrer Projet");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(filter);
             if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION)
             {
-                controller.saveProject(fileChooser.getSelectedFile());
+                controller.saveProject(new File(fileChooser.getSelectedFile().toString() + ".ser"));
             }
         }
     }//GEN-LAST:event_saveProjectButtonActionPerformed
 
-    /**
-     * Déplace le zoom par la roue de la souris.
-     *
-     * @param evt
-     */
     private void canvasPanelMouseWheelMoved(java.awt.event.MouseWheelEvent evt)//GEN-FIRST:event_canvasPanelMouseWheelMoved
     {//GEN-HEADEREND:event_canvasPanelMouseWheelMoved
         double newZoom = canvasPanel.changeZoom(evt.getWheelRotation(), evt.getX(), evt.getY(),
@@ -2794,11 +2983,6 @@ public class MainWindow extends JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_horizontalScrollBarAdjustmentValueChanged
 
-    /**
-     * Exécute une opération dépendant du mode courant de l'application.
-     *
-     * @param evt
-     */
     private void canvasPanelMousePressed(java.awt.event.MouseEvent evt)//GEN-FIRST:event_canvasPanelMousePressed
     {//GEN-HEADEREND:event_canvasPanelMousePressed
         if (!toolBar.isVisible()) return;
@@ -2823,26 +3007,26 @@ public class MainWindow extends JFrame
     {
         switch (selectedMode)
         {
-            // Fusionner deux surfaces
             case MERGE:
                 mergeSelectedSurfaces(pointToMetric(evt.getPoint()));
                 break;
 
-            // Change la sélection de surface.
             case SELECT:
                 selectSurface(pointToMetric(evt.getPoint()));
                 break;
 
-            // Démarche pour créer un nouveau rectangle.
             case RECTANGLE:
                 createNewRectangularSurface(pointToMetric(evt.getPoint()));
+                break;
+                
+            case CIRCLE:
+                createNewCircularSurface(pointToMetric(evt.getPoint()));
                 break;
 
             case POLYGON:
                 addPointToPolygon(pointToMetric(evt.getPoint()));
                 break;
                 
-            // Set le point d'origine du mouvement de la souris pour déplacer une surface.
             case SURFACEMOVE:
                 Point2D.Double point = pointToMetric(evt.getPoint());
                 selectSurface(point);
@@ -2869,10 +3053,14 @@ public class MainWindow extends JFrame
 
     private void rightClickActionHandler(MouseEvent evt)
     {
-        // Annule la création en cours d'une surface rectangulaire.
         if (selectedMode == ApplicationModes.RECTANGLE && firstRectangleCorner != null)
         {
-            unselect();
+            unselectSurface();
+            return;
+        }
+        else if (selectedMode == ApplicationModes.CIRCLE && firstEllipseCorner != null)
+        {
+            unselectSurface();
             return;
         }
         else if (selectedMode == ApplicationModes.POLYGON && polygonInProgress != null)
@@ -2885,6 +3073,7 @@ public class MainWindow extends JFrame
         // Display le context menu
         if (controller.surfaceIsRectangular())
         {
+            decombineMenuItem.setEnabled(false);
             pushSubMenu.setEnabled(true);
             double surroundingBounds[] = controller.getSurroundingBounds();
             if (surroundingBounds[2] == Integer.MAX_VALUE)
@@ -2902,8 +3091,14 @@ public class MainWindow extends JFrame
                 pushBottomMenuItem.setEnabled(true);
             }
         }
+        else if (controller.surfaceIsCombined())
+        {
+            decombineMenuItem.setEnabled(true);
+            pushSubMenu.setEnabled(false);
+        }
         else
         {
+            decombineMenuItem.setEnabled(false);
             pushSubMenu.setEnabled(false);
         }
         if (controller.isHole() || !controller.hasTileType())
@@ -2956,11 +3151,6 @@ public class MainWindow extends JFrame
         this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
     }
 
-    /**
-     * Combine deux surfaces.
-     *
-     * @param point Endroit où le clic est reçu dans le canevas
-     */
     private void mergeSelectedSurfaces(Point2D.Double point)
     {
         selectSurface(point);
@@ -2969,34 +3159,37 @@ public class MainWindow extends JFrame
             if (!controller.mergeIsInProgress())
             {
                 controller.setFirstSurfaceToMerge();
-            } else
+            }
+            else
             {
                 boolean flag = controller.mergeSurfaces();
                 if (flag)
                 {
-                    selectSurface(point);
-                } else
+                    controller.selectLastSurfaceAdded();
+                    toggleGroup.clearSelection();
+                    selectionToggle.setSelected(true);
+                    selectedMode = ApplicationModes.SELECT;
+                    updatePanelInformation();
+                    repaint();
+                }
+                else
                 {
-                    unselect();
+                    unselectSurface();
                     JOptionPane.showMessageDialog(this,
                             "La combinaison ne peut pas être effectuée.",
                             "Opération interdite", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        } else
+        }
+        else
         {
-            unselect();
+            unselectSurface();
         }
     }
 
-    /**
-     * Sélectionne une surface.
-     *
-     * @param point : le point que la surface doit contenir, en mesure métrique.
-     */
     private void selectSurface(Point2D.Double point)
     {
-        controller.setSelectedVertex(point);
+        controller.selectVertex(point);
         if (controller.vertexIsSelected())
         {
             movingVertex = true;
@@ -3012,16 +3205,11 @@ public class MainWindow extends JFrame
             }
             else
             {
-                unselect();
+                unselectSurface();
             }
         }
     }
 
-    /**
-     * Crée une nouvelle surface rectangulaire.
-     *
-     * @param point : un des deux coins du rectangle, en mesure métrique.
-     */
     private void createNewRectangularSurface(Point2D.Double point)
     {
         if (canvasPanel.getZoom() * 100 < 5)
@@ -3036,37 +3224,94 @@ public class MainWindow extends JFrame
             {
                 Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
             }
-
-            // Sélectionne le premier coin du nouveau rectangle.
             if (firstRectangleCorner == null)
             {
-                unselect();
+                unselectSurface();
                 firstRectangleCorner = point;
-            } // Sélectionne le deuxième coin du nouveau rectangle.
+            }
             else
             {
                 Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstRectangleCorner, point);
-                unselect();
-
+                unselectSurface();
                 if (rectangle.width < 100 || rectangle.height < 100)
                 {
                     canvasPanel.repaint();
                     JOptionPane.showMessageDialog(this, "Surface trop petite.",
                             "Opération interdite", JOptionPane.ERROR_MESSAGE);
-                } else
+                }
+                else
                 {
-                    // Fait une requête pour la création du rectangle.
                     boolean status = controller.addRectangularSurface(rectangle);
-
                     if (status)
                     {
-                        selectSurface(new Point2D.Double(rectangle.x + 0.1, rectangle.y + 0.1));
-                    } else
+                        controller.selectLastSurfaceAdded();
+                        toggleGroup.clearSelection();
+                        selectionToggle.setSelected(true);
+                        selectedMode = ApplicationModes.SELECT;
+                        enablePanelButtons();
+                        updatePanelInformation();
+                        repaint();
+                    }
+                    else
                     {
-                        canvasPanel.repaint();
                         JOptionPane.showMessageDialog(this, "Création de la surface entraîne un conflit.",
                                 "Opération interdite", JOptionPane.ERROR_MESSAGE);
                     }
+                    canvasPanel.repaint();
+                }
+            }
+        }
+    }
+    
+    private void createNewCircularSurface(Point2D.Double point)
+    {
+        if (canvasPanel.getZoom() * 100 < 5)
+        {
+            JOptionPane.showMessageDialog(this, 
+                    "Impossible de créer une surface avec un zoom inférieur à 5%.\nVeuillez augmenter le zoom, puis réessayer", 
+                    "Action interdite", JOptionPane.ERROR_MESSAGE);
+        }
+        else
+        {
+            if (gridIsMagnetic)
+            {
+                Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
+            }
+            if (firstEllipseCorner == null)
+            {
+                unselectSurface();
+                firstEllipseCorner = point;
+            }
+            else
+            {
+                Rectangle2D.Double rectangle = Utilities.cornersToRectangle(firstEllipseCorner, point);
+                unselectSurface();
+                if (rectangle.width < 100 || rectangle.height < 100)
+                {
+                    canvasPanel.repaint();
+                    JOptionPane.showMessageDialog(this, "Surface trop petite.",
+                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
+                else
+                {
+                    boolean status = controller.addCircularSurface(rectangle);
+                    if (status)
+                    {
+                        controller.selectLastSurfaceAdded();
+                        toggleGroup.clearSelection();
+                        selectionToggle.setSelected(true);
+                        selectedMode = ApplicationModes.SELECT;
+                        enablePanelButtons();
+                        updatePanelInformation();
+                        repaint();
+                    }
+                    else
+                    {
+                        
+                        JOptionPane.showMessageDialog(this, "Création de la surface entraîne un conflit.",
+                                "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                    }
+                    canvasPanel.repaint();
                 }
             }
         }
@@ -3127,14 +3372,17 @@ public class MainWindow extends JFrame
             status = controller.addIrregularSurface(polygonInProgress);
             if (!status)
             {
-                JOptionPane.showMessageDialog(this, "Création de la surface entraîne un conflit.",
+                JOptionPane.showMessageDialog(this, "Création de la surface impossible.",
                         "Opération interdite", JOptionPane.ERROR_MESSAGE);
             }
         }
-        unselect();
+        unselectSurface();
         if (status)
         {
             controller.selectLastSurfaceAdded();
+            toggleGroup.clearSelection();
+            selectionToggle.setSelected(true);
+            selectedMode = ApplicationModes.SELECT;
             enablePanelButtons();
             updatePanelInformation();
         }
@@ -3177,6 +3425,10 @@ public class MainWindow extends JFrame
         {
             mouseDraggedRectangle(evt);
         }
+        else if (selectedMode == ApplicationModes.CIRCLE && firstEllipseCorner != null)
+        {
+            mouseDraggedCircle(evt);
+        }
         else if (selectedMode == ApplicationModes.TILEMOVE && controller.surfaceIsSelected()
                 && originPoint != null && controller.hasTileType())
         {
@@ -3215,18 +3467,25 @@ public class MainWindow extends JFrame
         canvasPanel.repaint();
     }
     
+    private void mouseDraggedCircle(MouseEvent evt)
+    {
+        Point2D.Double point = pointToMetric(evt.getPoint());
+        if (gridIsMagnetic)
+        {
+            Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
+        }
+        canvasPanel.setTemporaryEllipse(Utilities.cornersToRectangle(firstEllipseCorner,
+                point));
+        canvasPanel.repaint();
+    }
+    
     private void mouseDraggedTileMove(MouseEvent evt)
     {
         Point2D.Double currentCursorPosition = pointToMetric(evt.getPoint());
         double deltaX = currentCursorPosition.x - originPoint.x;
         double deltaY = currentCursorPosition.y - originPoint.y;
-        double tileTypeWidth = controller.getTileWidth();
-        double tileTypeHeight = controller.getTileHeight();
-        double tileWidth = zeroOrientationRadioButton.isSelected()? tileTypeWidth : tileTypeHeight;
-        double tileHeight = zeroOrientationRadioButton.isSelected()? tileTypeHeight : tileTypeWidth;
-        double jointWidth = controller.getJointWidth();
-        double offsetX = (controller.getOffsetX() + deltaX) % (tileWidth + jointWidth);
-        double offsetY = (controller.getOffsetY() + deltaY) % (2 * (tileHeight + jointWidth));
+        double offsetX = controller.getOffsetX() + deltaX;
+        double offsetY = controller.getOffsetY() + deltaY;
         controller.setOffsetXY(offsetX, offsetY);
         originPoint = currentCursorPosition;
         updatePanelInformation();
@@ -3241,6 +3500,8 @@ public class MainWindow extends JFrame
             Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
         }
         controller.moveVertexToPoint(point);
+        updateSurfacePanel();
+        updateSurfaceQuantities();
         repaint();
     }
     
@@ -3355,7 +3616,7 @@ public class MainWindow extends JFrame
     private void deleteSurfaceMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_deleteSurfaceMenuItemActionPerformed
     {//GEN-HEADEREND:event_deleteSurfaceMenuItemActionPerformed
         controller.removeSelectedSurface();
-        unselect();
+        unselectSurface();
     }//GEN-LAST:event_deleteSurfaceMenuItemActionPerformed
 
     private void formComponentResized(java.awt.event.ComponentEvent evt)//GEN-FIRST:event_formComponentResized
@@ -3364,26 +3625,28 @@ public class MainWindow extends JFrame
     }//GEN-LAST:event_formComponentResized
     
     private void tileNbPerBoxFieldActionPerformed(ActionEvent evt)
-       {
-           try
-           {
-                int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
-                if (newTileNbPerBox >= 1)
-                {
-                    controller.setTileNbPerBox(newTileNbPerBox);
-                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-                }
-                else
-                {
-                    JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile", 
-                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
-                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-                }
-           } catch (NumberFormatException e)
-           {
-               tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-           }
-       }
+    {
+        try
+        {
+             int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
+             if (newTileNbPerBox >= 1)
+             {
+                 controller.setTileNbPerBox(newTileNbPerBox);
+                 updateSurfaceQuantities();
+                 tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+             }
+             else
+             {
+                 JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile", 
+                         "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                 tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+             }
+        }
+        catch (NumberFormatException e)
+        {
+            tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+        }
+    }
 
     private void tileNameFieldActionPerformed(ActionEvent evt)
        {
@@ -3485,7 +3748,7 @@ public class MainWindow extends JFrame
         }
         else
         {
-            unselect();
+            unselectSurface();
         }
         canvasPanel.repaint();
     }//GEN-LAST:event_menuEditionAnnulerActionPerformed
@@ -3499,7 +3762,7 @@ public class MainWindow extends JFrame
         }
         else
         {
-            unselect();
+            unselectSurface();
         }
         canvasPanel.repaint();
     }//GEN-LAST:event_menuEditionRepeterActionPerformed
@@ -3513,7 +3776,7 @@ public class MainWindow extends JFrame
         }
         else
         {
-            unselect();
+            unselectSurface();
         }
         canvasPanel.repaint();
         undoButton.setToolTipText(controller.getUndoPresentationName());
@@ -3528,7 +3791,7 @@ public class MainWindow extends JFrame
         }
         else
         {
-            unselect();
+            unselectSurface();
         }
         canvasPanel.repaint();
         redoButton.setToolTipText(controller.getRedoPresentationName());
@@ -3551,7 +3814,7 @@ public class MainWindow extends JFrame
                 "Fermer projet",
                 JOptionPane.YES_NO_OPTION) == 0)
         {
-            unselect();
+            unselectSurface();
             selectedMode = ApplicationModes.NONE;
             toggleGroup.clearSelection();
             controller.closeProject();
@@ -3560,6 +3823,7 @@ public class MainWindow extends JFrame
             createTileWindow.setVisible(false);
             menuEditionAnnuler.setEnabled(false);
             menuEditionRepeter.setEnabled(false);
+            collisionCheckToggleButton.setSelected(false);
         }
     }//GEN-LAST:event_closeProjectButtonActionPerformed
 
@@ -3571,22 +3835,26 @@ public class MainWindow extends JFrame
                 JOptionPane.YES_NO_OPTION) == 0)
         {
             controller.createNewProject();
+            collisionCheckToggleButton.setSelected(false);
             toolBar.setVisible(true);
             createTileButton.setEnabled(true);
             menuEditionAnnuler.setEnabled(true);
             menuEditionRepeter.setEnabled(true);
-            unselect();
+            unselectSurface();
         }
     }//GEN-LAST:event_newProjectButtonActionPerformed
 
     private void openProjectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_openProjectButtonActionPerformed
     {//GEN-HEADEREND:event_openProjectButtonActionPerformed
         JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Ouvrir Projet");
+        fileChooser.setAcceptAllFileFilterUsed(false);
+        fileChooser.addChoosableFileFilter(filter);
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
         {
             if (toolBar.isVisible())
             {
-                unselect();
+                unselectSurface();
                 selectedMode = ApplicationModes.NONE;
                 toggleGroup.clearSelection();
                 controller.closeProject();
@@ -3598,9 +3866,10 @@ public class MainWindow extends JFrame
                 createTileButton.setEnabled(true);
                 menuEditionAnnuler.setEnabled(true);
                 menuEditionRepeter.setEnabled(true);
-                unselect();
+                unselectSurface();
             }
             controller.loadProject(fileChooser.getSelectedFile());
+            collisionCheckToggleButton.setSelected(false);
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_openProjectButtonActionPerformed
@@ -3913,6 +4182,7 @@ public class MainWindow extends JFrame
             } // fin else imperial
         } // fin if isMetric
         controller.refreshSurfaces();
+        updateSurfaceQuantities();
         canvasPanel.repaint();
    }
     
@@ -3991,7 +4261,7 @@ public class MainWindow extends JFrame
 
     private void updateTileTypeComboBox()
     {
-        DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileTypeStrings());
+        DefaultComboBoxModel model = new DefaultComboBoxModel(controller.getTileNames());
         tileTypeComboBox.setModel(model);
         if (controller.surfaceIsSelected() && controller.hasTileType())
         {
@@ -4051,15 +4321,12 @@ public class MainWindow extends JFrame
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }//GEN-LAST:event_relativeMoveMenuItemActionPerformed
 
-    private void createTileWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileWidthFieldActionPerformed
-    {//GEN-HEADEREND:event_createTileWidthFieldActionPerformed
-
-    }//GEN-LAST:event_createTileWidthFieldActionPerformed
-
     private void menuResetZoomActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_menuResetZoomActionPerformed
     {//GEN-HEADEREND:event_menuResetZoomActionPerformed
-        double newZoom = canvasPanel.setZoom(1);
-        zoomLabel.setText(String.valueOf((int) (newZoom * 100)));
+        canvasPanel.setZoom(1);
+        zoomLabel.setText("100");
+        horizontalScrollBar.setValue(0);
+        verticalScrollBar.setValue(0);
         canvasPanel.repaint();
     }//GEN-LAST:event_menuResetZoomActionPerformed
 
@@ -4104,6 +4371,7 @@ public class MainWindow extends JFrame
     private void createTileButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_createTileButtonActionPerformed
     {//GEN-HEADEREND:event_createTileButtonActionPerformed
         createTileWindow.setVisible(true);
+        createTileNameField.grabFocus();
     }//GEN-LAST:event_createTileButtonActionPerformed
 
     private void rowOffsetFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_rowOffsetFieldActionPerformed
@@ -4119,6 +4387,7 @@ public class MainWindow extends JFrame
         }
         controller.setRowOffset(Math.max(0, Math.min(100, offset)));
         rowOffsetField.setText("" + controller.getRowOffset());
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_rowOffsetFieldActionPerformed
 
@@ -4194,18 +4463,18 @@ public class MainWindow extends JFrame
             } // fin else imperial
         } // fin if isMetric
         controller.refreshSurfaces();
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_tileWidthFieldActionPerformed
 
     private void tileTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileTypeComboBoxActionPerformed
     {//GEN-HEADEREND:event_tileTypeComboBoxActionPerformed
-        try
+        int selectedIndex = tileTypeComboBox.getSelectedIndex();
+        if (selectedIndex > -1)
         {
             controller.setTileTypeByIndex(tileTypeComboBox.getSelectedIndex());
             updatePanelInformation();
             canvasPanel.repaint();
-        } catch (Exception e)
-        {
         }
     }//GEN-LAST:event_tileTypeComboBoxActionPerformed
 
@@ -4218,6 +4487,7 @@ public class MainWindow extends JFrame
                 double offset = Utilities.parseDoubleLocale(offsetYField.getText()) * 10;
                 controller.setOffsetY(offset);
                 offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             }
             catch (ParseException e)
@@ -4233,6 +4503,7 @@ public class MainWindow extends JFrame
                 double offsetY = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetY(offsetY);
                 offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             }
             catch (ParseException e)
@@ -4251,6 +4522,7 @@ public class MainWindow extends JFrame
                 double offset = Utilities.parseDoubleLocale(offsetXField.getText()) * 10;
                 controller.setOffsetX(offset);
                 offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             } catch (ParseException e)
             {
@@ -4264,6 +4536,7 @@ public class MainWindow extends JFrame
                 double offsetX = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetX(offsetX);
                 offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             } catch (ParseException e)
             {
@@ -4275,12 +4548,14 @@ public class MainWindow extends JFrame
     private void ninetyOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ninetyOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_ninetyOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(true);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
 
     private void zeroOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_zeroOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_zeroOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(false);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_zeroOrientationRadioButtonActionPerformed
 
@@ -4289,23 +4564,61 @@ public class MainWindow extends JFrame
         if ((String) patternComboBox.getSelectedItem() != null)
         {
             Pattern pattern;
+            String message = "Ce motif peut seulement être utilisé avec un matériau ayant\n"
+                    + "un côté plus long ou égal au double de son autre côté.";
             switch ((String) patternComboBox.getSelectedItem())
             {
                 case patternA:
-                pattern = Pattern.CHECKERED; break;
+                    pattern = Pattern.CHECKERED;
+                    break;
                 case patternB:
-                pattern = Pattern.LSHAPE; break;
+                    pattern = Pattern.LSHAPE;
+                    if (!hasTwoToOneRatio())
+                    {
+                        JOptionPane.showMessageDialog(this, message,
+                                "Motif incompatible avec tuile", JOptionPane.ERROR_MESSAGE);
+                        updatePatternComboBox();
+                        return;
+                    }
+                    break;
                 case patternC:
-                pattern = Pattern.TWOBYTWO; break;
+                    pattern = Pattern.TWOBYTWO;
+                    if (!hasTwoToOneRatio())
+                    {
+                        JOptionPane.showMessageDialog(this, message,
+                                "Motif incompatible avec tuile", JOptionPane.ERROR_MESSAGE);
+                        updatePatternComboBox();
+                        return;
+                    }
+                    break;
                 default:
-                pattern = Pattern.DIAGONAL;
+                    pattern = Pattern.DIAGONAL;
             }
             controller.setPattern(pattern);
             enablePanelButtons();
+            updateCoveringPanel();
+            updateSurfaceQuantities();
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_patternComboBoxActionPerformed
-
+    
+    private boolean hasTwoToOneRatio()
+    {
+        if (controller.hasTileType())
+        {
+            double tileWidth = controller.getTileWidth();
+            double tileHeight = controller.getTileHeight();
+            double longLength = tileWidth > tileHeight ? tileWidth : tileHeight;
+            double shortLength = tileWidth > tileHeight ? tileHeight : tileWidth;
+            if (longLength >= 2 * shortLength)
+            {
+                controller.setJointWidth(longLength - 2 * shortLength);
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void jointWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jointWidthFieldActionPerformed
     {//GEN-HEADEREND:event_jointWidthFieldActionPerformed
         if (isMetric)
@@ -4315,12 +4628,15 @@ public class MainWindow extends JFrame
                 double width = Utilities.parseDoubleLocale(jointWidthField.getText());
                 controller.setJointWidth(width);
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
-            } catch (ParseException e)
+            }
+            catch (ParseException e)
             {
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
             }
-        } else
+        }
+        else
         {
             try
             {
@@ -4330,12 +4646,14 @@ public class MainWindow extends JFrame
                 controller.setJointWidth(jointWidth);
                 jointWidthField.setText(String.format("%.03f",
                     Utilities.mmToInches(controller.getJointWidth())));
-            canvasPanel.repaint();
-        } catch (ParseException e)
-        {
-            jointWidthField.setText(String.format("%.03f",
-                Utilities.mmToInches(controller.getJointWidth())));
-        }
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+            }
+            catch (ParseException e)
+            {
+                jointWidthField.setText(String.format("%.03f",
+                    Utilities.mmToInches(controller.getJointWidth())));
+            }
         }
     }//GEN-LAST:event_jointWidthFieldActionPerformed
 
@@ -4381,19 +4699,20 @@ public class MainWindow extends JFrame
                 boolean status = controller.setSurfaceHeight(height);
                 surfaceHeightField.setText(String.format("%.03f",
                     controller.getBounds2D().getHeight() / 1000.));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceHeightField.setText(String.format("%.03f",
-                controller.getBounds2D().getHeight() / 1000.));
-        }
-        }
+            catch (ParseException e)
+            {
+                surfaceHeightField.setText(String.format("%.03f",
+                    controller.getBounds2D().getHeight() / 1000.));
+            }
+            }
         else
         {
             try
@@ -4408,19 +4727,20 @@ public class MainWindow extends JFrame
                 surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(newHeight)));
                 surfaceHeightFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newHeight)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
-            surfaceHeightFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getHeight())));
-        }
+            catch (ParseException e)
+            {
+                surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
+                surfaceHeightFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getHeight())));
+            }
         }
     }//GEN-LAST:event_surfaceHeightFieldActionPerformed
 
@@ -4434,18 +4754,21 @@ public class MainWindow extends JFrame
                 boolean status = controller.setSurfaceWidth(width);
                 surfaceWidthField.setText(String.format("%.03f",
                     controller.getBounds2D().getWidth() / 1000.));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        } catch (ParseException e)
-        {
-            surfaceWidthField.setText(String.format("%.03f",
-                controller.getBounds2D().getWidth() / 1000.));
+            catch (ParseException e)
+            {
+                surfaceWidthField.setText(String.format("%.03f",
+                    controller.getBounds2D().getWidth() / 1000.));
+            }
         }
-        } else
+        else
         {
             try
             {
@@ -4459,18 +4782,20 @@ public class MainWindow extends JFrame
                 surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(newWidth)));
                 surfaceWidthFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newWidth)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        } catch (ParseException e)
-        {
-            surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getWidth())));
-            surfaceWidthFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getWidth())));
-        }
+            catch (ParseException e)
+            {
+                surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getWidth())));
+                surfaceWidthFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getWidth())));
+            }
         }
     }//GEN-LAST:event_surfaceWidthFieldActionPerformed
 
@@ -4561,31 +4886,33 @@ public class MainWindow extends JFrame
                 surfaceXField.setText(String.valueOf(Utilities.mmToFeet(newX)));
                 surfaceXFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newX)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
-            surfaceXFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getX())));
-        }
+            catch (ParseException e)
+            {
+                surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
+                surfaceXFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getX())));
+            }
         }
     }//GEN-LAST:event_surfaceXFieldActionPerformed
 
     private void doNotCoverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_doNotCoverRadioButtonActionPerformed
     {//GEN-HEADEREND:event_doNotCoverRadioButtonActionPerformed
         controller.setSurfaceIsHole(true);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_doNotCoverRadioButtonActionPerformed
 
     private void coverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_coverRadioButtonActionPerformed
     {//GEN-HEADEREND:event_coverRadioButtonActionPerformed
         controller.setSurfaceIsHole(false);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_coverRadioButtonActionPerformed
 
@@ -4604,6 +4931,7 @@ public class MainWindow extends JFrame
     private void rotationTextFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_rotationTextFieldActionPerformed
     {//GEN-HEADEREND:event_rotationTextFieldActionPerformed
         controller.setRotation(Integer.parseInt(rotationTextField.getText()));
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_rotationTextFieldActionPerformed
     private void inspectorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_inspectorButtonActionPerformed
@@ -4612,6 +4940,55 @@ public class MainWindow extends JFrame
         canvasPanel.repaint();
     }//GEN-LAST:event_inspectorButtonActionPerformed
 
+    private void quantitiesButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_quantitiesButtonActionPerformed
+    {//GEN-HEADEREND:event_quantitiesButtonActionPerformed
+        String[] tileNames = controller.getTileNames();
+        String receipt = "Nombre de types de tuiles:          " + tileNames.length + "\n\n";
+        int[] boxCapacities = controller.getBoxCapacities();
+        int[] tileQuantities = controller.getTileQuantities();
+        for (int i = 0; i < tileNames.length; i++)
+        {
+            receipt += "Nom de la tuile:                               " + tileNames[i]  + "\n";
+            receipt += "Nombre de tuiles par boîte:          " + boxCapacities[i] + "\n";
+            receipt += "Nombre de tuiles utilisées:           " + tileQuantities[i] + "\n";
+            receipt += "Nombre de boîtes nécessaires:   " +
+                    (int)Math.ceil((double)tileQuantities[i] / (double)boxCapacities[i]) + "\n\n";
+        }
+        String message = receipt + "Enregistré sous VirtuTuile/FACTURE_VirtuTuile.txt";
+        writeReceiptToFile(receipt.trim().replaceAll(" +", " "));
+        JOptionPane.showMessageDialog(this, message,
+                    "Calcul des quantités de tuiles", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_quantitiesButtonActionPerformed
+
+    private void writeReceiptToFile(String receipt)
+    {
+        File file = new File("FACTURE_VirtuTuile.txt");
+        FileWriter fr = null;
+        try
+        {
+            fr = new FileWriter(file);
+            fr.write(receipt);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace(System.out);
+        }
+        finally
+        {
+            try
+            {
+                if (fr != null)
+                {
+                    fr.close();
+                }
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace(System.out);
+            }
+        }
+    }
+    
     private void inspectorOKButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_inspectorOKButtonActionPerformed
     {//GEN-HEADEREND:event_inspectorOKButtonActionPerformed
         canvasPanel.setInspectorLength(inspectorSlider.getValue());
@@ -4631,7 +5008,43 @@ public class MainWindow extends JFrame
     {//GEN-HEADEREND:event_inspectorSliderStateChanged
         inspectorLabel.setText(inspectorSlider.getValue() + " mm");
     }//GEN-LAST:event_inspectorSliderStateChanged
-    
+
+    private void collisionCheckToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_collisionCheckToggleButtonActionPerformed
+    {//GEN-HEADEREND:event_collisionCheckToggleButtonActionPerformed
+        controller.toggleCollisionCheck();
+    }//GEN-LAST:event_collisionCheckToggleButtonActionPerformed
+
+    private void exportMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_exportMenuItemActionPerformed
+    {//GEN-HEADEREND:event_exportMenuItemActionPerformed
+        BufferedImage bImg = new BufferedImage(canvasPanel.getWidth(), canvasPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D cg = bImg.createGraphics();
+        canvasPanel.paintAll(cg);
+        try
+        {
+                if (ImageIO.write(bImg, "png", new File("RENDU_VirtuTuile.png")))
+                {
+                    JOptionPane.showMessageDialog(this, "Sauvegardé sous VirtuTuile/RENDU_VirtuTuile.png",
+                        "Sauvegardé", JOptionPane.INFORMATION_MESSAGE);
+                }
+        }
+        catch (IOException e)
+        {
+                e.printStackTrace(System.out);
+        }
+    }//GEN-LAST:event_exportMenuItemActionPerformed
+
+    private void decombineMenuItemActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_decombineMenuItemActionPerformed
+    {//GEN-HEADEREND:event_decombineMenuItemActionPerformed
+        controller.unmergeSurface();
+        canvasPanel.repaint();
+    }//GEN-LAST:event_decombineMenuItemActionPerformed
+
+    private void ellipseToggleButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ellipseToggleButtonActionPerformed
+    {//GEN-HEADEREND:event_ellipseToggleButtonActionPerformed
+        selectedMode = ApplicationModes.CIRCLE;
+        unselect();
+    }//GEN-LAST:event_ellipseToggleButtonActionPerformed
+
     private void moveRelatively(Point2D.Double point) 
     {
         Rectangle2D bounds = controller.getBounds2DByPoint(point);
@@ -4777,7 +5190,6 @@ public class MainWindow extends JFrame
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel RotationLabel;
     private javax.swing.JMenuItem alignBottomMenuItem;
     private javax.swing.JMenuItem alignLeftMenuItem;
     private javax.swing.JMenuItem alignRightMenuItem;
@@ -4791,6 +5203,7 @@ public class MainWindow extends JFrame
     private javax.swing.JMenu centerSubMenu;
     private javax.swing.JMenuItem centerVMenuItem;
     private javax.swing.JMenuItem closeProjectButton;
+    private javax.swing.JToggleButton collisionCheckToggleButton;
     private javax.swing.ButtonGroup coverButtonGroup;
     private javax.swing.JRadioButton coverRadioButton;
     private javax.swing.JButton createTileButton;
@@ -4805,9 +5218,11 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel createWindowHeightLabel;
     private javax.swing.JLabel createWindowWidthLabel;
     private javax.swing.JToggleButton debugToggleButton;
-    private javax.swing.JLabel degreesLabel;
+    private javax.swing.JMenuItem decombineMenuItem;
     private javax.swing.JMenuItem deleteSurfaceMenuItem;
     private javax.swing.JRadioButton doNotCoverRadioButton;
+    private javax.swing.JToggleButton ellipseToggleButton;
+    private javax.swing.JMenuItem exportMenuItem;
     private javax.swing.JDialog gridDistanceDialog;
     private javax.swing.JLabel gridDistanceLabel;
     private javax.swing.JButton gridDistanceOKButton;
@@ -4839,10 +5254,8 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
@@ -4850,6 +5263,7 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel28;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -4857,17 +5271,15 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
-    private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JToolBar.Separator jSeparator9;
     private javax.swing.JButton jointColorButton;
     private javax.swing.JTextField jointWidthField;
     private javax.swing.JLabel largeurJointText;
@@ -4890,6 +5302,9 @@ public class MainWindow extends JFrame
     private javax.swing.JMenuItem menuResetZoom;
     private javax.swing.JToggleButton mergeToggle;
     private javax.swing.JToggleButton metricButton;
+    private javax.swing.JLabel nbBoxesOnSurfaceLabel;
+    private javax.swing.JLabel nbTilesOnSurfaceLabels;
+    private javax.swing.JPanel newPanel;
     private javax.swing.JMenuItem newProjectButton;
     private javax.swing.JRadioButton ninetyOrientationRadioButton;
     private javax.swing.JTextField offsetXField;
@@ -4898,6 +5313,7 @@ public class MainWindow extends JFrame
     private javax.swing.JLabel offsetYText;
     private javax.swing.JMenuItem openProjectButton;
     private javax.swing.ButtonGroup orientationGroup;
+    private javax.swing.JLabel orientationLabel;
     private javax.swing.JComboBox<String> patternComboBox;
     private javax.swing.JLabel percentLabel;
     private javax.swing.JToggleButton polygonToggle;
@@ -4910,13 +5326,12 @@ public class MainWindow extends JFrame
     private javax.swing.JToggleButton rectangleToggle;
     private javax.swing.JButton redoButton;
     private javax.swing.JMenuItem relativeMoveMenuItem;
-<<<<<<< Updated upstream
-    private javax.swing.JPanel rightPanel;
-=======
->>>>>>> Stashed changes
+    private javax.swing.JLabel rotationLabel1;
+    private javax.swing.JLabel rotationLabel2;
     private javax.swing.JTextField rotationTextField;
     private javax.swing.JTextField rowOffsetField;
-    private javax.swing.JLabel rowOffsetLabel;
+    private javax.swing.JLabel rowOffsetLabel1;
+    private javax.swing.JLabel rowOffsetLabel2;
     private javax.swing.JMenuItem saveProjectButton;
     private javax.swing.JToggleButton selectionToggle;
     private javax.swing.JMenuItem startColumnFullTileMenuItem;

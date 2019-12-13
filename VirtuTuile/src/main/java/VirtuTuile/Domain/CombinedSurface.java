@@ -1,6 +1,7 @@
 package VirtuTuile.Domain;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
@@ -8,64 +9,57 @@ import java.awt.geom.Path2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * Une surface combinée à partir de deux autres surfaces.
  * @author gabparrot
  */
-public class CombinedSurface extends Area implements Surface, Serializable
+public class CombinedSurface implements Surface, Serializable
 {
     private boolean isHole;
     private Color color;
     private Covering covering;
-    private Area uncoveredArea = new Area();
-    private ArrayList<Surface> absorbedSurfaces = new ArrayList<>();
+    private Path2D.Double uncoveredPath = new Path2D.Double();
+    private final Path2D.Double path = new Path2D.Double();
+    private final Surface firstSurface;
+    private final Surface secondSurface;
 
-    /**
-     * Constructeur.
-     * @param s1: la première surface fusionnée.
-     * @param s2: la deuxième surface fusionnée.
-     * @param isHole : la surface est-elle un trou?
-     * @param color : la couleur de la surface.
-     * @param covering : le covering de la surface.
-     */
     public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color, Covering covering)
     {
-        super(s1);
-        this.add(new Area(s2));
-        
+        Area area = new Area(s1);
+        area.add(new Area(s2));
+        path.append(area, false);
+        Area uncoveredArea = new Area();
         if (s1.isHole())
         {
             uncoveredArea.add(new Area(s1));
         }
         else if (s1 instanceof CombinedSurface)
         {
-            uncoveredArea.add(((CombinedSurface) s1).getUncoveredArea());
+            uncoveredArea.add(new Area(((CombinedSurface) s1).getUncoveredPath()));
         }
         if (s2.isHole())
         {
-            uncoveredArea.add(new Area(s2));
+            uncoveredArea.add(new Area(s1));
         }
         else if (s2 instanceof CombinedSurface)
         {
-            uncoveredArea.add(((CombinedSurface) s2).getUncoveredArea());
+            uncoveredArea.add(new Area(((CombinedSurface) s2).getUncoveredPath()));
         }
-        
-        absorbedSurfaces.add(s1);
-        absorbedSurfaces.add(s2);
-        
+        uncoveredPath.append(uncoveredArea, false);
+        firstSurface = s1;
+        secondSurface = s2;
         this.isHole = isHole;
         this.color = color;
-        
-        // Copie du Covering:
+        copyCovering(covering);
+    }
+    
+    private void copyCovering(Covering newCovering)
+    {
         try
         {
-            this.covering = (Covering) covering.clone();
+            this.covering = (Covering) newCovering.clone();
             this.covering.setParent(this);
             this.covering.cover();
         }
@@ -76,11 +70,26 @@ public class CombinedSurface extends Area implements Surface, Serializable
      * Retourne l'aire de la surface qui ne doit pas être couverte.
      * @return l'aire de la surface qui ne doit pas être couverte.
      */
-    public Area getUncoveredArea()
+    public Path2D.Double getUncoveredPath()
     {
-        return uncoveredArea;
+        return uncoveredPath;
+    }
+    
+    public void setUncoveredPath(Path2D.Double uncoveredPath)
+    {
+        this.uncoveredPath = uncoveredPath;
     }
 
+    public Surface getFirstSurface()
+    {
+        return firstSurface;
+    }
+    
+    public Surface getSecondSurface()
+    {
+        return secondSurface;
+    }
+    
     /**
      * Getter de la couleur de la surface, visible lorsqu'elle n'est pas couverte
      * @return color objet Color
@@ -139,50 +148,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
     @Override
     public double getArea()
     {
-        double area = 0;
-        if (this.isRectangular()) 
-        {
-            return getBounds2D().getHeight() * getBounds2D().getWidth();
-        } 
-        else 
-        {
-            for (int i = 0; i < absorbedSurfaces.size(); i++) 
-            {
-                area += absorbedSurfaces.get(i).getArea();
-            }
-        }
-        return area;
-    }
-    
-    /**
-     * Permet la sauvegarde d'une surface combinée dans un OutputStream
-     * @param out le OutputStream de destination
-     * @throws IOException Erreur d'écriture
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException
-    {
-        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(this));
-        out.writeObject(AffineTransform.getTranslateInstance(0, 0).createTransformedShape(uncoveredArea));
-        out.writeObject(isHole);
-        out.writeObject(color);
-        out.writeObject(covering);
-        out.writeObject(absorbedSurfaces);
-    }
-    
-    /**
-     * Permet le chargement d'une surface combinée à partir d'un InputStream de sauvegarde
-     * @param in L'InputStream de sauvegarde
-     * @throws IOException erreur d'écriture
-     * @throws ClassNotFoundException erreur de définition de classe
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
-    {
-        add(new Area((Shape) in.readObject()));
-        uncoveredArea = new Area((Shape) in.readObject());
-        isHole = (boolean) in.readObject();
-        color = (Color) in.readObject();
-        covering = (Covering) in.readObject();
-        absorbedSurfaces = (ArrayList<Surface>) in.readObject();
+        return path.getBounds2D().getWidth() * path.getBounds2D().getHeight();
     }
     
     /**
@@ -201,10 +167,10 @@ public class CombinedSurface extends Area implements Surface, Serializable
     {
         AffineTransform translation = new AffineTransform();
         translation.translate(10000, 10000);
-        transform(translation);
+        path.transform(translation);
         translation = new AffineTransform();
         translation.translate(-10000, -10000);
-        transform(translation);
+        path.transform(translation);
     }
 
     /**
@@ -221,14 +187,14 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = getBounds2D();
+        Rectangle2D bounds = path.getBounds2D();
         double deltaX = x - bounds.getX();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(deltaX, 0);
-        transform(translationTransform);
+        path.transform(translationTransform);
         if (project.conflictCheck(this))
         {
-            uncoveredArea.transform(translationTransform);
+            uncoveredPath.transform(translationTransform);
             coverSurface();
             return true;
         }
@@ -236,7 +202,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(-deltaX, 0);
-            transform(translationTransform);
+            path.transform(translationTransform);
             return false;
         }
     }
@@ -255,14 +221,14 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = getBounds2D();
+        Rectangle2D bounds = path.getBounds2D();
         double deltaY = y - bounds.getY();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(0, deltaY);
-        transform(translationTransform);
+        path.transform(translationTransform);
         if (project.conflictCheck(this))
         {
-            uncoveredArea.transform(translationTransform);
+            uncoveredPath.transform(translationTransform);
             coverSurface();
             return true;
         }
@@ -270,7 +236,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(0, -deltaY);
-            transform(translationTransform);
+            path.transform(translationTransform);
             return false;
         }
     }
@@ -289,17 +255,17 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = getBounds2D();
+        Rectangle2D bounds = path.getBounds2D();
         double oldWidth = bounds.getWidth();
         double oldX = bounds.getX();
         
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(width / oldWidth, 1);
-        transform(scaleTransform);
+        path.transform(scaleTransform);
         
         if (project.conflictCheck(this))
         {
-            uncoveredArea.transform(scaleTransform);
+            uncoveredPath.transform(scaleTransform);
             setX(oldX, project);
             coverSurface();
             return true;
@@ -308,7 +274,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             scaleTransform = new AffineTransform();
             scaleTransform.scale(oldWidth / width, 1);
-            transform(scaleTransform);
+            path.transform(scaleTransform);
             return false;
         }
     }
@@ -327,17 +293,17 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             return false;
         }
-        Rectangle2D bounds = getBounds2D();
+        Rectangle2D bounds = path.getBounds2D();
         double oldHeight = bounds.getHeight();
         double oldY = bounds.getY();
         
         AffineTransform scaleTransform = new AffineTransform();
         scaleTransform.scale(1, height / oldHeight);
-        transform(scaleTransform);
+        path.transform(scaleTransform);
         
         if (project.conflictCheck(this))
         {
-            uncoveredArea.transform(scaleTransform);
+            uncoveredPath.transform(scaleTransform);
             setY(oldY, project);
             coverSurface();
             return true;
@@ -346,7 +312,7 @@ public class CombinedSurface extends Area implements Surface, Serializable
         {
             scaleTransform = new AffineTransform();
             scaleTransform.scale(1, oldHeight / height);
-            transform(scaleTransform);
+            path.transform(scaleTransform);
             return false;
         }
     }
@@ -363,20 +329,20 @@ public class CombinedSurface extends Area implements Surface, Serializable
     {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-        double deltaX = x - getBounds2D().getX();
-        double deltaY = y - getBounds2D().getY();
+        double deltaX = x - path.getBounds2D().getX();
+        double deltaY = y - path.getBounds2D().getY();
         AffineTransform translationTransform = new AffineTransform();
         translationTransform.translate(deltaX, deltaY);
-        transform(translationTransform);
+        path.transform(translationTransform);
         if (!project.conflictCheck(this))
         {
             translationTransform = new AffineTransform();
             translationTransform.translate(-deltaX, -deltaY);
-            transform(translationTransform);
+            path.transform(translationTransform);
         }
         else
         {
-            uncoveredArea.transform(translationTransform);
+            uncoveredPath.transform(translationTransform);
             coverSurface();
         }
     }
@@ -384,18 +350,25 @@ public class CombinedSurface extends Area implements Surface, Serializable
     @Override
     public void moveVertexToPoint(Point2D.Double vertex, Point2D.Double point)
     {
+        boolean vertexFound = false;
         PathIterator iterator = getPathIterator(null);
         Path2D.Double newPath = new Path2D.Double();
-        double[] v = new double[2];
+        double[] v = new double[6];
         while (!iterator.isDone())
         {
             int segmentType = iterator.currentSegment(v);
-            v[0] = Math.round(v[0]);
-            v[1] = Math.round(v[1]);
-            if (v[0] == vertex.x && v[1] == vertex.y)
+            for (int i = 0; i < 6; i++)
             {
-                v[0] = point.x;
-                v[1] = point.y;
+                v[i] = Math.round(v[i]);
+            }
+            for (int i = 0; i < 5; i += 2)
+            {
+                if (v[i] == vertex.x && v[i + 1] == vertex.y)
+                {
+                    v[i] = point.x;
+                    v[i + 1] = point.y;
+                    vertexFound = true;
+                }
             }
             switch (segmentType)
             {
@@ -405,9 +378,11 @@ public class CombinedSurface extends Area implements Surface, Serializable
                 case PathIterator.SEG_LINETO:
                     newPath.lineTo(v[0], v[1]);
                     break;
-                case PathIterator.SEG_CLOSE:
+                case PathIterator.SEG_QUADTO:
+                    newPath.quadTo(v[0], v[1], v[2], v[3]);
                     break;
-                default:
+                case PathIterator.SEG_CUBICTO:
+                    newPath.curveTo(v[0], v[1], v[2], v[3], v[4], v[5]);
                     break;
             }
             iterator.next();
@@ -416,9 +391,166 @@ public class CombinedSurface extends Area implements Surface, Serializable
         Rectangle2D bounds = newArea.getBounds2D();
         if (!newArea.isEmpty() && bounds.getWidth() > 100 && bounds.getHeight() > 100)
         {
-            reset();
-            add(new Area(newPath));
-            uncoveredArea.intersect(this);
+            Area uncoveredArea = new Area(uncoveredPath);
+            uncoveredArea.subtract(newArea);
+            if (uncoveredArea.isEmpty())
+            {
+                path.reset();
+                path.append(newPath, false);
+            }
         }
+        if (!vertexFound && contains(point))
+        {
+            moveUncoveredAreaVertexToPoint(vertex, point);
+        }
+    }
+    
+    private void moveUncoveredAreaVertexToPoint(Point2D.Double vertex, Point2D.Double point)
+    {
+        PathIterator iterator = uncoveredPath.getPathIterator(null);
+        Path2D.Double newPath = new Path2D.Double();
+        double[] v = new double[6];
+        while (!iterator.isDone())
+        {
+            int segmentType = iterator.currentSegment(v);
+            for (int i = 0; i < 6; i++)
+            {
+                v[i] = Math.round(v[i]);
+            }
+            for (int i = 0; i < 5; i += 2)
+            {
+                if (v[i] == vertex.x && v[i + 1] == vertex.y)
+                {
+                    v[i] = point.x;
+                    v[i + 1] = point.y;
+                }
+            }
+            switch (segmentType)
+            {
+                case PathIterator.SEG_MOVETO:
+                    newPath.moveTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_LINETO:
+                    newPath.lineTo(v[0], v[1]);
+                    break;
+                case PathIterator.SEG_QUADTO:
+                    newPath.quadTo(v[0], v[1], v[2], v[3]);
+                    break;
+                case PathIterator.SEG_CUBICTO:
+                    newPath.curveTo(v[0], v[1], v[2], v[3], v[4], v[5]);
+                    break;
+            }
+            iterator.next();
+        }
+        Area newArea = new Area(newPath);
+        Rectangle2D bounds = newArea.getBounds2D();
+        if (!newArea.isEmpty() && bounds.getWidth() > 100 && bounds.getHeight() > 100)
+        {
+            newArea.subtract(new Area(path));
+            if (newArea.isEmpty())
+            {
+                uncoveredPath.reset();
+                uncoveredPath.append(newPath, false);
+            }
+        }
+    }
+    
+    private int countSubPaths(Path2D.Double path)
+    {
+        PathIterator iterator = path.getPathIterator(null);
+        double[] v = new double[6];
+        int numberSubPaths = 0;
+        while (!iterator.isDone())
+        {
+            int segmentType = iterator.currentSegment(v);
+            switch (segmentType)
+            {
+                case PathIterator.SEG_MOVETO:
+                    ++numberSubPaths;
+                    break;
+            }
+            iterator.next();
+        }
+        return numberSubPaths;
+    }
+
+    @Override
+    public Rectangle getBounds()
+    {
+        return path.getBounds();
+    }
+
+    @Override
+    public Rectangle2D getBounds2D()
+    {
+        return path.getBounds2D();
+    }
+
+    @Override
+    public boolean contains(double x, double y)
+    {
+        return path.contains(x, y);
+    }
+
+    @Override
+    public boolean contains(Point2D p)
+    {
+        return path.contains(p);
+    }
+
+    @Override
+    public boolean intersects(double x, double y, double w, double h)
+    {
+        return path.intersects(x, y, w, h);
+    }
+
+    @Override
+    public boolean intersects(Rectangle2D r)
+    {
+        return path.intersects(r);
+    }
+
+    @Override
+    public boolean contains(double x, double y, double w, double h)
+    {
+        return path.contains(x, y, w, h);
+    }
+
+    @Override
+    public boolean contains(Rectangle2D r)
+    {
+        return path.contains(r);
+    }
+
+    @Override
+    public PathIterator getPathIterator(AffineTransform at)
+    {
+        return path.getPathIterator(at);
+    }
+
+    @Override
+    public PathIterator getPathIterator(AffineTransform at, double flatness)
+    {
+        return path.getPathIterator(at, flatness);
+    }
+    
+    public void reset()
+    {
+        path.reset();
+    }
+    
+    public void append(PathIterator pi, boolean connect)
+    {
+        path.append(pi, connect);
+    }
+    
+    public void append(Shape s, boolean connect)
+    {
+        path.append(s, connect);
+    }
+    
+    public Path2D.Double getPath()
+    {
+        return path;
     }
 }
