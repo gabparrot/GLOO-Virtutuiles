@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import javax.imageio.ImageIO;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JColorChooser;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -88,6 +89,7 @@ public class MainWindow extends JFrame
      */
     public MainWindow()
     {
+        setIcon();
         controller = new VirtuTuile.Domain.Controller();
         initComponents();
         canvasPanel.assignControllerToDrawer(controller);
@@ -101,6 +103,16 @@ public class MainWindow extends JFrame
         heightInLabel.setVisible(false);
         toolBar.setVisible(false);
         createTileWindow.setVisible(false);
+    }
+    
+    private void setIcon()
+    {
+        try
+        {
+            ImageIcon img = new ImageIcon(getClass().getResource("/logo.png"));
+            setIconImage(img.getImage());
+        }
+        catch (Exception e){}
     }
     
     private void unselectSurface()
@@ -308,9 +320,6 @@ public class MainWindow extends JFrame
     {
         if (controller.hasTileType())
         {
-            nbTilesOnSurfaceLabels.setText(controller.getTileQuantity() + " tuiles");
-            int boxesNeeded = (int) Math.ceil((double) controller.getTileQuantity() / controller.getTileNbPerBox());
-            nbBoxesOnSurfaceLabel.setText(boxesNeeded + " boîtes");
             enableTileTypePanelButtons();
             tileTypeComboBox.setSelectedItem(controller.getTileName());
             if (isMetric)
@@ -331,10 +340,25 @@ public class MainWindow extends JFrame
         }
         else
         {
-            nbTilesOnSurfaceLabels.setText("0 tuiles");
-            nbBoxesOnSurfaceLabel.setText("0 boîtes");
             tileTypeComboBox.setSelectedItem(null);
             disableTileTypeButtons();
+        }
+        updateSurfaceQuantities();
+    }
+
+    private void updateSurfaceQuantities()
+    {
+        if (controller.hasTileType())
+        {
+            nbTilesOnSurfaceLabels.setText(controller.getTileQuantity() + " tuiles");
+            int boxesNeeded = (int) Math.ceil(
+                    (double) controller.getTileQuantity() / controller.getTileNbPerBox());
+            nbBoxesOnSurfaceLabel.setText(boxesNeeded + " boîtes");
+        }
+        else
+        {
+            nbTilesOnSurfaceLabels.setText("0 tuiles");
+            nbBoxesOnSurfaceLabel.setText("0 boîtes");   
         }
     }
 
@@ -3476,6 +3500,8 @@ public class MainWindow extends JFrame
             Utilities.movePointToGrid(point, canvasPanel.getGridDistance());
         }
         controller.moveVertexToPoint(point);
+        updateSurfacePanel();
+        updateSurfaceQuantities();
         repaint();
     }
     
@@ -3599,26 +3625,28 @@ public class MainWindow extends JFrame
     }//GEN-LAST:event_formComponentResized
     
     private void tileNbPerBoxFieldActionPerformed(ActionEvent evt)
-       {
-           try
-           {
-                int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
-                if (newTileNbPerBox >= 1)
-                {
-                    controller.setTileNbPerBox(newTileNbPerBox);
-                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-                }
-                else
-                {
-                    JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile", 
-                            "Opération interdite", JOptionPane.ERROR_MESSAGE);
-                    tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-                }
-           } catch (NumberFormatException e)
-           {
-               tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
-           }
-       }
+    {
+        try
+        {
+             int newTileNbPerBox = Integer.parseInt(tileNbPerBoxField.getText());
+             if (newTileNbPerBox >= 1)
+             {
+                 controller.setTileNbPerBox(newTileNbPerBox);
+                 updateSurfaceQuantities();
+                 tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+             }
+             else
+             {
+                 JOptionPane.showMessageDialog(this, "Une boîte doit contenir au moins 1 tuile", 
+                         "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                 tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+             }
+        }
+        catch (NumberFormatException e)
+        {
+            tileNbPerBoxField.setText(String.format("%d", controller.getTileNbPerBox()));
+        }
+    }
 
     private void tileNameFieldActionPerformed(ActionEvent evt)
        {
@@ -4154,6 +4182,7 @@ public class MainWindow extends JFrame
             } // fin else imperial
         } // fin if isMetric
         controller.refreshSurfaces();
+        updateSurfaceQuantities();
         canvasPanel.repaint();
    }
     
@@ -4358,6 +4387,7 @@ public class MainWindow extends JFrame
         }
         controller.setRowOffset(Math.max(0, Math.min(100, offset)));
         rowOffsetField.setText("" + controller.getRowOffset());
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_rowOffsetFieldActionPerformed
 
@@ -4433,18 +4463,18 @@ public class MainWindow extends JFrame
             } // fin else imperial
         } // fin if isMetric
         controller.refreshSurfaces();
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_tileWidthFieldActionPerformed
 
     private void tileTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_tileTypeComboBoxActionPerformed
     {//GEN-HEADEREND:event_tileTypeComboBoxActionPerformed
-        try
+        int selectedIndex = tileTypeComboBox.getSelectedIndex();
+        if (selectedIndex > -1)
         {
             controller.setTileTypeByIndex(tileTypeComboBox.getSelectedIndex());
             updatePanelInformation();
             canvasPanel.repaint();
-        } catch (Exception e)
-        {
         }
     }//GEN-LAST:event_tileTypeComboBoxActionPerformed
 
@@ -4457,6 +4487,7 @@ public class MainWindow extends JFrame
                 double offset = Utilities.parseDoubleLocale(offsetYField.getText()) * 10;
                 controller.setOffsetY(offset);
                 offsetYField.setText(String.format("%.03f", controller.getOffsetY() / 10));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             }
             catch (ParseException e)
@@ -4472,6 +4503,7 @@ public class MainWindow extends JFrame
                 double offsetY = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetY(offsetY);
                 offsetYField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetY())));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             }
             catch (ParseException e)
@@ -4490,6 +4522,7 @@ public class MainWindow extends JFrame
                 double offset = Utilities.parseDoubleLocale(offsetXField.getText()) * 10;
                 controller.setOffsetX(offset);
                 offsetXField.setText(String.format("%.03f", controller.getOffsetX() / 10));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             } catch (ParseException e)
             {
@@ -4503,6 +4536,7 @@ public class MainWindow extends JFrame
                 double offsetX = Utilities.inchesToMm(dblInchesField);
                 controller.setOffsetX(offsetX);
                 offsetXField.setText(String.format("%.03f", Utilities.mmToInches(controller.getOffsetX())));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
             } catch (ParseException e)
             {
@@ -4514,12 +4548,14 @@ public class MainWindow extends JFrame
     private void ninetyOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_ninetyOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_ninetyOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(true);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_ninetyOrientationRadioButtonActionPerformed
 
     private void zeroOrientationRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_zeroOrientationRadioButtonActionPerformed
     {//GEN-HEADEREND:event_zeroOrientationRadioButtonActionPerformed
         controller.setIsNinetyDegree(false);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_zeroOrientationRadioButtonActionPerformed
 
@@ -4528,11 +4564,8 @@ public class MainWindow extends JFrame
         if ((String) patternComboBox.getSelectedItem() != null)
         {
             Pattern pattern;
-            String message = "Ce motif peut seulement être appliqué si la longueur du "
-                                + "plus long côté du matériau est égale\nau double de la longeur de "
-                                + "son plus court côté plus la largeur du joint.\n\n"
-                                + "FORMULE: côté long = 2 * côté court + largeur du joint\n"
-                                + "EXEMPLE: une tuile 30cm x 14cm avec un joint de 2cm";
+            String message = "Ce motif peut seulement être utilisé avec un matériau ayant\n"
+                    + "un côté plus long ou égal au double de son autre côté.";
             switch ((String) patternComboBox.getSelectedItem())
             {
                 case patternA:
@@ -4563,6 +4596,8 @@ public class MainWindow extends JFrame
             }
             controller.setPattern(pattern);
             enablePanelButtons();
+            updateCoveringPanel();
+            updateSurfaceQuantities();
             canvasPanel.repaint();
         }
     }//GEN-LAST:event_patternComboBoxActionPerformed
@@ -4573,15 +4608,15 @@ public class MainWindow extends JFrame
         {
             double tileWidth = controller.getTileWidth();
             double tileHeight = controller.getTileHeight();
-            double jointWidth = controller.getJointWidth();
             double longLength = tileWidth > tileHeight ? tileWidth : tileHeight;
             double shortLength = tileWidth > tileHeight ? tileHeight : tileWidth;
-            return longLength == 2 * shortLength + jointWidth;
+            if (longLength >= 2 * shortLength)
+            {
+                controller.setJointWidth(longLength - 2 * shortLength);
+                return true;
+            }
         }
-        else
-        {
-            return false;
-        }
+        return false;
     }
     
     private void jointWidthFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_jointWidthFieldActionPerformed
@@ -4593,12 +4628,15 @@ public class MainWindow extends JFrame
                 double width = Utilities.parseDoubleLocale(jointWidthField.getText());
                 controller.setJointWidth(width);
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
+                updateSurfaceQuantities();
                 canvasPanel.repaint();
-            } catch (ParseException e)
+            }
+            catch (ParseException e)
             {
                 jointWidthField.setText(String.format("%.03f", controller.getJointWidth()));
             }
-        } else
+        }
+        else
         {
             try
             {
@@ -4608,12 +4646,14 @@ public class MainWindow extends JFrame
                 controller.setJointWidth(jointWidth);
                 jointWidthField.setText(String.format("%.03f",
                     Utilities.mmToInches(controller.getJointWidth())));
-            canvasPanel.repaint();
-        } catch (ParseException e)
-        {
-            jointWidthField.setText(String.format("%.03f",
-                Utilities.mmToInches(controller.getJointWidth())));
-        }
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+            }
+            catch (ParseException e)
+            {
+                jointWidthField.setText(String.format("%.03f",
+                    Utilities.mmToInches(controller.getJointWidth())));
+            }
         }
     }//GEN-LAST:event_jointWidthFieldActionPerformed
 
@@ -4659,19 +4699,20 @@ public class MainWindow extends JFrame
                 boolean status = controller.setSurfaceHeight(height);
                 surfaceHeightField.setText(String.format("%.03f",
                     controller.getBounds2D().getHeight() / 1000.));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceHeightField.setText(String.format("%.03f",
-                controller.getBounds2D().getHeight() / 1000.));
-        }
-        }
+            catch (ParseException e)
+            {
+                surfaceHeightField.setText(String.format("%.03f",
+                    controller.getBounds2D().getHeight() / 1000.));
+            }
+            }
         else
         {
             try
@@ -4686,19 +4727,20 @@ public class MainWindow extends JFrame
                 surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(newHeight)));
                 surfaceHeightFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newHeight)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
-            surfaceHeightFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getHeight())));
-        }
+            catch (ParseException e)
+            {
+                surfaceHeightField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getHeight())));
+                surfaceHeightFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getHeight())));
+            }
         }
     }//GEN-LAST:event_surfaceHeightFieldActionPerformed
 
@@ -4712,18 +4754,21 @@ public class MainWindow extends JFrame
                 boolean status = controller.setSurfaceWidth(width);
                 surfaceWidthField.setText(String.format("%.03f",
                     controller.getBounds2D().getWidth() / 1000.));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        } catch (ParseException e)
-        {
-            surfaceWidthField.setText(String.format("%.03f",
-                controller.getBounds2D().getWidth() / 1000.));
+            catch (ParseException e)
+            {
+                surfaceWidthField.setText(String.format("%.03f",
+                    controller.getBounds2D().getWidth() / 1000.));
+            }
         }
-        } else
+        else
         {
             try
             {
@@ -4737,18 +4782,20 @@ public class MainWindow extends JFrame
                 surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(newWidth)));
                 surfaceWidthFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newWidth)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                updateSurfaceQuantities();
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        } catch (ParseException e)
-        {
-            surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getWidth())));
-            surfaceWidthFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getWidth())));
-        }
+            catch (ParseException e)
+            {
+                surfaceWidthField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getWidth())));
+                surfaceWidthFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getWidth())));
+            }
         }
     }//GEN-LAST:event_surfaceWidthFieldActionPerformed
 
@@ -4839,31 +4886,33 @@ public class MainWindow extends JFrame
                 surfaceXField.setText(String.valueOf(Utilities.mmToFeet(newX)));
                 surfaceXFieldInches.setText(String.format("%.02f",
                     Utilities.mmToRemainingInches(newX)));
-            canvasPanel.repaint();
-            if (!status)
-            {
-                JOptionPane.showMessageDialog(this, "Modification illégale.",
-                    "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                canvasPanel.repaint();
+                if (!status)
+                {
+                    JOptionPane.showMessageDialog(this, "Modification illégale.",
+                        "Opération interdite", JOptionPane.ERROR_MESSAGE);
+                }
             }
-        }
-        catch (ParseException e)
-        {
-            surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
-            surfaceXFieldInches.setText(String.format("%.02f",
-                Utilities.mmToRemainingInches(controller.getBounds2D().getX())));
-        }
+            catch (ParseException e)
+            {
+                surfaceXField.setText(String.valueOf(Utilities.mmToFeet(controller.getBounds2D().getX())));
+                surfaceXFieldInches.setText(String.format("%.02f",
+                    Utilities.mmToRemainingInches(controller.getBounds2D().getX())));
+            }
         }
     }//GEN-LAST:event_surfaceXFieldActionPerformed
 
     private void doNotCoverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_doNotCoverRadioButtonActionPerformed
     {//GEN-HEADEREND:event_doNotCoverRadioButtonActionPerformed
         controller.setSurfaceIsHole(true);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_doNotCoverRadioButtonActionPerformed
 
     private void coverRadioButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_coverRadioButtonActionPerformed
     {//GEN-HEADEREND:event_coverRadioButtonActionPerformed
         controller.setSurfaceIsHole(false);
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_coverRadioButtonActionPerformed
 
@@ -4882,6 +4931,7 @@ public class MainWindow extends JFrame
     private void rotationTextFieldActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_rotationTextFieldActionPerformed
     {//GEN-HEADEREND:event_rotationTextFieldActionPerformed
         controller.setRotation(Integer.parseInt(rotationTextField.getText()));
+        updateSurfaceQuantities();
         canvasPanel.repaint();
     }//GEN-LAST:event_rotationTextFieldActionPerformed
     private void inspectorButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_inspectorButtonActionPerformed

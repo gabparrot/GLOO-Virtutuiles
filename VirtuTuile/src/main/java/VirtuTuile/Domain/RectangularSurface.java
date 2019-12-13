@@ -360,7 +360,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
     {
         double oldWidth = width;
         double oldHeight = height;
-        if (vertex.x == x)
+        if (Math.abs(vertex.x - x) < 1)
         {
             width += (x - point.x);
             if (width >= 100)
@@ -372,7 +372,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
                 width = oldWidth;
             }
         }
-        if (vertex.x == x + width)
+        if (Math.abs(vertex.x - x - width) < 1)
         {
             width -= (x + width - point.x);
             if (width < 100)
@@ -380,7 +380,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
                 width = oldWidth;
             }
         }
-        if (vertex.y == y)
+        if (Math.abs(vertex.y - y) < 1)
         {
             height += (y - point.y);
             if (height >= 100)
@@ -392,7 +392,7 @@ public class RectangularSurface extends Rectangle2D.Double implements Surface
                 height = oldHeight;
             }
         }
-        if (vertex.y == y + height)
+        if (Math.abs(vertex.y - y - height) < 1)
         {
             height -= (y + height - point.y);
             if (height < 100)

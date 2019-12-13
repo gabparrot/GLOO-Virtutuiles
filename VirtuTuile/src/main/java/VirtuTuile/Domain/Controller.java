@@ -912,7 +912,15 @@ public class Controller
      */
     public boolean hasTileType()
     {
-        return project.getSelectedSurface().getCovering().getTileType() != null;
+        Surface selectedSurface = project.getSelectedSurface();
+        if (selectedSurface == null)
+        {
+            return false;
+        }
+        else
+        {
+            return selectedSurface.getCovering().getTileType() != null;
+        }
     }
     
     /**

@@ -21,9 +21,9 @@ public class CombinedSurface implements Surface, Serializable
     private Color color;
     private Covering covering;
     private Path2D.Double uncoveredPath = new Path2D.Double();
-    private Path2D.Double path = new Path2D.Double();
-    private Surface firstSurface;
-    private Surface secondSurface;
+    private final Path2D.Double path = new Path2D.Double();
+    private final Surface firstSurface;
+    private final Surface secondSurface;
 
     public CombinedSurface(Surface s1, Surface s2, boolean isHole, Color color, Covering covering)
     {
@@ -52,10 +52,14 @@ public class CombinedSurface implements Surface, Serializable
         secondSurface = s2;
         this.isHole = isHole;
         this.color = color;
-        // Copie du Covering:
+        copyCovering(covering);
+    }
+    
+    private void copyCovering(Covering newCovering)
+    {
         try
         {
-            this.covering = (Covering) covering.clone();
+            this.covering = (Covering) newCovering.clone();
             this.covering.setParent(this);
             this.covering.cover();
         }
